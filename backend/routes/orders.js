@@ -34,12 +34,22 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'Please fill all required fields' });
     }
 
+    const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Please enter a valid email address' });
+    }
+
     if (phone.length !== 10) {
       return res.status(400).json({ message: 'Phone number must contain exactly 10 digits' });
     }
 
-    if (alternatePhone && alternatePhone.length !== 10) {
-      return res.status(400).json({ message: 'Alternate phone number must contain exactly 10 digits' });
+    if (alternatePhone) {
+      if (alternatePhone.length !== 10) {
+        return res.status(400).json({ message: 'Alternate phone number must contain exactly 10 digits' });
+      }
+      if (phone === alternatePhone) {
+        return res.status(400).json({ message: 'Alternate phone number cannot be the same as the primary phone number' });
+      }
     }
 
     if (pinCode.length !== 6) {

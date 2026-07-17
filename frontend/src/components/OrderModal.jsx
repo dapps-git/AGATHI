@@ -161,9 +161,15 @@ const OrderModal = ({ product, onClose }) => {
     }
 
     // Alt Phone validation (10 digits if provided and India)
-    if (selectedCountryCode === 'IN' && alternatePhone && !/^\d{10}$/.test(alternatePhone)) {
-      setError('Alternate phone number must contain exactly 10 digits.');
-      return false;
+    if (selectedCountryCode === 'IN' && alternatePhone) {
+      if (!/^\d{10}$/.test(alternatePhone)) {
+        setError('Alternate phone number must contain exactly 10 digits.');
+        return false;
+      }
+      if (phone === alternatePhone) {
+        setError('Alternate phone number cannot be the same as the primary phone number.');
+        return false;
+      }
     }
 
     // PIN code validation (6 digits if India)

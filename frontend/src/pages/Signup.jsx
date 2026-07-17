@@ -42,13 +42,14 @@ const Signup = () => {
 
     const { name, email, phone, password, confirmPassword } = formData;
 
-    if (!name || !email || !phone || !password || !confirmPassword) {
-      setError('Please fill in all fields.');
+    if (!name.trim() || name.trim().length < 2) {
+      setError('Name must be at least 2 characters.');
       return;
     }
 
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+    const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address.');
       return;
     }
 
@@ -57,8 +58,14 @@ const Signup = () => {
       return;
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
+    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d).{6,}$/;
+    if (!passwordRegex.test(password)) {
+      setError('Password must be at least 6 characters and contain both letters and numbers.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
       return;
     }
 
