@@ -13,12 +13,12 @@ const ProductCard = ({ product, onBuyNow }) => {
             onError={(e) => {
               // Fallback if image fails to load
               e.target.onerror = null;
-              e.target.src = 'https://placehold.co/300x300/f0f3ee/2f4f1e?text=Agadhi+Churna';
+              e.target.src = 'https://placehold.co/300x300/f0f3ee/2f4f1e?text=Agadi+Churna';
             }}
           />
         ) : (
           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifycontent: 'center', backgroundColor: 'var(--accent-green)' }}>
-            <span style={{ color: 'var(--primary-green)', fontWeight: 'bold' }}>Agadhi Choorna</span>
+            <span style={{ color: 'var(--primary-green)', fontWeight: 'bold' }}>Agadi Choorna</span>
           </div>
         )}
       </div>

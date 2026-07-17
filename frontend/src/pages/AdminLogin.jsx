@@ -40,7 +40,7 @@ const AdminLogin = () => {
         <div className="admin-login-header">
           <img
             src="/images/logo.png"
-            alt="Agadhi Choorna Logo"
+            alt="Agadi Choorna Logo"
             style={{ maxHeight: '120px', maxWidth: '100%', display: 'block', margin: '0 auto 20px', objectFit: 'contain' }}
           />
           <h2 style={{ fontSize: '1.4rem', color: 'var(--primary-green)', fontWeight: '700', marginBottom: '8px' }}>Admin Portal</h2>
@@ -57,7 +57,7 @@ const AdminLogin = () => {
               id="admin-email"
               value={email}
               onChange={(e) => { setEmail(e.target.value); setError(''); }}
-              placeholder="admin@agadhi.com"
+              placeholder="admin@agadi.com"
               required
             />
           </div>

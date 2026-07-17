@@ -92,7 +92,7 @@ const ForgotPassword = () => {
         <div className="auth-header" style={{ marginBottom: '28px', textAlign: 'center' }}>
           <img 
             src="/images/logo.png" 
-            alt="Agadhi Logo" 
+            alt="Agadi Logo" 
             style={{ maxHeight: '110px', maxWidth: '100%', objectFit: 'contain', display: 'block', margin: '0 auto 16px' }} 
           />
           <h2 style={{ fontSize: '1.4rem', color: 'var(--primary-green)', fontWeight: '700', marginBottom: '4px' }}>Reset Password</h2>

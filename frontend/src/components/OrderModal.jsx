@@ -465,7 +465,7 @@ ${order.landmark ? `- Landmark: ${order.landmark}\n` : ''}- District: ${order.di
                   style={{ width: '80px', height: '80px', objectFit: 'contain', backgroundColor: 'white', borderRadius: '6px', border: '1px solid var(--border-color)', padding: '4px' }}
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.src = 'https://placehold.co/100x100/f0f3ee/2f4f1e?text=Agadhi';
+                    e.target.src = 'https://placehold.co/100x100/f0f3ee/2f4f1e?text=Agadi';
                   }}
                 />
                 <div>

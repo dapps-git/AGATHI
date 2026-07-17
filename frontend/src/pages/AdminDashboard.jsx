@@ -176,7 +176,7 @@ const AdminDashboard = () => {
       {/* ── Topbar ── */}
       <header className="admin-topbar">
         <div className="admin-topbar-brand">
-          <img src="/images/logo.png" alt="Agadhi Logo" style={{ maxHeight: '46px', objectFit: 'contain' }} />
+          <img src="/images/logo.png" alt="Agadi Logo" style={{ maxHeight: '46px', objectFit: 'contain' }} />
         </div>
         <div className="admin-topbar-actions">
           <div style={{ textAlign: 'right' }}>
@@ -235,7 +235,7 @@ const AdminDashboard = () => {
           <div style={{ flex: 1 }} />
           <div style={{ padding: '16px 18px 0', borderTop: '1px solid var(--border-color)', marginTop: '8px' }}>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-              <strong style={{ color: 'var(--primary-green)' }}>Agadhi Admin</strong><br />
+              <strong style={{ color: 'var(--primary-green)' }}>Agadi Admin</strong><br />
               v1.0 — MVP Panel
             </div>
           </div>
@@ -418,7 +418,7 @@ const AdminDashboard = () => {
                           src={prod.images[0]}
                           alt={prod.name}
                           style={{ width: '60px', height: '60px', objectFit: 'contain', border: '1px solid var(--border-color)', borderRadius: '8px', background: 'var(--card-bg)', padding: '4px' }}
-                          onError={e => { e.target.onerror = null; e.target.src = 'https://placehold.co/80x80?text=Agadhi'; }}
+                          onError={e => { e.target.onerror = null; e.target.src = 'https://placehold.co/80x80?text=Agadi'; }}
                         />
                       </td>
                       <td style={{ fontWeight: '600', maxWidth: '180px' }}>{prod.name}</td>

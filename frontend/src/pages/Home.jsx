@@ -11,7 +11,7 @@ const REVIEWS = [
   {
     name: 'Suresh Kumar',
     location: 'Wayanad, Kerala',
-    text: 'I was struggling with low weight and weak appetite for years. After using Agadhi Choorna for 2 months, I gained 6 kgs naturally. My digestion is much better now!',
+    text: 'I was struggling with low weight and weak appetite for years. After using Agadi Choorna for 2 months, I gained 6 kgs naturally. My digestion is much better now!',
     rating: 5,
   },
   {
@@ -20,18 +20,6 @@ const REVIEWS = [
     text: 'Highly recommended! Unlike other weight gain powders, this did not cause any bloating or side-effects. It is 100% natural, and the taste is very earthy and herbal.',
     rating: 5,
   },
-];
-
-const STATIC_PRODUCTS = [
-  {
-    _id: "66723e7f4a56a6452ba3be7f",
-    name: "Agadi Choorna - Single Pack (125g)",
-    price: 1550,
-    description: "Herbal Weight Gain Powder. Authentic Ayurvedic formulation packed with potent adaptogenic herbs. Designed to naturally boost appetite, improve digestion, and build healthy muscle mass safely without side-effects.",
-    images: ["/images/product-pouch.jpg"],
-    benefits: ["100% Ayurvedic & Safe", "Naturally Boosts Appetite", "Promotes Healthy Weight Gain", "Net Weight: 125g Pouch"]
-  },
-
 ];
 
 const Home = () => {
@@ -85,14 +73,10 @@ const Home = () => {
     const fetchProducts = async () => {
       try {
         const { data } = await API.get('/products');
-        if (data && data.length > 0) {
-          setProducts(data);
-        } else {
-          setProducts(STATIC_PRODUCTS);
-        }
+        setProducts(data || []);
       } catch (error) {
-        console.error('Error fetching products, using static fallback:', error);
-        setProducts(STATIC_PRODUCTS);
+        console.error('Error fetching products:', error);
+        setProducts([]);
       } finally {
         setLoading(false);
       }
@@ -152,7 +136,7 @@ const Home = () => {
         <div className="container hero-grid">
           <div className="hero-content">
             <div className="hero-logo-mobile">
-              <img src="/images/logo.png" alt="Agadhi Choorna Logo" />
+              <img src="/images/logo.png" alt="Agadi Choorna Logo" />
             </div>
             <div className="hero-tag">
               <ShieldCheck size={16} />
@@ -181,7 +165,7 @@ const Home = () => {
                 <span>Order Now</span>
                 <ArrowRight size={18} />
               </button>
-              <a href="https://wa.me/919539416003?text=Hello,%20I'd%20like%20to%20consult%20an%20expert%20about%20Agadi%20Choornam." className="btn btn-outline" target="_blank" rel="noopener noreferrer">
+              <a href="https://wa.me/919072888821?text=Hello,%20I'd%20like%20to%20consult%20an%20expert%20about%20Agadi%20Choornam." className="btn btn-outline" target="_blank" rel="noopener noreferrer">
                 <Phone size={18} />
                 <span>Call Expert</span>
               </a>
@@ -191,7 +175,7 @@ const Home = () => {
           <div className="hero-image-container">
             <img
               src="/images/product-pouch.jpg"
-              alt="Agadhi Choorna Weight Gain Powder"
+              alt="Agadi Choorna Weight Gain Powder"
               className="hero-img"
               onError={(e) => {
                 e.target.onerror = null;
@@ -217,7 +201,7 @@ const Home = () => {
             />
           </div>
           <div className="about-content">
-            <h2 className="section-title" style={{ display: 'block', margin: '0 0 16px 0' }}>About Agadi Jorna</h2>
+            <h2 className="section-title" style={{ display: 'block', margin: '0 0 16px 0' }}>About Agadi Choorna</h2>
             <h3 style={{ marginBottom: '16px' }}>Empowering Your Weight Gain Journey Authentically</h3>
             <p>
               Weight gain is not about loaded fats or artificial sugars; it is about building clean muscle bulk, normalizing metabolism, and nourishing bodily tissues (Dhatus).
@@ -371,7 +355,7 @@ const Home = () => {
 
           <div style={{ textAlign: 'center' }}>
             <button onClick={() => navigate('/results')} className="view-all-results-link">
-              View All 100+ Customer Results &rarr;
+              View All 1000+ Customer Results &rarr;
             </button>
           </div>
         </div>
@@ -389,7 +373,7 @@ const Home = () => {
 
           <div className="contact-grid">
             <div className="contact-info">
-              <a href="https://wa.me/919539416003?text=Hello,%20I'd%20like%20to%20place%20an%20order%20for%20Agadi%20Choornam." target="_blank" rel="noopener noreferrer" className="contact-card">
+              <a href="https://wa.me/919072888821?text=Hello,%20I'd%20like%20to%20place%20an%20order%20for%20Agadi%20Choornam." target="_blank" rel="noopener noreferrer" className="contact-card">
                 <div className="contact-icon-wrapper">
                   <MessageSquare size={24} />
                 </div>
@@ -400,14 +384,14 @@ const Home = () => {
                 </div>
               </a>
 
-              <a href="https://wa.me/919539416003?text=Hello,%20I'd%20like%20to%20consult%20an%20expert%20about%20Agadi%20Choornam." target="_blank" rel="noopener noreferrer" className="contact-card">
+              <a href="https://wa.me/919072888821?text=Hello,%20I'd%20like%20to%20consult%20an%20expert%20about%20Agadi%20Choornam." target="_blank" rel="noopener noreferrer" className="contact-card">
                 <div className="contact-icon-wrapper">
                   <Phone size={24} />
                 </div>
                 <div className="contact-details">
                   <h4>Phone & WhatsApp Hotline</h4>
                   <p>Reach out to consult directly with our healthcare advisors.</p>
-                  <strong style={{ color: 'var(--primary-green)', fontSize: '0.9rem', display: 'block', marginTop: '6px' }}>+91 9539416003 &rarr;</strong>
+                  <strong style={{ color: 'var(--primary-green)', fontSize: '0.9rem', display: 'block', marginTop: '6px' }}>+91 9072888821 &rarr;</strong>
                 </div>
               </a>
 
@@ -416,7 +400,7 @@ const Home = () => {
                   <MapPin size={24} />
                 </div>
                 <div className="contact-details">
-                  <h4>Physical Clinic</h4>
+                  <h4>Business Location</h4>
                   <p>Agadi Choornam, Palakkad, Kerala, India</p>
                 </div>
               </div>
@@ -475,7 +459,7 @@ const Home = () => {
       </section>
 
       {/* Floating Call Button */}
-      <a href="https://wa.me/919539416003?text=Hello,%20I'd%20like%20to%20place%20an%20order%20for%20Agadi%20Choornam." target="_blank" rel="noopener noreferrer" className="floating-call" aria-label="Call Support Now">
+      <a href="https://wa.me/919072888821?text=Hello,%20I'd%20like%20to%20place%20an%20order%20for%20Agadi%20Choornam." target="_blank" rel="noopener noreferrer" className="floating-call" aria-label="Call Support Now">
         <Phone size={20} />
       </a>
 

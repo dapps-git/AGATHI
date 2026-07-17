@@ -46,7 +46,7 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="container nav-container">
         <div onClick={handleLogoClick} style={{ cursor: 'pointer' }} className="logo-link">
-          <img src="/images/logo.png" alt="Agadhi Choorna Logo" className="logo-img" />
+          <img src="/images/logo.png" alt="Agadi Choorna Logo" className="logo-img" />
         </div>
 
         <ul className={`nav-menu ${isOpen ? 'open' : ''}`}>

@@ -77,7 +77,7 @@ const Signup = () => {
         <div className="auth-header" style={{ marginBottom: '32px', textAlign: 'center' }}>
           <img 
             src="/images/logo.png" 
-            alt="Agadhi Logo" 
+            alt="Agadi Logo" 
             style={{ maxHeight: '110px', maxWidth: '100%', objectFit: 'contain', display: 'block', margin: '0 auto' }} 
           />
         </div>
