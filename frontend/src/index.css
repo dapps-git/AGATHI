@@ -1187,24 +1187,7 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
   position: relative;
   margin: 32px 0 24px;
 }
-.reviews-marquee-container::before,
-.reviews-marquee-container::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 120px;
-  z-index: 2;
-  pointer-events: none;
-}
-.reviews-marquee-container::before {
-  left: 0;
-  background: linear-gradient(to right, var(--card-bg) 0%, transparent 100%);
-}
-.reviews-marquee-container::after {
-  right: 0;
-  background: linear-gradient(to left, var(--card-bg) 0%, transparent 100%);
-}
+/* Marquee edge overlays removed — no fade/blur on sides */
 .reviews-marquee-track {
   display: flex;
   gap: 16px;

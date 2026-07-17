@@ -147,7 +147,7 @@ const Home = () => {
               <span style={{ color: 'var(--secondary-green)' }}>Naturally & Safely</span>
             </h1>
             <p className="hero-subtitle">
-              Agadi Choorna blends ancient Ayurvedic science with potent adaptogenic herbs like Ashwagandha and Shatavari to naturally enhance your appetite, improve nutrient absorption, and build lean muscle mass.
+              Agadi Choorna blends ancient Ayurvedic science with potent adaptogenic herbs like Cherukura and Venga to naturally enhance your appetite, improve nutrient absorption, and build lean muscle mass.
             </p>
             <div className="hero-buttons">
               <button
