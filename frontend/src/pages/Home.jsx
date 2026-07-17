@@ -25,20 +25,13 @@ const REVIEWS = [
 const STATIC_PRODUCTS = [
   {
     _id: "66723e7f4a56a6452ba3be7f",
-    name: "Agadhi Choorna - Single Pack (125g)",
+    name: "Agadi Choorna - Single Pack (125g)",
     price: 1550,
     description: "Herbal Weight Gain Powder. Authentic Ayurvedic formulation packed with potent adaptogenic herbs. Designed to naturally boost appetite, improve digestion, and build healthy muscle mass safely without side-effects.",
     images: ["/images/product-pouch.jpg"],
     benefits: ["100% Ayurvedic & Safe", "Naturally Boosts Appetite", "Promotes Healthy Weight Gain", "Net Weight: 125g Pouch"]
   },
-  {
-    _id: "66723e7f4a56a6452ba3be80",
-    name: "Agadhi Choorna - Double Value Pack (2 x 125g)",
-    price: 2900,
-    description: "Get two 125g pouches of Agadhi Choorna for a complete 30-day course and save ₹200.",
-    images: ["/images/product-pouch-alt.jpg"],
-    benefits: ["Best Value (Save ₹200)", "Complete 30-Day Supply", "Regulates Metabolism", "Free Shipping Included"]
-  }
+
 ];
 
 const Home = () => {
@@ -170,7 +163,7 @@ const Home = () => {
               <span style={{ color: 'var(--secondary-green)' }}>Naturally & Safely</span>
             </h1>
             <p className="hero-subtitle">
-              Agadhi Choorna blends ancient Ayurvedic science with potent adaptogenic herbs like Ashwagandha and Shatavari to naturally enhance your appetite, improve nutrient absorption, and build lean muscle mass.
+              Agadi Choorna blends ancient Ayurvedic science with potent adaptogenic herbs like Ashwagandha and Shatavari to naturally enhance your appetite, improve nutrient absorption, and build lean muscle mass.
             </p>
             <div className="hero-buttons">
               <button
@@ -196,10 +189,10 @@ const Home = () => {
           </div>
 
           <div className="hero-image-container">
-            <img 
-              src="/images/product-pouch.jpg" 
-              alt="Agadhi Choorna Weight Gain Powder" 
-              className="hero-img" 
+            <img
+              src="/images/product-pouch.jpg"
+              alt="Agadhi Choorna Weight Gain Powder"
+              className="hero-img"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = '/images/product-pouch-alt.jpg';
@@ -230,7 +223,7 @@ const Home = () => {
               Weight gain is not about loaded fats or artificial sugars; it is about building clean muscle bulk, normalizing metabolism, and nourishing bodily tissues (Dhatus).
             </p>
             <p style={{ marginBottom: '24px' }}>
-              Agadhi Choorna is an age-old herbal recipe that targets the root cause of underweight conditions—poor digestive fire (Agni) and low metabolism. By restoring metabolic balance, it increases your nutritional capacity, helping you gain weight steadily and hold it permanently.
+              Agadi Choorna is an age-old herbal recipe that targets the root cause of underweight conditions—poor digestive fire (Agni) and low metabolism. By restoring metabolic balance, it increases your nutritional capacity, helping you gain weight steadily and hold it permanently.
             </p>
 
             {/* Ingredients */}
