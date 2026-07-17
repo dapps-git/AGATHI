@@ -1,7 +1,7 @@
 {
-  "name": "agadhi-churna-backend",
+  "name": "agadi-churna-backend",
   "version": "1.0.0",
-  "description": "Backend API for Agadhi Churna Weight Gain Powder",
+  "description": "Backend API for Agadi Churna Weight Gain Powder",
   "main": "server.js",
   "type": "module",
   "scripts": {

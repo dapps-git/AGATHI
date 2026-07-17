@@ -12,21 +12,11 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     if (mongoose.connection.readyState === 1) {
-      let products = await Product.find({}).sort({ createdAt: -1 });
-      if (products.length === 0) {
-        const db = getFallbackDb();
-        if (db.products && db.products.length > 0) {
-          const cleanProducts = db.products.map(p => {
-            const { _id, ...rest } = p;
-            return rest;
-          });
-          products = await Product.create(cleanProducts);
-        }
-      }
+      const products = await Product.find({}).sort({ createdAt: -1 });
       res.json(products);
     } else {
       const db = getFallbackDb();
-      res.json(db.products);
+      res.json(db.products || []);
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
