@@ -25,12 +25,12 @@ const seedData = async () => {
 
     const admin = await User.create({
       name: 'Agadi Administrator',
-      email: 'admin@agadhi.com',
+      email: 'admin@agadi.com',
       phone: '9072888821',
       password: 'Admin@123', // Will be hashed automatically by userSchema.pre('save') hook
       isAdmin: true,
     });
-    console.log('Admin user seeded: admin@agadhi.com / Admin@123');
+    console.log('Admin user seeded: admin@agadi.com / Admin@123');
 
 
 
