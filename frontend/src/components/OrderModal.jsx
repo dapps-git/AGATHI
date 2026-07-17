@@ -140,10 +140,16 @@ const OrderModal = ({ product, onClose }) => {
   };
 
   const validateStep1 = () => {
-    const { name, phone, alternatePhone, email, address, state, country, district, pinCode } = formData;
+    const { name, phone, alternatePhone, email, address, landmark, state, country, district, pinCode } = formData;
 
     if (!name || !phone || !email || !address || !state || !country || !district || !pinCode) {
       setError('Please fill in all required fields.');
+      return false;
+    }
+
+    // Landmark validation (optional, but must be at least 4 characters if entered)
+    if (landmark && landmark.trim().length < 4) {
+      setError('Landmark must be at least 4 characters long.');
       return false;
     }
 

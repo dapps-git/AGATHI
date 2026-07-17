@@ -34,6 +34,10 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'Please fill all required fields' });
     }
 
+    if (landmark && landmark.trim().length < 4) {
+      return res.status(400).json({ message: 'Landmark must be at least 4 characters long' });
+    }
+
     const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: 'Please enter a valid email address' });
