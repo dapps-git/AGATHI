@@ -8,6 +8,45 @@ import {
 import adminAPI from '../utils/adminApi';
 import { AdminAuthContext } from '../context/AdminAuthContext';
 
+const compressImageToWebP = (file, maxWidth = 1000, maxHeight = 1000, quality = 0.7) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const webpDataUrl = canvas.toDataURL('image/webp', quality);
+        resolve(webpDataUrl);
+      };
+      img.onerror = (err) => reject(err);
+      img.src = event.target.result;
+    };
+    reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(file);
+  });
+};
+
 const AdminDashboard = () => {
   const { admin, logoutAdmin } = useContext(AdminAuthContext);
   const navigate = useNavigate();
@@ -125,20 +164,20 @@ const AdminDashboard = () => {
     setProductModalOpen(true);
   };
 
-  // Convert selected file → Base64 and store as preview
-  const handleImageChange = (e) => {
+  // Convert selected file → WebP Base64 and compress
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Image must be under 5 MB.');
-      return;
+
+    try {
+      setError('');
+      const webpDataUrl = await compressImageToWebP(file, 1000, 1000, 0.7);
+      setImageBase64(webpDataUrl);
+      setImagePreview(webpDataUrl);
+    } catch (err) {
+      console.error('Image compression error:', err);
+      setError('Failed to compress and convert image to WebP.');
     }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImageBase64(reader.result);   // full data:image/…;base64,…
-      setImagePreview(reader.result);
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleProductSubmit = async (e) => {
