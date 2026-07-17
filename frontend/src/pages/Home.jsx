@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Phone, MessageSquare, MapPin, Mail, ArrowRight, ShieldCheck, Dumbbell, Apple, UtensilsCrossed, Star } from 'lucide-react';
+import { Phone, MessageSquare, MapPin, Mail, ArrowRight, ShieldCheck, Dumbbell, Apple, UtensilsCrossed, Star, X, Leaf } from 'lucide-react';
 import API from '../utils/api';
 import ProductCard from '../components/ProductCard';
 import OrderModal from '../components/OrderModal';
 import { AuthContext } from '../context/AuthContext';
+import reviewImages from '../utils/reviewImages';
 
 const REVIEWS = [
   {
@@ -52,6 +53,12 @@ const Home = () => {
     email: '',
     message: '',
   });
+  const [visibleCount, setVisibleCount] = useState(12);
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  const handleLoadMore = () => {
+    setVisibleCount(prev => prev + 12);
+  };
 
   const location = useLocation();
 
@@ -141,8 +148,19 @@ const Home = () => {
     <div>
       {/* Hero Section */}
       <section id="hero" className="hero">
+        {/* Floating background decorative leaves for mobile view */}
+        <div className="hero-deco-leaf-1 mobile-only">
+          <Leaf size={120} />
+        </div>
+        <div className="hero-deco-leaf-2 mobile-only">
+          <Leaf size={140} />
+        </div>
+
         <div className="container hero-grid">
           <div className="hero-content">
+            <div className="hero-logo-mobile">
+              <img src="/images/logo.png" alt="Agadhi Choorna Logo" />
+            </div>
             <div className="hero-tag">
               <ShieldCheck size={16} />
               <span>100% Ayurvedic & Certified Powder</span>
@@ -325,32 +343,43 @@ const Home = () => {
 
       {/* Reviews Section */}
       <section className="reviews section-padding">
-        <div className="container">
-          <div className="text-center">
+        <div className="container" style={{ maxWidth: '100%', padding: '0' }}>
+          <div className="text-center" style={{ padding: '0 24px' }}>
             <h2 className="section-title">What Our Customers Say</h2>
             <p className="section-subtitle">
               Real results reported by real people from across Kerala.
             </p>
           </div>
 
-          <div className="reviews-grid">
-            {REVIEWS.map((rev, index) => (
-              <div key={index} className="review-card">
-                <div className="stars">
-                  {[...Array(rev.rating)].map((_, i) => (
-                    <Star key={i} size={18} fill="currentColor" />
-                  ))}
-                </div>
-                <p className="review-text">"{rev.text}"</p>
-                <div className="review-author">
-                  <div className="author-avatar">{rev.name[0]}</div>
-                  <div className="author-info">
-                    <h4>{rev.name}</h4>
-                    <span>{rev.location}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+          {/* Animated sliding train (Marquee) */}
+          <div className="reviews-marquee-container">
+            <div className="reviews-marquee-track">
+              {reviewImages.slice(0, 18).map((img, i) => (
+                <img
+                  key={i}
+                  src={`/review/${img}`}
+                  alt="Customer Review screenshot"
+                  className="marquee-img"
+                  onClick={() => setSelectedImage(img)}
+                />
+              ))}
+              {/* Duplicate list for seamless infinite loop */}
+              {reviewImages.slice(0, 18).map((img, i) => (
+                <img
+                  key={`dup-${i}`}
+                  src={`/review/${img}`}
+                  alt="Customer Review screenshot"
+                  className="marquee-img"
+                  onClick={() => setSelectedImage(img)}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div style={{ textAlign: 'center' }}>
+            <button onClick={() => navigate('/results')} className="view-all-results-link">
+              View All 100+ Customer Results &rarr;
+            </button>
           </div>
         </div>
       </section>
@@ -460,6 +489,18 @@ const Home = () => {
       {/* Order Modal */}
       {selectedProduct && (
         <OrderModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+      )}
+
+      {/* Lightbox Modal */}
+      {selectedImage && (
+        <div className="lightbox-overlay" onClick={() => setSelectedImage(null)}>
+          <div className="lightbox-container" onClick={(e) => e.stopPropagation()}>
+            <button className="lightbox-close" onClick={() => setSelectedImage(null)} aria-label="Close image zoom">
+              <X size={28} />
+            </button>
+            <img src={`/review/${selectedImage}`} alt="Customer Result Zoomed" className="lightbox-img" />
+          </div>
+        </div>
       )}
     </div>
   );

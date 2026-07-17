@@ -11,6 +11,10 @@ const Navbar = () => {
 
   const handleNavClick = (sectionId) => {
     setIsOpen(false);
+    if (sectionId === 'results') {
+      navigate('/results');
+      return;
+    }
     if (location.pathname !== '/') {
       navigate('/', { state: { scrollTo: sectionId } });
     } else {
@@ -64,6 +68,11 @@ const Navbar = () => {
           <li>
             <button onClick={() => handleNavClick('products')} className="nav-link">
               Products
+            </button>
+          </li>
+          <li>
+            <button onClick={() => handleNavClick('results')} className="nav-link">
+              Results
             </button>
           </li>
           <li>

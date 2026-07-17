@@ -10,6 +10,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
+import Results from './pages/Results';
 
 // Admin Components & Pages (completely separate)
 import AdminLogin from './pages/AdminLogin';
@@ -48,6 +49,7 @@ function PublicAppContent() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/results" element={<Results />} />
           {/* Catch-all → home */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
