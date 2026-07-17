@@ -11,7 +11,7 @@ const getBaseURL = () => {
       return 'https://tweaki.pw/agadi/api';
     }
   }
-  return import.meta.env.DEV ? 'http://127.0.0.1:8080/api' : 'https://tweaki.pw/agadi/api';
+  return import.meta.env.DEV ? 'http://127.0.0.1:8080/api' : '/api';
 };
 
 const API = axios.create({
