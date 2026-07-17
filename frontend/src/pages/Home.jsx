@@ -165,7 +165,7 @@ const Home = () => {
                 <span>Order Now</span>
                 <ArrowRight size={18} />
               </button>
-              <a href="https://wa.me/919072888821?text=Hello,%20I'd%20like%20to%20consult%20an%20expert%20about%20Agadi%20Choornam." className="btn btn-outline" target="_blank" rel="noopener noreferrer">
+              <a href="tel:+919072888821" className="btn btn-outline">
                 <Phone size={18} />
                 <span>Call Expert</span>
               </a>
@@ -384,13 +384,13 @@ const Home = () => {
                 </div>
               </a>
 
-              <a href="https://wa.me/919072888821?text=Hello,%20I'd%20like%20to%20consult%20an%20expert%20about%20Agadi%20Choornam." target="_blank" rel="noopener noreferrer" className="contact-card">
+              <a href="tel:+919072888821" className="contact-card">
                 <div className="contact-icon-wrapper">
                   <Phone size={24} />
                 </div>
                 <div className="contact-details">
-                  <h4>Phone & WhatsApp Hotline</h4>
-                  <p>Reach out to consult directly with our healthcare advisors.</p>
+                  <h4>Phone Hotline</h4>
+                  <p>Call directly to consult with our healthcare advisors.</p>
                   <strong style={{ color: 'var(--primary-green)', fontSize: '0.9rem', display: 'block', marginTop: '6px' }}>+91 9072888821 &rarr;</strong>
                 </div>
               </a>
@@ -459,7 +459,7 @@ const Home = () => {
       </section>
 
       {/* Floating Call Button */}
-      <a href="https://wa.me/919072888821?text=Hello,%20I'd%20like%20to%20place%20an%20order%20for%20Agadi%20Choornam." target="_blank" rel="noopener noreferrer" className="floating-call" aria-label="Call Support Now">
+      <a href="tel:+919072888821" className="floating-call" aria-label="Call Support Now">
         <Phone size={20} />
       </a>
 

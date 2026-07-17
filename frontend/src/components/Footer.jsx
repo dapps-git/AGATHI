@@ -60,9 +60,7 @@ const Footer = () => {
             <li>
               <Phone size={16} className="footer-contact-icon" />
               <a
-                href="https://wa.me/919072888821?text=Hello,%20I'd%20like%20to%20place%20an%20order%20for%20Agadi%20Choornam."
-                target="_blank"
-                rel="noopener noreferrer"
+                href="tel:+919072888821"
               >
                 +91 9072888821
               </a>
