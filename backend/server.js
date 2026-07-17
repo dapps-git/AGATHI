@@ -29,7 +29,7 @@ app.use('/api/stats', statsRoutes);
 
 // Base route
 app.get('/', (req, res) => {
-  res.send('Agadhi Churna API is running...');
+  res.send('Agadi Choorna API is running...');
 });
 
 // Global error handler
