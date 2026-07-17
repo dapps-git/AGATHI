@@ -22,6 +22,37 @@ connectDB();
 
 const app = express();
 
+// ── RAW CORS middleware (MUST be first — before everything including subfolder strip)
+// Directly writes headers so Apache reverse-proxy cannot strip them.
+const ALLOWED_ORIGINS = [
+  'https://www.agadichoornam.com',
+  'https://agadichoornam.com',
+  'https://tweaki.pw',
+  'https://www.tweaki.pw',
+];
+app.use((req, res, next) => {
+  const origin = req.headers.origin || '';
+  const allowed =
+    ALLOWED_ORIGINS.includes(origin) ||
+    /\.vercel\.app$/.test(origin) ||
+    /^http:\/\/localhost(:\d+)?$/.test(origin) ||
+    /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(origin);
+
+  if (allowed) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  res.setHeader('Access-Control-Max-Age', '86400');
+
+  // Answer preflight immediately
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 // Middleware to strip subfolder prefix for cPanel deployments
 app.use((req, res, next) => {
   try {
