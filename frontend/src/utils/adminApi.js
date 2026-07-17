@@ -1,8 +1,22 @@
 import axios from 'axios';
 
+const getBaseURL = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  // Fallback depending on host/mode
+  if (typeof window !== 'undefined' && window.location) {
+    const hostname = window.location.hostname;
+    if (hostname && (hostname.includes('agadichoornam.com') || hostname.includes('tweaki.pw') || hostname.includes('vercel.app'))) {
+      return 'https://tweaki.pw/agadi/api';
+    }
+  }
+  return import.meta.env.DEV ? 'http://127.0.0.1:8080/api' : 'https://tweaki.pw/agadi/api';
+};
+
 // Separate Axios instance for admin — reads from 'adminInfo', not 'userInfo'
 const adminAPI = axios.create({
-  baseURL: 'http://127.0.0.1:8080/api',
+  baseURL: getBaseURL(),
   headers: { 'Content-Type': 'application/json' },
 });
 
