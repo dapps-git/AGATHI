@@ -17,6 +17,14 @@ connectDB();
 
 const app = express();
 
+// Middleware to strip subfolder prefix for cPanel deployments
+app.use((req, res, next) => {
+  if (req.url.startsWith('/agadi')) {
+    req.url = req.url.replace(/^\/agadi/, '') || '/';
+  }
+  next();
+});
+
 // Middleware
 app.use(cors());
 app.use(express.json());
