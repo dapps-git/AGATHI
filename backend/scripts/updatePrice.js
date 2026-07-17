@@ -15,14 +15,14 @@ async function updatePrices() {
     // Update "Single Pack (125g)" to 1550 if it's wrong
     const updated = await Product.updateMany(
       { price: { $lt: 1000 } }, // catches old 350 price
-      { $set: { price: 1550, name: 'Agadhi Choorna - Single Pack (125g)' } }
+      { $set: { price: 1550, name: 'Agadi Choorna - Single Pack (125g)' } }
     );
     console.log('Updated old low-price products:', updated.modifiedCount);
 
     // Update "Premium Weight Gain (500g)" to correct product if exists
     await Product.updateMany(
       { name: { $regex: '500g' } },
-      { $set: { price: 1550, name: 'Agadhi Choorna - Single Pack (125g)' } }
+      { $set: { price: 1550, name: 'Agadi Choorna - Single Pack (125g)' } }
     );
 
     // Ensure at least one product has correct price

@@ -116,9 +116,9 @@ router.post('/login', async (req, res) => {
       const count = await User.countDocuments();
       if (count === 0) {
         await User.create({
-          name: 'Agadhi Administrator',
-          email: 'admin@agadhi.com',
-          phone: '9999999999',
+          name: 'Agadi Administrator',
+          email: 'admin@agadi.com',
+          phone: '9072888821',
           password: 'Admin@123',
           isAdmin: true
         });
