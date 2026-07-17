@@ -26,9 +26,10 @@ const AdminDashboard = () => {
     name: '',
     price: '',
     description: '',
-    images: '/images/product-500g.png',
     benefits: '',
   });
+  const [imagePreview, setImagePreview] = useState(null);  // base64 or existing URL
+  const [imageBase64, setImageBase64] = useState('');      // base64 to submit
 
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -104,7 +105,9 @@ const AdminDashboard = () => {
 
   const openAddProductModal = () => {
     setEditingProduct(null);
-    setProductForm({ name: '', price: '', description: '', images: '/images/product-500g.png', benefits: '' });
+    setProductForm({ name: '', price: '', description: '', benefits: '' });
+    setImagePreview(null);
+    setImageBase64('');
     setProductModalOpen(true);
   };
 
@@ -114,20 +117,53 @@ const AdminDashboard = () => {
       name: prod.name,
       price: prod.price,
       description: prod.description,
-      images: prod.images.join(', '),
       benefits: prod.benefits.join(', '),
     });
+    // Show existing image as preview (keep it; only replaced if admin picks a new file)
+    setImagePreview(prod.images[0] || null);
+    setImageBase64('');
     setProductModalOpen(true);
+  };
+
+  // Convert selected file → Base64 and store as preview
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      setError('Image must be under 2 MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImageBase64(reader.result);   // full data:image/…;base64,…
+      setImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleProductSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    // Determine final images array:
+    // - If admin picked a new file → use new Base64
+    // - Else if editing → keep existing images
+    // - Else (new product, no file) → error
+    let finalImages;
+    if (imageBase64) {
+      finalImages = [imageBase64];
+    } else if (editingProduct && imagePreview) {
+      finalImages = editingProduct.images;  // unchanged
+    } else {
+      setError('Please select a product image.');
+      return;
+    }
+
     const payload = {
       name: productForm.name,
       price: Number(productForm.price),
       description: productForm.description,
-      images: productForm.images.split(',').map(img => img.trim()),
+      images: finalImages,
       benefits: productForm.benefits.split(',').map(b => b.trim()).filter(b => b !== ''),
     };
     try {
@@ -540,8 +576,41 @@ const AdminDashboard = () => {
                     <input type="number" id="prod-price" value={productForm.price} onChange={e => setProductForm({ ...productForm, price: e.target.value })} placeholder="1250" required />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="prod-images">Image Paths *</label>
-                    <input type="text" id="prod-images" value={productForm.images} onChange={e => setProductForm({ ...productForm, images: e.target.value })} placeholder="Comma-separated paths" required />
+                    <label htmlFor="prod-image-upload">Product Image *</label>
+                    <label
+                      htmlFor="prod-image-upload"
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        gap: '8px', padding: '8px 12px', border: '1.5px dashed var(--border-color)',
+                        borderRadius: '8px', cursor: 'pointer', fontSize: '0.82rem',
+                        color: 'var(--primary-green)', fontWeight: '600',
+                        background: 'var(--card-bg)', transition: 'var(--transition)',
+                        minHeight: '42px',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary-green)'}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                    >
+                      📁 {imagePreview ? 'Change Image' : 'Choose Image'}
+                    </label>
+                    <input
+                      type="file"
+                      id="prod-image-upload"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      style={{ display: 'none' }}
+                    />
+                    {imagePreview && (
+                      <div style={{ marginTop: '8px', textAlign: 'center' }}>
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          style={{ maxHeight: '80px', maxWidth: '100%', objectFit: 'contain', borderRadius: '6px', border: '1px solid var(--border-color)', background: '#fff', padding: '4px' }}
+                        />
+                        {imageBase64 && (
+                          <div style={{ fontSize: '0.72rem', color: 'var(--secondary-green)', marginTop: '4px' }}>✓ New image ready</div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="form-group" style={{ marginBottom: '16px' }}>

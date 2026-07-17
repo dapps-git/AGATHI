@@ -37,8 +37,37 @@ app.use((req, res, next) => {
   next();
 });
 
-// Middleware
-app.use(cors());
+// CORS — allow all required methods from production + dev origins
+const allowedOrigins = [
+  'https://www.agadichoornam.com',
+  'https://agadichoornam.com',
+  'https://tweaki.pw',
+  'https://www.tweaki.pw',
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, etc.) or allowed origins
+    if (!origin) return callback(null, true);
+    if (
+      allowedOrigins.includes(origin) ||
+      /\.vercel\.app$/.test(origin) ||
+      /^http:\/\/localhost(:\d+)?$/.test(origin) ||
+      /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)
+    ) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS blocked: ${origin}`));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 200,
+}));
+
+// Handle preflight for all routes
+app.options('*', cors());
+
 app.use(express.json());
 
 // Routes
