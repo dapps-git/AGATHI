@@ -1,0 +1,269 @@
+Agadhi Churna - Phase 1 Implementation Plan (MVP)
+
+Project Theme
+
+Use the existing herbal branding throughout the website.
+
+Color Palette
+
+* Primary: Dark Forest Green #2F4F1E
+* Secondary: Olive Green #6B7256
+* Accent: Light Sage Green #E1E4DF
+* Background: Pure White #FEFEFE
+* Cards: Soft White #F6F6F5
+* Text: Charcoal Black #111614
+
+Design style should be modern, clean, premium, and healthcare-focused.
+
+⸻
+
+Phase 1 Goal
+
+Deploy a working website today.
+
+Instead of online payment, customers will place orders through WhatsApp.
+
+⸻
+
+User Authentication
+
+Login
+
+* Email
+* Password
+* Forgot Password
+* JWT Authentication
+* Session expires after 2 days
+
+Signup
+
+Fields:
+
+* Full Name
+* Email
+* Mobile Number
+* Password
+* Confirm Password
+
+Validation
+
+* Email must be unique
+* Mobile number must be unique
+* Mobile number must contain exactly 10 digits
+* Password confirmation required
+
+⸻
+
+Website Pages
+
+1. Login Page
+
+* Company Logo
+* Login Form
+* Forgot Password
+* Create Account
+
+⸻
+
+2. Signup Page
+
+* User Registration
+* Validation Messages
+* Success Message
+* Redirect to Login
+
+⸻
+
+3. Home Page
+
+Hero Section
+
+* Product Banner
+* Buy Now Button
+* Call Now Button
+
+About Section
+
+About Agadhi Churna
+
+Benefits Section
+
+Weight gain benefits
+
+Product Section
+
+Since there are only a few products, no separate Products page is required.
+
+Each product card contains
+
+* Image
+* Name
+* Short Description
+* Price
+* Buy Now
+
+Customer Reviews
+
+Static review cards
+
+Contact Section
+
+* WhatsApp
+* Call
+* Address
+
+Footer
+
+* About
+* Contact
+* Social Links
+* Copyright
+
+⸻
+
+Product Ordering Flow
+
+Step 1
+
+User clicks
+
+Buy Now
+
+↓
+
+Open Order Form
+
+⸻
+
+Step 2
+
+Customer fills
+
+Personal Details
+
+* Name
+* Mobile Number
+* Alternate Mobile (Optional)
+* Email
+
+Shipping Address
+
+* Address
+* Landmark
+* District (Dropdown)
+* State (Kerala)
+* Country (India)
+* PIN Code
+
+Validation
+
+* Phone = 10 digits
+* Alternate Phone = 10 digits
+* PIN Code = 6 digits
+* Required fields cannot be empty
+
+⸻
+
+Step 3
+
+Product Information
+
+* Product Name
+* Quantity (+ / −)
+* Total Price
+
+⸻
+
+Step 4
+
+Click
+
+Send Order
+
+Instead of payment,
+
+Automatically open WhatsApp with a pre-filled message containing:
+
+* Customer Name
+* Phone
+* Address
+* District
+* PIN Code
+* Product Name
+* Quantity
+* Total Amount
+
+This message is sent to the owner’s WhatsApp number.
+
+⸻
+
+Call Button
+
+A floating Call Now button should directly dial the owner’s phone number.
+
+⸻
+
+Admin Panel
+
+Dashboard
+
+Overview cards
+
+* Total Users
+* Total Products
+* Total Orders
+
+⸻
+
+User Management
+
+View
+
+* Name
+* Email
+* Phone
+* Address
+* Registration Date
+
+Search users
+
+Delete users if required
+
+⸻
+
+Product Management
+
+Admin can
+
+* Add Product
+* Edit Product
+* Delete Product
+
+Fields
+
+* Product Name
+* Description
+* Price
+* Images
+* Benefits
+
+⸻
+
+Orders
+
+View all WhatsApp orders
+
+Customer Details
+
+* Name
+* Phone
+* Address
+* Product
+* Quantity
+* Order Date
+
+Status
+
+* Pending
+* Contacted
+* Completed
