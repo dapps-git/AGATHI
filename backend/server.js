@@ -1,7 +1,12 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Route imports
 import authRoutes from './routes/auth.js';
@@ -19,6 +24,13 @@ const app = express();
 
 // Middleware to strip subfolder prefix for cPanel deployments
 app.use((req, res, next) => {
+  try {
+    const logMsg = `${new Date().toISOString()} - ${req.method} ${req.url} (originalUrl: ${req.originalUrl || ''})\n`;
+    fs.appendFileSync(path.join(__dirname, 'request_log.txt'), logMsg);
+  } catch (err) {
+    // Ignore logging failures
+  }
+
   if (req.url.startsWith('/agadi')) {
     req.url = req.url.replace(/^\/agadi/, '') || '/';
   }
