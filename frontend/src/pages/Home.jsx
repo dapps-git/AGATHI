@@ -165,7 +165,7 @@ const Home = () => {
                 <span>Order Now</span>
                 <ArrowRight size={18} />
               </button>
-              <a href="tel:+919072888821" className="btn btn-outline">
+              <a href="tel:+919072888825" className="btn btn-outline">
                 <Phone size={18} />
                 <span>Call Expert</span>
               </a>
@@ -373,7 +373,7 @@ const Home = () => {
 
           <div className="contact-grid">
             <div className="contact-info">
-              <a href="https://wa.me/919072888821?text=Hello,%20I'd%20like%20to%20place%20an%20order%20for%20Agadi%20Choornam." target="_blank" rel="noopener noreferrer" className="contact-card">
+              <a href="https://wa.me/919072888825?text=Hello,%20I'd%20like%20to%20place%20an%20order%20for%20Agadi%20Choornam." target="_blank" rel="noopener noreferrer" className="contact-card">
                 <div className="contact-icon-wrapper">
                   <MessageSquare size={24} />
                 </div>
@@ -384,26 +384,16 @@ const Home = () => {
                 </div>
               </a>
 
-              <a href="tel:+919072888821" className="contact-card">
+              <a href="tel:+919072888825" className="contact-card">
                 <div className="contact-icon-wrapper">
                   <Phone size={24} />
                 </div>
                 <div className="contact-details">
                   <h4>Phone Hotline</h4>
                   <p>Call directly to consult with our healthcare advisors.</p>
-                  <strong style={{ color: 'var(--primary-green)', fontSize: '0.9rem', display: 'block', marginTop: '6px' }}>+91 9072888821 &rarr;</strong>
+                  <strong style={{ color: 'var(--primary-green)', fontSize: '0.9rem', display: 'block', marginTop: '6px' }}>+91 9072888825 &rarr;</strong>
                 </div>
               </a>
-
-              <div className="contact-card">
-                <div className="contact-icon-wrapper">
-                  <MapPin size={24} />
-                </div>
-                <div className="contact-details">
-                  <h4>Business Location</h4>
-                  <p>Agadi Choornam, Palakkad, Kerala, India</p>
-                </div>
-              </div>
             </div>
 
             <div className="contact-form-container">
@@ -459,7 +449,7 @@ const Home = () => {
       </section>
 
       {/* Floating Call Button */}
-      <a href="tel:+919072888821" className="floating-call" aria-label="Call Support Now">
+      <a href="tel:+919072888825" className="floating-call" aria-label="Call Support Now">
         <Phone size={20} />
       </a>
 
