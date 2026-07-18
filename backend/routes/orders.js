@@ -60,7 +60,7 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'PIN code must contain exactly 6 digits' });
     }
 
-    const ownerWhatsAppNumber = (process.env.WHATSAPP_PHONE || '919539416003').replace(/\+/g, '');
+    const ownerWhatsAppNumber = (process.env.WHATSAPP_PHONE || '919072888825').replace(/\+/g, '');
 
     // Fallback if mongoose is not connected
     if (mongoose.connection.readyState !== 1) {
@@ -97,7 +97,7 @@ router.post('/', async (req, res) => {
       };
 
       db.orders.push(newOrder);
-      
+
       // Update User address in fallback
       if (user) {
         const userIndex = db.users.findIndex(u => u._id === user);
@@ -217,7 +217,7 @@ router.put('/:id/status', protect, admin, async (req, res) => {
       if (order) {
         order.status = status;
         const updatedOrder = await order.save();
-        
+
         const populatedOrder = await Order.findById(updatedOrder._id)
           .populate('product', 'name price')
           .populate('user', 'name email phone');
