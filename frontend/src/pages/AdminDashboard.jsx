@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ShoppingBag, Users, ShoppingCart,
   Plus, Edit2, Trash2, Search, X, LogOut, RefreshCw,
-  TrendingUp, Package, UserCheck
+  TrendingUp, Package, UserCheck, Menu
 } from 'lucide-react';
 import adminAPI from '../utils/adminApi';
 import { AdminAuthContext } from '../context/AdminAuthContext';
@@ -58,6 +58,7 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [userSearch, setUserSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -265,6 +266,21 @@ const AdminDashboard = () => {
     <div className="admin-page">
       {/* ── Topbar ── */}
       <header className="admin-topbar">
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="admin-hamburger"
+          style={{
+            display: 'none',
+            background: 'none',
+            border: 'none',
+            color: 'var(--primary-green)',
+            cursor: 'pointer',
+            padding: '8px',
+            marginRight: '12px',
+          }}
+        >
+          <Menu size={24} />
+        </button>
         <div className="admin-topbar-brand">
           <img src="/images/logo.png" alt="Agadi Logo" style={{ maxHeight: '46px', objectFit: 'contain' }} />
         </div>
@@ -300,7 +316,20 @@ const AdminDashboard = () => {
 
       <div className="admin-body">
         {/* ── Sidebar ── */}
-        <aside className="admin-sidebar">
+        <aside className={`admin-sidebar ${sidebarOpen ? 'admin-sidebar-open' : ''}`}>
+          {/* Close button inside sidebar on mobile */}
+          <div style={{ display: 'none', justifyContent: 'flex-end', padding: '0 16px 16px' }} className="admin-sidebar-close">
+            <button
+              onClick={() => setSidebarOpen(false)}
+              style={{
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                padding: '4px',
+              }}
+            >
+              <X size={20} />
+            </button>
+          </div>
           {/* sidebar section label */}
           <div style={{ padding: '0 18px 16px', fontSize: '0.7rem', fontWeight: '700', color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>
             Main Menu
@@ -314,7 +343,10 @@ const AdminDashboard = () => {
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                setActiveTab(tab.id);
+                setSidebarOpen(false);
+              }}
               className={`sidebar-btn ${activeTab === tab.id ? 'active' : ''}`}
             >
               {tab.icon}
@@ -330,6 +362,19 @@ const AdminDashboard = () => {
             </div>
           </div>
         </aside>
+
+        {/* Sidebar backdrop overlay on mobile */}
+        {sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.4)',
+              zIndex: 998,
+            }}
+          />
+        )}
 
         {/* ── Main Content ── */}
         <main className="admin-content">
@@ -449,18 +494,18 @@ const AdminDashboard = () => {
                   <tbody>
                     {orders.slice(0, 5).map(order => (
                       <tr key={order._id}>
-                        <td style={{ fontWeight: '600' }}>{order.name}</td>
-                        <td>{order.phone}</td>
-                        <td>{order.product?.name || 'Deleted Product'}</td>
-                        <td>{order.quantity}</td>
-                        <td style={{ fontWeight: '700', color: 'var(--primary-green)' }}>₹{order.totalPrice}</td>
-                        <td>
+                        <td data-label="Customer" style={{ fontWeight: '600' }}>{order.name}</td>
+                        <td data-label="Phone">{order.phone}</td>
+                        <td data-label="Product">{order.product?.name || 'Deleted Product'}</td>
+                        <td data-label="Qty">{order.quantity}</td>
+                        <td data-label="Total" style={{ fontWeight: '700', color: 'var(--primary-green)' }}>₹{order.totalPrice}</td>
+                        <td data-label="Order Time">
                           <div style={{ fontWeight: '500' }}>{new Date(order.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</div>
                           <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
                             {new Date(order.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                           </div>
                         </td>
-                        <td>
+                        <td data-label="Status">
                           <span className={`badge badge-${order.status.toLowerCase()}`}>{order.status}</span>
                         </td>
                       </tr>
@@ -494,27 +539,27 @@ const AdminDashboard = () => {
                 <tbody>
                   {orders.map(order => (
                     <tr key={order._id}>
-                      <td style={{ fontWeight: '600' }}>{order.name}</td>
-                      <td>
+                      <td data-label="Customer" style={{ fontWeight: '600' }}>{order.name}</td>
+                      <td data-label="Contact">
                         <div style={{ fontSize: '0.875rem' }}>{order.email}</div>
                         <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{order.phone}</div>
                         {order.alternatePhone && <div style={{ fontSize: '0.75rem', color: '#aaa' }}>Alt: {order.alternatePhone}</div>}
                       </td>
-                      <td>{order.product?.name || 'Deleted Product'}</td>
-                      <td>{order.quantity}</td>
-                      <td style={{ fontWeight: '700', color: 'var(--primary-green)' }}>₹{order.totalPrice}</td>
-                      <td style={{ fontSize: '0.82rem', maxWidth: '200px' }}>
+                      <td data-label="Product">{order.product?.name || 'Deleted Product'}</td>
+                      <td data-label="Qty">{order.quantity}</td>
+                      <td data-label="Total" style={{ fontWeight: '700', color: 'var(--primary-green)' }}>₹{order.totalPrice}</td>
+                      <td data-label="Address" style={{ fontSize: '0.82rem', maxWidth: '200px' }}>
                         <div>{order.address}</div>
                         {order.landmark && <div style={{ color: '#aaa' }}>{order.landmark}</div>}
                         <div style={{ color: 'var(--secondary-green)', fontWeight: '600' }}>{order.district}, {order.state} – {order.pinCode}</div>
                       </td>
-                      <td>
+                      <td data-label="Order Time">
                         <div style={{ fontWeight: '500' }}>{new Date(order.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</div>
                         <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
                           {new Date(order.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </td>
-                      <td>
+                      <td data-label="Status">
                         <select value={order.status} onChange={e => handleStatusChange(order._id, e.target.value)} className="status-select">
                           <option value="Pending">Pending</option>
                           <option value="Contacted">Contacted</option>
@@ -524,7 +569,7 @@ const AdminDashboard = () => {
                           <option value="Cancelled">Cancelled</option>
                         </select>
                       </td>
-                      <td>
+                      <td data-label="Actions">
                         <button onClick={() => handleOrderDelete(order._id)} className="action-btn action-btn-danger" aria-label="Delete order">
                           <Trash2 size={15} />
                         </button>
@@ -556,7 +601,7 @@ const AdminDashboard = () => {
                 <tbody>
                   {products.map(prod => (
                     <tr key={prod._id}>
-                      <td>
+                      <td data-label="Image">
                         <img
                           src={prod.images[0]}
                           alt={prod.name}
@@ -564,10 +609,10 @@ const AdminDashboard = () => {
                           onError={e => { e.target.onerror = null; e.target.src = 'https://placehold.co/80x80?text=Agadi'; }}
                         />
                       </td>
-                      <td style={{ fontWeight: '600', maxWidth: '180px' }}>{prod.name}</td>
-                      <td style={{ fontSize: '0.82rem', maxWidth: '240px', color: 'var(--text-muted)' }}>{prod.description}</td>
-                      <td style={{ fontWeight: '700', color: 'var(--primary-green)', whiteSpace: 'nowrap' }}>₹{prod.price}</td>
-                      <td>
+                      <td data-label="Name" style={{ fontWeight: '600', maxWidth: '180px' }}>{prod.name}</td>
+                      <td data-label="Description" style={{ fontSize: '0.82rem', maxWidth: '240px', color: 'var(--text-muted)' }}>{prod.description}</td>
+                      <td data-label="Price" style={{ fontWeight: '700', color: 'var(--primary-green)', whiteSpace: 'nowrap' }}>₹{prod.price}</td>
+                      <td data-label="Benefits">
                         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                           {prod.benefits.slice(0, 3).map((b, i) => (
                             <li key={i} style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '3px' }}>• {b}</li>
@@ -575,7 +620,7 @@ const AdminDashboard = () => {
                           {prod.benefits.length > 3 && <li style={{ fontSize: '0.75rem', color: 'var(--secondary-green)' }}>+{prod.benefits.length - 3} more</li>}
                         </ul>
                       </td>
-                      <td>
+                      <td data-label="Actions">
                         <div className="actions-cell">
                           <button onClick={() => openEditProductModal(prod)} className="action-btn" aria-label="Edit">
                             <Edit2 size={15} />
@@ -625,19 +670,19 @@ const AdminDashboard = () => {
                   <tbody>
                     {filteredUsers.map(u => (
                       <tr key={u._id}>
-                        <td style={{ fontWeight: '600' }}>{u.name}</td>
-                        <td>{u.email}</td>
-                        <td>{u.phone}</td>
-                        <td style={{ maxWidth: '220px', whiteSpace: 'normal', lineHeight: '1.4', fontSize: '0.82rem', color: u.address ? 'var(--text-color)' : 'var(--text-muted)' }}>
+                        <td data-label="Name" style={{ fontWeight: '600' }}>{u.name}</td>
+                        <td data-label="Email">{u.email}</td>
+                        <td data-label="Phone">{u.phone}</td>
+                        <td data-label="Shipping Address" style={{ maxWidth: '220px', whiteSpace: 'normal', lineHeight: '1.4', fontSize: '0.82rem', color: u.address ? 'var(--text-color)' : 'var(--text-muted)' }}>
                           {u.address || <span style={{ fontStyle: 'italic' }}>No order yet</span>}
                         </td>
-                        <td>
+                        <td data-label="Role">
                           <span className={`badge ${u.isAdmin ? 'badge-completed' : 'badge-pending'}`}>
                             {u.isAdmin ? 'Admin' : 'Customer'}
                           </span>
                         </td>
-                        <td>{new Date(u.createdAt).toLocaleDateString()}</td>
-                        <td>
+                        <td data-label="Joined">{new Date(u.createdAt).toLocaleDateString()}</td>
+                        <td data-label="Actions">
                           {!u.isAdmin ? (
                             <button onClick={() => handleUserDelete(u._id)} className="action-btn action-btn-danger" aria-label="Delete user">
                               <Trash2 size={15} />
