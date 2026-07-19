@@ -367,6 +367,13 @@ const AdminDashboard = () => {
               <div className="stats-grid">
                 <div className="stat-card">
                   <div className="stat-info">
+                    <h3>₹{stats.totalRevenue ? stats.totalRevenue.toLocaleString('en-IN') : 0}</h3>
+                    <p>Total Revenue</p>
+                  </div>
+                  <div className="stat-icon" style={{ background: 'rgba(74, 222, 128, 0.15)', color: '#16a34a' }}><TrendingUp size={24} /></div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-info">
                     <h3>{stats.totalOrders}</h3>
                     <p>Total Orders</p>
                   </div>
@@ -385,6 +392,33 @@ const AdminDashboard = () => {
                     <p>Registered Users</p>
                   </div>
                   <div className="stat-icon"><UserCheck size={24} /></div>
+                </div>
+              </div>
+
+              {/* Status Breakdown Section */}
+              <div style={{ marginBottom: '40px' }}>
+                <h3 style={{ fontWeight: '700', color: 'var(--primary-green)', fontSize: '1.1rem', marginBottom: '16px' }}>Order Status Breakdown</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '16px' }}>
+                  {[
+                    { label: 'Pending', count: stats.statusBreakdown?.pending || 0, color: '#92400e', bg: '#fef3c7', border: '#fde68a' },
+                    { label: 'Contacted', count: stats.statusBreakdown?.contacted || 0, color: '#1d4ed8', bg: '#eff6ff', border: '#bfdbfe' },
+                    { label: 'Checked', count: stats.statusBreakdown?.checked || 0, color: '#0369a1', bg: '#e0f2fe', border: '#bae6fd' },
+                    { label: 'Shipped', count: stats.statusBreakdown?.shipped || 0, color: '#6b21a8', bg: '#f3e8ff', border: '#e9d5ff' },
+                    { label: 'Completed', count: stats.statusBreakdown?.completed || 0, color: '#065f46', bg: '#d1fae5', border: '#a7f3d0' },
+                    { label: 'Cancelled', count: stats.statusBreakdown?.cancelled || 0, color: '#991b1b', bg: '#fef2f2', border: '#fecaca' },
+                  ].map(item => (
+                    <div key={item.label} style={{
+                      background: '#fff',
+                      border: `1.5px solid ${item.border}`,
+                      borderRadius: '12px',
+                      padding: '16px',
+                      textAlign: 'center',
+                      boxShadow: 'var(--shadow-sm)',
+                    }}>
+                      <div style={{ fontSize: '1.5rem', fontWeight: '700', color: item.color }}>{item.count}</div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-muted)', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{item.label}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -408,7 +442,7 @@ const AdminDashboard = () => {
                       <th>Product</th>
                       <th>Qty</th>
                       <th>Total</th>
-                      <th>Date</th>
+                      <th>Order Time</th>
                       <th>Status</th>
                     </tr>
                   </thead>
@@ -420,7 +454,12 @@ const AdminDashboard = () => {
                         <td>{order.product?.name || 'Deleted Product'}</td>
                         <td>{order.quantity}</td>
                         <td style={{ fontWeight: '700', color: 'var(--primary-green)' }}>₹{order.totalPrice}</td>
-                        <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                        <td>
+                          <div style={{ fontWeight: '500' }}>{new Date(order.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</div>
+                          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                            {new Date(order.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </td>
                         <td>
                           <span className={`badge badge-${order.status.toLowerCase()}`}>{order.status}</span>
                         </td>
@@ -447,7 +486,7 @@ const AdminDashboard = () => {
                     <th>Qty</th>
                     <th>Total</th>
                     <th>Address</th>
-                    <th>Date</th>
+                    <th>Order Time</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
@@ -469,12 +508,20 @@ const AdminDashboard = () => {
                         {order.landmark && <div style={{ color: '#aaa' }}>{order.landmark}</div>}
                         <div style={{ color: 'var(--secondary-green)', fontWeight: '600' }}>{order.district}, {order.state} – {order.pinCode}</div>
                       </td>
-                      <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                      <td>
+                        <div style={{ fontWeight: '500' }}>{new Date(order.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                          {new Date(order.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </td>
                       <td>
                         <select value={order.status} onChange={e => handleStatusChange(order._id, e.target.value)} className="status-select">
                           <option value="Pending">Pending</option>
                           <option value="Contacted">Contacted</option>
+                          <option value="Checked">Checked</option>
+                          <option value="Shipped">Shipped</option>
                           <option value="Completed">Completed</option>
+                          <option value="Cancelled">Cancelled</option>
                         </select>
                       </td>
                       <td>
