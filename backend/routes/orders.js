@@ -60,7 +60,7 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'PIN code must contain exactly 6 digits' });
     }
 
-    const ownerWhatsAppNumber = (process.env.WHATSAPP_PHONE || '919072888825').replace(/\+/g, '');
+    const ownerWhatsAppNumber = (process.env.WHATSAPP_PHONE || '918139800282').replace(/\+/g, '');
 
     // Fallback if mongoose is not connected
     if (mongoose.connection.readyState !== 1) {
