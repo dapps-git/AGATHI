@@ -127,6 +127,21 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleOrderDelete = async (orderId) => {
+    if (window.confirm('Are you sure you want to delete this order?')) {
+      try {
+        await adminAPI.delete(`/orders/${orderId}`);
+        setOrders(orders.filter(o => o._id !== orderId));
+        setSuccess('Order deleted.');
+        setTimeout(() => setSuccess(''), 3000);
+        fetchData();
+      } catch (err) {
+        setError(err.response?.data?.message || 'Delete failed.');
+        setTimeout(() => setError(''), 3000);
+      }
+    }
+  };
+
   const handleUserDelete = async (userId) => {
     if (window.confirm('Delete this user?')) {
       try {
@@ -434,6 +449,7 @@ const AdminDashboard = () => {
                     <th>Address</th>
                     <th>Date</th>
                     <th>Status</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -461,10 +477,15 @@ const AdminDashboard = () => {
                           <option value="Completed">Completed</option>
                         </select>
                       </td>
+                      <td>
+                        <button onClick={() => handleOrderDelete(order._id)} className="action-btn action-btn-danger" aria-label="Delete order">
+                          <Trash2 size={15} />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                   {orders.length === 0 && (
-                    <tr><td colSpan="8" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No orders found.</td></tr>
+                    <tr><td colSpan="9" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No orders found.</td></tr>
                   )}
                 </tbody>
               </table>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Leaf, Phone, Mail, MapPin } from 'lucide-react';
+import { Leaf, Phone, Mail } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const Footer = () => {
@@ -53,19 +53,25 @@ const Footer = () => {
         <div className="footer-col">
           <h4 className="footer-col-title">Contact Info</h4>
           <ul className="footer-contact-list">
-
             <li>
               <Phone size={16} className="footer-contact-icon" />
-              <a
-                href="tel:+919072888825"
-              >
-                +91 9072888825
-              </a>
+              <a href="tel:+919072888825">+91 9072888825</a>
             </li>
             <li>
               <Mail size={16} className="footer-contact-icon" />
               <a href="mailto:agadichoornam@gmail.com">agadichoornam@gmail.com</a>
             </li>
+          </ul>
+        </div>
+
+        {/* Policies */}
+        <div className="footer-col">
+          <h4 className="footer-col-title">Policies</h4>
+          <ul className="footer-links">
+            <li><a href="/policies#privacy" className="footer-link">Privacy Policy</a></li>
+            <li><a href="/policies#terms" className="footer-link">Terms &amp; Conditions</a></li>
+            <li><a href="/policies#refund" className="footer-link">Refund Policy</a></li>
+            <li><a href="/policies#shipping" className="footer-link">Shipping Policy</a></li>
           </ul>
         </div>
 

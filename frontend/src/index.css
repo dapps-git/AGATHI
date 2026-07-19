@@ -489,8 +489,8 @@ a.contact-card:hover { border-color: var(--primary-green); transform: translateX
 .footer { background: #172610; color: #c8cdc6; padding: 56px 0 0; }
 .footer-inner {
   display: grid;
-  grid-template-columns: 1.6fr 1fr 1.3fr;
-  gap: 48px;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 40px;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 32px 48px;

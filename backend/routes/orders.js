@@ -256,4 +256,34 @@ router.put('/:id/status', protect, admin, async (req, res) => {
   }
 });
 
+// @desc    Delete an order
+// @route   DELETE /api/orders/:id
+// @access  Private/Admin
+router.delete('/:id', protect, admin, async (req, res) => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      const order = await Order.findById(req.params.id);
+
+      if (order) {
+        await Order.deleteOne({ _id: req.params.id });
+        res.json({ message: 'Order deleted successfully' });
+      } else {
+        res.status(404).json({ message: 'Order not found' });
+      }
+    } else {
+      const db = getFallbackDb();
+      const orderIndex = db.orders.findIndex(o => o._id === req.params.id);
+      if (orderIndex !== -1) {
+        db.orders.splice(orderIndex, 1);
+        saveFallbackDb(db);
+        res.json({ message: 'Order deleted successfully' });
+      } else {
+        res.status(404).json({ message: 'Order not found' });
+      }
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 export default router;
