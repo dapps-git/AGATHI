@@ -721,9 +721,10 @@ a.contact-card:hover { border-color: var(--primary-green); transform: translateX
   box-shadow: var(--shadow-md);
   border-color: var(--secondary-green);
 }
-.stat-info h3 { font-size: 2.25rem; font-weight: 700; color: var(--primary-green); line-height: 1.1; }
-.stat-info p { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-top: 6px; text-transform: uppercase; letter-spacing: 1px; }
-.stat-icon { width: 52px; height: 52px; border-radius: 14px; background: rgba(47, 79, 30, 0.08); color: var(--primary-green); display: flex; align-items: center; justify-content: center; }
+.stat-info { min-width: 0; }
+.stat-info h3 { font-size: 2.25rem; font-weight: 700; color: var(--primary-green); line-height: 1; white-space: nowrap; }
+.stat-info p { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-top: 6px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+.stat-icon { width: 52px; height: 52px; border-radius: 14px; background: rgba(47, 79, 30, 0.08); color: var(--primary-green); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
 /* ===== Admin Tables ===== */
 .table-container { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow-x: auto; box-shadow: var(--shadow-md); }

@@ -61,6 +61,9 @@ const AdminDashboard = () => {
   const [userSearch, setUserSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [pdfFilterType, setPdfFilterType] = useState('all');
+  const [pdfFromDate, setPdfFromDate] = useState('');
 
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -101,32 +104,68 @@ const AdminDashboard = () => {
     navigate('/admin-login');
   };
 
-  const downloadOrdersPDF = () => {
+  const downloadFilteredPDF = () => {
+    let filteredOrders = [...orders];
+    const now = new Date();
+    let rangeLabel = 'All Time';
+
+    if (pdfFilterType === 'today') {
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      filteredOrders = orders.filter(o => new Date(o.createdAt) >= todayStart);
+      rangeLabel = 'Today';
+    } else if (pdfFilterType === 'weekly') {
+      const weeklyStart = new Date();
+      weeklyStart.setDate(now.getDate() - 7);
+      filteredOrders = orders.filter(o => new Date(o.createdAt) >= weeklyStart);
+      rangeLabel = 'Last 7 Days';
+    } else if (pdfFilterType === 'monthly') {
+      const monthlyStart = new Date();
+      monthlyStart.setDate(now.getDate() - 30);
+      filteredOrders = orders.filter(o => new Date(o.createdAt) >= monthlyStart);
+      rangeLabel = 'Last 30 Days';
+    } else if (pdfFilterType === 'custom' && pdfFromDate) {
+      const start = new Date(pdfFromDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date();
+      end.setHours(23, 59, 59, 999);
+      filteredOrders = orders.filter(o => {
+        const d = new Date(o.createdAt);
+        return d >= start && d <= end;
+      });
+      rangeLabel = `From ${new Date(pdfFromDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })} to Today`;
+    }
+
+    if (filteredOrders.length === 0) {
+      alert('No orders found in the selected date range!');
+      return;
+    }
+
     const doc = new jsPDF({ orientation: 'landscape' });
 
-    // Header
+    // Header block
     doc.setFillColor(47, 79, 30);
     doc.rect(0, 0, 297, 22, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(14);
+    doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
-    doc.text('Agadi Choorna — All Orders Report', 14, 14);
-    doc.setFontSize(9);
+    doc.text(`Agadi Choorna — Orders Report (${rangeLabel})`, 14, 14);
+    doc.setFontSize(8.5);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Generated: ${new Date().toLocaleString()}`, 220, 14);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 215, 14);
 
     // Table
     autoTable(doc, {
       startY: 28,
-      head: [['#', 'Customer Name', 'Phone', 'Email', 'Product', 'Qty', 'Total (₹)', 'Address', 'District / State / PIN', 'Status', 'Order Date']],
-      body: orders.map((order, idx) => [
+      head: [['#', 'Customer Name', 'Phone', 'Email', 'Product', 'Qty', 'Total (Rs.)', 'Address', 'District / State / PIN', 'Status', 'Order Date']],
+      body: filteredOrders.map((order, idx) => [
         idx + 1,
         order.name || '—',
         order.phone || '—',
         order.email || '—',
         order.product?.name || 'Deleted Product',
         order.quantity,
-        `₹${order.totalPrice?.toLocaleString('en-IN') || 0}`,
+        `Rs. ${order.totalPrice || 0}`,
         [order.address, order.landmark].filter(Boolean).join(', ') || '—',
         `${order.district || ''}, ${order.state || ''} – ${order.pinCode || ''}`,
         order.status || '—',
@@ -135,8 +174,8 @@ const AdminDashboard = () => {
           : '—',
       ]),
       styles: {
-        fontSize: 8,
-        cellPadding: 4,
+        fontSize: 6.5,
+        cellPadding: 3,
         valign: 'middle',
         lineColor: [220, 220, 220],
         lineWidth: 0.3,
@@ -145,38 +184,39 @@ const AdminDashboard = () => {
         fillColor: [47, 79, 30],
         textColor: [255, 255, 255],
         fontStyle: 'bold',
-        fontSize: 8,
+        fontSize: 6.5,
       },
       alternateRowStyles: {
         fillColor: [247, 251, 247],
       },
       columnStyles: {
-        0:  { cellWidth: 8 },
-        1:  { cellWidth: 28 },
+        0:  { cellWidth: 10 },
+        1:  { cellWidth: 26 },
         2:  { cellWidth: 24 },
-        3:  { cellWidth: 36 },
-        4:  { cellWidth: 28 },
+        3:  { cellWidth: 32 },
+        4:  { cellWidth: 24 },
         5:  { cellWidth: 10 },
-        6:  { cellWidth: 18 },
-        7:  { cellWidth: 38 },
-        8:  { cellWidth: 32 },
+        6:  { cellWidth: 20 },
+        7:  { cellWidth: 42 },
+        8:  { cellWidth: 34 },
         9:  { cellWidth: 18 },
-        10: { cellWidth: 32 },
+        10: { cellWidth: 29 },
       },
       margin: { left: 14, right: 14 },
     });
 
-    // Footer
+    // Footer page count
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
       doc.setFontSize(7);
       doc.setTextColor(150);
-      doc.text(`Page ${i} of ${pageCount}  |  Total Orders: ${orders.length}`, 14, doc.internal.pageSize.getHeight() - 6);
+      doc.text(`Page ${i} of ${pageCount}  |  Total Orders: ${filteredOrders.length}`, 14, doc.internal.pageSize.getHeight() - 6);
     }
 
     const today = new Date().toISOString().split('T')[0];
-    doc.save(`agadi-orders-${today}.pdf`);
+    doc.save(`agadi-orders-${pdfFilterType}-${today}.pdf`);
+    setExportModalOpen(false);
   };
 
   const handleStatusChange = async (orderId, newStatus) => {
@@ -486,8 +526,12 @@ const AdminDashboard = () => {
                 </button>
                 {(activeTab === 'dashboard' || activeTab === 'orders') && orders.length > 0 && (
                   <button
-                    onClick={downloadOrdersPDF}
-                    title="Download all orders as PDF"
+                    onClick={() => {
+                      setPdfFilterType('all');
+                      setPdfFromDate('');
+                      setExportModalOpen(true);
+                    }}
+                    title="Download orders report as PDF"
                     style={{
                       display: 'flex', alignItems: 'center', gap: '7px',
                       padding: '8px 18px',
@@ -888,6 +932,70 @@ const AdminDashboard = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── PDF Export Modal ── */}
+      {exportModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-container" style={{ maxWidth: '440px' }}>
+            <button onClick={() => setExportModalOpen(false)} className="modal-close" aria-label="Close modal">
+              <X size={22} />
+            </button>
+            <div className="modal-body" style={{ padding: '28px' }}>
+              <div className="modal-header" style={{ marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '1.25rem', color: 'var(--primary-green)', fontWeight: '700' }}>Export Orders Report</h3>
+                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Generate a landscape PDF report with custom date filters.</p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label htmlFor="pdf-filter-select" style={{ fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-color)' }}>Date Range *</label>
+                  <select
+                    id="pdf-filter-select"
+                    value={pdfFilterType}
+                    onChange={e => setPdfFilterType(e.target.value)}
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.875rem', background: '#fff' }}
+                  >
+                    <option value="all">All Orders (No Filter)</option>
+                    <option value="today">Today's Orders (Daily)</option>
+                    <option value="weekly">Last 7 Days (Weekly)</option>
+                    <option value="monthly">Last 30 Days (Monthly)</option>
+                    <option value="custom">Custom Date Range</option>
+                  </select>
+                </div>
+
+                {pdfFilterType === 'custom' && (
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', animation: 'fadeIn 0.2s ease' }}>
+                    <label htmlFor="pdf-from-date" style={{ fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-color)' }}>From Date (Start Date) *</label>
+                    <input
+                      type="date"
+                      id="pdf-from-date"
+                      value={pdfFromDate}
+                      onChange={e => setPdfFromDate(e.target.value)}
+                      max={new Date().toISOString().split('T')[0]}
+                      required
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.875rem' }}
+                    />
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>The report will include orders from this date up to today.</p>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                  <button type="button" onClick={() => setExportModalOpen(false)} className="btn btn-outline" style={{ flex: 1, padding: '10px' }}>Cancel</button>
+                  <button
+                    type="button"
+                    onClick={downloadFilteredPDF}
+                    className="btn btn-primary"
+                    disabled={pdfFilterType === 'custom' && !pdfFromDate}
+                    style={{ flex: 2, padding: '10px', gap: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <Download size={16} />
+                    Generate PDF
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
