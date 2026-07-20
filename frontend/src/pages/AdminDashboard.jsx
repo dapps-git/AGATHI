@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ShoppingBag, Users, ShoppingCart,
   Plus, Edit2, Trash2, Search, X, LogOut, RefreshCw,
-  TrendingUp, Package, UserCheck, Menu
+  TrendingUp, Package, UserCheck, Menu, Download
 } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import adminAPI from '../utils/adminApi';
 import { AdminAuthContext } from '../context/AdminAuthContext';
 
@@ -97,6 +99,84 @@ const AdminDashboard = () => {
   const handleLogout = () => {
     logoutAdmin();
     navigate('/admin-login');
+  };
+
+  const downloadOrdersPDF = () => {
+    const doc = new jsPDF({ orientation: 'landscape' });
+
+    // Header
+    doc.setFillColor(47, 79, 30);
+    doc.rect(0, 0, 297, 22, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Agadi Choorna — All Orders Report', 14, 14);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 220, 14);
+
+    // Table
+    autoTable(doc, {
+      startY: 28,
+      head: [['#', 'Customer Name', 'Phone', 'Email', 'Product', 'Qty', 'Total (₹)', 'Address', 'District / State / PIN', 'Status', 'Order Date']],
+      body: orders.map((order, idx) => [
+        idx + 1,
+        order.name || '—',
+        order.phone || '—',
+        order.email || '—',
+        order.product?.name || 'Deleted Product',
+        order.quantity,
+        `₹${order.totalPrice?.toLocaleString('en-IN') || 0}`,
+        [order.address, order.landmark].filter(Boolean).join(', ') || '—',
+        `${order.district || ''}, ${order.state || ''} – ${order.pinCode || ''}`,
+        order.status || '—',
+        order.createdAt
+          ? new Date(order.createdAt).toLocaleString(undefined, { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+          : '—',
+      ]),
+      styles: {
+        fontSize: 8,
+        cellPadding: 4,
+        valign: 'middle',
+        lineColor: [220, 220, 220],
+        lineWidth: 0.3,
+      },
+      headStyles: {
+        fillColor: [47, 79, 30],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 8,
+      },
+      alternateRowStyles: {
+        fillColor: [247, 251, 247],
+      },
+      columnStyles: {
+        0:  { cellWidth: 8 },
+        1:  { cellWidth: 28 },
+        2:  { cellWidth: 24 },
+        3:  { cellWidth: 36 },
+        4:  { cellWidth: 28 },
+        5:  { cellWidth: 10 },
+        6:  { cellWidth: 18 },
+        7:  { cellWidth: 38 },
+        8:  { cellWidth: 32 },
+        9:  { cellWidth: 18 },
+        10: { cellWidth: 32 },
+      },
+      margin: { left: 14, right: 14 },
+    });
+
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7);
+      doc.setTextColor(150);
+      doc.text(`Page ${i} of ${pageCount}  |  Total Orders: ${orders.length}`, 14, doc.internal.pageSize.getHeight() - 6);
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    doc.save(`agadi-orders-${today}.pdf`);
   };
 
   const handleStatusChange = async (orderId, newStatus) => {
@@ -396,10 +476,38 @@ const AdminDashboard = () => {
               </button>
             )}
             {activeTab !== 'products' && (
-              <button onClick={fetchData} style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '8px 16px', border: '1.5px solid var(--border-color)', borderRadius: '8px', fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-muted)', background: 'var(--card-bg)', cursor: 'pointer' }}>
-                <RefreshCw size={15} />
-                Refresh
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button
+                  onClick={fetchData}
+                  style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '8px 16px', border: '1.5px solid var(--border-color)', borderRadius: '8px', fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-muted)', background: 'var(--card-bg)', cursor: 'pointer' }}
+                >
+                  <RefreshCw size={15} />
+                  Refresh
+                </button>
+                {(activeTab === 'dashboard' || activeTab === 'orders') && orders.length > 0 && (
+                  <button
+                    onClick={downloadOrdersPDF}
+                    title="Download all orders as PDF"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '7px',
+                      padding: '8px 18px',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '0.82rem', fontWeight: '700',
+                      color: '#fff',
+                      background: 'var(--primary-green)',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 10px rgba(47,79,30,0.25)',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#1a3d0f'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'var(--primary-green)'; e.currentTarget.style.transform = 'none'; }}
+                  >
+                    <Download size={15} />
+                    Download PDF
+                  </button>
+                )}
+              </div>
             )}
           </div>
 
