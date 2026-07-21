@@ -25,7 +25,10 @@
 
 /* ===== Reset ===== */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
 body {
   font-family: var(--font);
   font-weight: 400;
@@ -34,6 +37,10 @@ body {
   color: var(--text-color);
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  touch-action: pan-y;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
 }
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font);
@@ -963,11 +970,14 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
     height: calc(100svh - 60px) !important;
     padding: 0 !important;
     overflow: hidden !important;
+    touch-action: pan-y;
   }
   .hero-banner-wrap {
     height: 100% !important;
     width: 100% !important;
     overflow: hidden !important;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
   }
   /* Hide desktop banner on mobile, show mobile image */
   .hero-banner-img {
@@ -979,6 +989,10 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
     height: 100% !important;
     object-fit: cover !important;
     object-position: center center !important;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
   /* Adjust overlay buttons for mobile size */
   .hero-mobile-cta {
