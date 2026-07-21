@@ -3,6 +3,9 @@ import API from '../utils/api';
 
 export const AuthContext = createContext();
 
+// Session duration: 7 days in milliseconds
+const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
+
 // This context manages ONLY public customer sessions (stored in 'userInfo').
 // Admin sessions are managed separately by AdminAuthContext ('adminInfo').
 export const AuthProvider = ({ children }) => {
@@ -11,11 +14,19 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const stored = localStorage.getItem('userInfo');
+    const expiresAt = localStorage.getItem('userSessionExpiry');
+
     if (stored) {
       const parsed = JSON.parse(stored);
+
       // Safety: if somehow an admin token ended up in userInfo, clear it
       if (parsed.isAdmin) {
         localStorage.removeItem('userInfo');
+        localStorage.removeItem('userSessionExpiry');
+      } else if (expiresAt && Date.now() > parseInt(expiresAt, 10)) {
+        // Session has expired (older than 7 days) — auto logout
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem('userSessionExpiry');
       } else {
         setUser(parsed);
       }
@@ -36,6 +47,8 @@ export const AuthProvider = ({ children }) => {
       }
       setUser(data);
       localStorage.setItem('userInfo', JSON.stringify(data));
+      // Store session expiry: now + 7 days
+      localStorage.setItem('userSessionExpiry', (Date.now() + SESSION_DURATION_MS).toString());
       return { success: true };
     } catch (error) {
       return {
@@ -52,6 +65,8 @@ export const AuthProvider = ({ children }) => {
       });
       setUser(data);
       localStorage.setItem('userInfo', JSON.stringify(data));
+      // Store session expiry: now + 7 days
+      localStorage.setItem('userSessionExpiry', (Date.now() + SESSION_DURATION_MS).toString());
       return { success: true };
     } catch (error) {
       return {
@@ -63,6 +78,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('userInfo');
+    localStorage.removeItem('userSessionExpiry');
     setUser(null);
   };
 

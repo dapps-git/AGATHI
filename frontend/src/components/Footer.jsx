@@ -29,7 +29,7 @@ const Footer = () => {
         {/* Brand Column */}
         <div className="footer-brand">
           <div className="footer-logo-wrap">
-            <img src="/images/logo.png" alt="Agadi Choorna Logo" className="footer-logo" />
+            <img src="/images/logo (3).png" alt="Agadi Choorna Logo" className="footer-logo" />
           </div>
           <p className="footer-brand-desc">
             Premium Ayurvedic weight gain powder formulated using natural adaptogenic herbs.

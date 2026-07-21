@@ -22,11 +22,12 @@ router.get('/', protect, admin, async (req, res) => {
       const totalRevenue = activeOrders.reduce((sum, o) => sum + (o.totalPrice || 0), 0);
 
       const pendingOrders = await Order.countDocuments({ status: 'Pending' });
+      const processingOrders = await Order.countDocuments({ status: 'Processing' });
+      const shippedOrders = await Order.countDocuments({ status: 'Shipped' });
+      const deliveredOrders = await Order.countDocuments({ status: 'Delivered' });
+      const cancelledOrders = await Order.countDocuments({ status: 'Cancelled' });
       const contactedOrders = await Order.countDocuments({ status: 'Contacted' });
       const completedOrders = await Order.countDocuments({ status: 'Completed' });
-      const cancelledOrders = await Order.countDocuments({ status: 'Cancelled' });
-      const checkedOrders = await Order.countDocuments({ status: 'Checked' });
-      const shippedOrders = await Order.countDocuments({ status: 'Shipped' });
 
       res.json({
         totalUsers,
@@ -35,11 +36,12 @@ router.get('/', protect, admin, async (req, res) => {
         totalRevenue,
         statusBreakdown: {
           pending: pendingOrders,
+          processing: processingOrders,
+          shipped: shippedOrders,
+          delivered: deliveredOrders,
+          cancelled: cancelledOrders,
           contacted: contactedOrders,
           completed: completedOrders,
-          cancelled: cancelledOrders,
-          checked: checkedOrders,
-          shipped: shippedOrders,
         },
       });
     } else {
@@ -52,18 +54,19 @@ router.get('/', protect, admin, async (req, res) => {
       const totalRevenue = activeOrders.reduce((sum, o) => sum + (o.totalPrice || 0), 0);
 
       const pending = db.orders.filter(o => o.status === 'Pending').length;
+      const processing = db.orders.filter(o => o.status === 'Processing').length;
+      const shipped = db.orders.filter(o => o.status === 'Shipped').length;
+      const delivered = db.orders.filter(o => o.status === 'Delivered').length;
+      const cancelled = db.orders.filter(o => o.status === 'Cancelled').length;
       const contacted = db.orders.filter(o => o.status === 'Contacted').length;
       const completed = db.orders.filter(o => o.status === 'Completed').length;
-      const cancelled = db.orders.filter(o => o.status === 'Cancelled').length;
-      const checked = db.orders.filter(o => o.status === 'Checked').length;
-      const shipped = db.orders.filter(o => o.status === 'Shipped').length;
 
       res.json({
         totalUsers,
         totalProducts,
         totalOrders,
         totalRevenue,
-        statusBreakdown: { pending, contacted, completed, cancelled, checked, shipped },
+        statusBreakdown: { pending, processing, shipped, delivered, cancelled, contacted, completed },
       });
     }
   } catch (error) {

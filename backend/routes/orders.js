@@ -62,8 +62,11 @@ router.post('/', async (req, res) => {
 
     const ownerWhatsAppNumber = (process.env.WHATSAPP_PHONE || '918139800282').replace(/\+/g, '');
 
-    // Fallback if mongoose is not connected
-    if (mongoose.connection.readyState !== 1) {
+    // Helper: check if productId looks like a fallback DB ID (e.g. 'prod-1720000000000')
+    const isFallbackId = typeof productId === 'string' && productId.startsWith('prod-');
+
+    // Use fallback DB if mongoose is not connected OR if the productId is a fallback-style ID
+    if (mongoose.connection.readyState !== 1 || isFallbackId) {
       const db = getFallbackDb();
       const product = db.products.find(p => p._id === productId);
       if (!product) {
@@ -115,8 +118,14 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Check product exists
-    const product = await Product.findById(productId);
+    // Check product exists in MongoDB (with safe ObjectId cast)
+    let product;
+    try {
+      product = await Product.findById(productId);
+    } catch (castError) {
+      // productId is not a valid MongoDB ObjectId
+      return res.status(404).json({ message: 'Product not found' });
+    }
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
@@ -200,6 +209,51 @@ router.get('/', protect, admin, async (req, res) => {
   }
 });
 
+// @desc    Get logged in user orders
+// @route   GET /api/orders/myorders
+// @access  Private
+router.get('/myorders', protect, async (req, res) => {
+  try {
+    const userId = req.user._id.toString();
+    const userEmail = req.user.email;
+    const userPhone = req.user.phone;
+
+    if (mongoose.connection.readyState === 1) {
+      const orders = await Order.find({
+        $or: [
+          { user: req.user._id },
+          { email: userEmail },
+          ...(userPhone ? [{ phone: userPhone }] : [])
+        ]
+      })
+        .populate('product', 'name price images description')
+        .sort({ createdAt: -1 });
+
+      res.json(orders);
+    } else {
+      const db = getFallbackDb();
+      const userOrders = db.orders
+        .filter(o => o.user === userId || o.email === userEmail || (userPhone && o.phone === userPhone))
+        .map(order => {
+          let productData = order.product;
+          if (typeof order.product === 'string') {
+            const p = db.products.find(x => x._id === order.product);
+            if (p) productData = p;
+          }
+          return {
+            ...order,
+            product: productData
+          };
+        })
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      res.json(userOrders);
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // @desc    Update order status
 // @route   PUT /api/orders/:id/status
 // @access  Private/Admin
@@ -207,7 +261,8 @@ router.put('/:id/status', protect, admin, async (req, res) => {
   const { status } = req.body;
 
   try {
-    if (!status || !['Pending', 'Contacted', 'Completed', 'Cancelled', 'Checked', 'Shipped'].includes(status)) {
+    const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Contacted', 'Checked', 'Completed'];
+    if (!status || !validStatuses.includes(status)) {
       return res.status(400).json({ message: 'Invalid status' });
     }
 

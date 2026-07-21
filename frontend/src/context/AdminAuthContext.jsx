@@ -3,14 +3,25 @@ import adminAPI from '../utils/adminApi';
 
 export const AdminAuthContext = createContext();
 
+// Admin session duration: 1 day in milliseconds
+const ADMIN_SESSION_DURATION_MS = 1 * 24 * 60 * 60 * 1000;
+
 export const AdminAuthProvider = ({ children }) => {
   const [admin, setAdmin] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const stored = localStorage.getItem('adminInfo');
+    const expiresAt = localStorage.getItem('adminSessionExpiry');
+
     if (stored) {
-      setAdmin(JSON.parse(stored));
+      if (expiresAt && Date.now() > parseInt(expiresAt, 10)) {
+        // Admin session expired (older than 1 day) — auto logout
+        localStorage.removeItem('adminInfo');
+        localStorage.removeItem('adminSessionExpiry');
+      } else {
+        setAdmin(JSON.parse(stored));
+      }
     }
     setLoading(false);
 
@@ -27,6 +38,8 @@ export const AdminAuthProvider = ({ children }) => {
       }
       setAdmin(data);
       localStorage.setItem('adminInfo', JSON.stringify(data));
+      // Store admin session expiry: now + 1 day
+      localStorage.setItem('adminSessionExpiry', (Date.now() + ADMIN_SESSION_DURATION_MS).toString());
       return { success: true };
     } catch (error) {
       return {
@@ -38,6 +51,7 @@ export const AdminAuthProvider = ({ children }) => {
 
   const logoutAdmin = () => {
     localStorage.removeItem('adminInfo');
+    localStorage.removeItem('adminSessionExpiry');
     setAdmin(null);
   };
 
@@ -47,3 +61,4 @@ export const AdminAuthProvider = ({ children }) => {
     </AdminAuthContext.Provider>
   );
 };
+

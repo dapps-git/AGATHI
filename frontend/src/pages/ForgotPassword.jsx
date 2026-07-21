@@ -91,7 +91,7 @@ const ForgotPassword = () => {
       <div className="auth-card" style={{ maxWidth: '520px' }}>
         <div className="auth-header" style={{ marginBottom: '28px', textAlign: 'center' }}>
           <img 
-            src="/images/logo.png" 
+            src="/images/logo.webp" 
             alt="Agadi Logo" 
             style={{ maxHeight: '110px', maxWidth: '100%', objectFit: 'contain', display: 'block', margin: '0 auto 16px' }} 
           />

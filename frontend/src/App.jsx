@@ -12,6 +12,7 @@ import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import Results from './pages/Results';
 import Policies from './pages/Policies';
+import MyOrders from './pages/MyOrders';
 
 // Admin Components & Pages (completely separate)
 import AdminLogin from './pages/AdminLogin';
@@ -50,6 +51,7 @@ function PublicAppContent() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/my-orders" element={<MyOrders />} />
           <Route path="/results" element={<Results />} />
           <Route path="/policies" element={<Policies />} />
           <Route path="/privacy-policy" element={<Policies />} />

@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Leaf, UserPlus } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 
 const Signup = () => {
@@ -12,7 +12,14 @@ const Signup = () => {
     password: '',
     confirmPassword: '',
   });
-  const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    confirmPassword: '',
+  });
+  const [generalError, setGeneralError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -28,68 +35,107 @@ const Signup = () => {
     }
   }, [user, navigate]);
 
+  const validateField = (name, value) => {
+    let errorMsg = '';
+    if (name === 'name') {
+      if (!value.trim()) {
+        errorMsg = 'Name is required.';
+      } else if (value.trim().length < 2) {
+        errorMsg = 'Name must be at least 2 characters.';
+      }
+    } else if (name === 'email') {
+      const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+      if (!value) {
+        errorMsg = 'Email is required.';
+      } else if (!emailRegex.test(value)) {
+        errorMsg = 'Please enter a valid email address.';
+      }
+    } else if (name === 'phone') {
+      if (!value) {
+        errorMsg = 'Mobile number is required.';
+      } else if (!/^\d{10}$/.test(value)) {
+        errorMsg = 'Mobile number must contain exactly 10 digits.';
+      }
+    } else if (name === 'password') {
+      const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d).{6,}$/;
+      if (!value) {
+        errorMsg = 'Password is required.';
+      } else if (!passwordRegex.test(value)) {
+        errorMsg = 'Password must be at least 6 characters and contain both letters and numbers.';
+      }
+    }
+    return errorMsg;
+  };
+
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    setError('');
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+    setGeneralError('');
+
+    // Clear or set field-specific validation errors dynamically
+    const err = validateField(name, value);
+    setFieldErrors(prev => ({
+      ...prev,
+      [name]: err,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setGeneralError('');
 
-    const { name, email, phone, password, confirmPassword } = formData;
+    const errors = {
+      name: validateField('name', formData.name),
+      email: validateField('email', formData.email),
+      phone: validateField('phone', formData.phone),
+      password: validateField('password', formData.password),
+      confirmPassword: '',
+    };
 
-    if (!name.trim() || name.trim().length < 2) {
-      setError('Name must be at least 2 characters.');
-      return;
+    if (formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match.';
     }
 
-    const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    if (!emailRegex.test(email)) {
-      setError('Please enter a valid email address.');
-      return;
-    }
+    setFieldErrors(errors);
 
-    if (!/^\d{10}$/.test(phone)) {
-      setError('Mobile number must contain exactly 10 digits.');
-      return;
-    }
-
-    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d).{6,}$/;
-    if (!passwordRegex.test(password)) {
-      setError('Password must be at least 6 characters and contain both letters and numbers.');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+    const hasErrors = Object.values(errors).some(err => err !== '');
+    if (hasErrors) {
       return;
     }
 
     setLoading(true);
-    const result = await register(name, email, phone, password, confirmPassword);
+    const result = await register(
+      formData.name,
+      formData.email,
+      formData.phone,
+      formData.password,
+      formData.confirmPassword
+    );
     setLoading(false);
 
     if (!result.success) {
-      setError(result.message);
+      setGeneralError(result.message);
     }
   };
+
+  const showConfirmFeedback = formData.confirmPassword.length > 0;
+  const isPasswordMatch = formData.password === formData.confirmPassword;
 
   return (
     <div className="auth-page">
       <div className="auth-card" style={{ maxWidth: '520px' }}>
         <div className="auth-header" style={{ marginBottom: '32px', textAlign: 'center' }}>
           <img 
-            src="/images/logo.png" 
+            src="/images/logo.webp" 
             alt="Agadi Logo" 
             style={{ maxHeight: '110px', maxWidth: '100%', objectFit: 'contain', display: 'block', margin: '0 auto' }} 
           />
         </div>
 
-        {error && <div className="alert alert-danger">{error}</div>}
+        {generalError && <div className="alert alert-danger">{generalError}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group" style={{ marginBottom: '16px' }}>
@@ -103,6 +149,7 @@ const Signup = () => {
               placeholder="Enter full name"
               required
             />
+            {fieldErrors.name && <span className="field-error">{fieldErrors.name}</span>}
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
@@ -117,6 +164,7 @@ const Signup = () => {
                 placeholder="name@example.com"
                 required
               />
+              {fieldErrors.email && <span className="field-error">{fieldErrors.email}</span>}
             </div>
             <div className="form-group">
               <label htmlFor="reg-phone">Mobile Number (10 digits) *</label>
@@ -130,6 +178,7 @@ const Signup = () => {
                 maxLength={10}
                 required
               />
+              {fieldErrors.phone && <span className="field-error">{fieldErrors.phone}</span>}
             </div>
           </div>
 
@@ -145,6 +194,7 @@ const Signup = () => {
                 placeholder="Min 6 chars"
                 required
               />
+              {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
             </div>
             <div className="form-group">
               <label htmlFor="reg-confirmPassword">Confirm Password *</label>
@@ -157,6 +207,16 @@ const Signup = () => {
                 placeholder="Repeat password"
                 required
               />
+              {showConfirmFeedback && (
+                isPasswordMatch ? (
+                  <span className="field-success">Passwords match.</span>
+                ) : (
+                  <span className="field-error">Passwords do not match.</span>
+                )
+              )}
+              {fieldErrors.confirmPassword && !showConfirmFeedback && (
+                <span className="field-error">{fieldErrors.confirmPassword}</span>
+              )}
             </div>
           </div>
 

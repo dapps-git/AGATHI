@@ -39,7 +39,7 @@ const AdminLogin = () => {
       <div className="admin-login-card">
         <div className="admin-login-header">
           <img
-            src="/images/logo.png"
+            src="/images/logo.webp"
             alt="Agadi Choorna Logo"
             style={{ maxHeight: '120px', maxWidth: '100%', display: 'block', margin: '0 auto 20px', objectFit: 'contain' }}
           />

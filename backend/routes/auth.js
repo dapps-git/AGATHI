@@ -6,10 +6,17 @@ import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Generate JWT token
+// Generate JWT token for regular users (7 days)
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'session_secret_key_agadhi_churna_2026', {
-    expiresIn: '2d', // Session expires after 2 days as per about.tmd
+    expiresIn: '7d', // User session: 1 week
+  });
+};
+
+// Generate JWT token for admin users (1 day)
+const generateAdminToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET || 'session_secret_key_agadhi_churna_2026', {
+    expiresIn: '1d', // Admin session: 1 day
   });
 };
 
@@ -63,7 +70,8 @@ router.post('/register', async (req, res) => {
         email,
         phone,
         password,
-        isAdmin: false
+        isAdmin: false,
+        address: ''
       };
       db.users.push(newUser);
       saveFallbackDb(db);
@@ -73,6 +81,7 @@ router.post('/register', async (req, res) => {
         email: newUser.email,
         phone: newUser.phone,
         isAdmin: newUser.isAdmin,
+        address: newUser.address,
         token: generateToken(newUser._id),
       });
     }
@@ -104,6 +113,7 @@ router.post('/register', async (req, res) => {
         email: user.email,
         phone: user.phone,
         isAdmin: user.isAdmin,
+        address: user.address || '',
         token: generateToken(user._id),
       });
     } else {
@@ -151,7 +161,8 @@ router.post('/login', async (req, res) => {
           email: user.email,
           phone: user.phone,
           isAdmin: user.isAdmin,
-          token: generateToken(user._id),
+          address: user.address || '',
+          token: user.isAdmin ? generateAdminToken(user._id) : generateToken(user._id),
         });
       } else {
         return res.status(401).json({ message: 'Invalid email or password' });
@@ -167,7 +178,8 @@ router.post('/login', async (req, res) => {
         email: user.email,
         phone: user.phone,
         isAdmin: user.isAdmin,
-        token: generateToken(user._id),
+        address: user.address || '',
+        token: user.isAdmin ? generateAdminToken(user._id) : generateToken(user._id),
       });
     } else {
       res.status(401).json({ message: 'Invalid email or password' });
@@ -241,6 +253,7 @@ router.get('/profile', protect, async (req, res) => {
         email: user.email,
         phone: user.phone,
         isAdmin: user.isAdmin,
+        address: user.address || '',
       });
     } else {
       res.status(404).json({ message: 'User not found' });

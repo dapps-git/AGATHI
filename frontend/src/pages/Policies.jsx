@@ -28,7 +28,7 @@ const Policies = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-color)', paddingTop: '88px' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-color)', paddingTop: '68px' }}>
       {/* Page Header */}
       <div style={{
         background: 'linear-gradient(135deg, #1a2c11 0%, var(--primary-green) 100%)',

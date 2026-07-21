@@ -359,17 +359,49 @@ const AdminDashboard = () => {
     }
   };
 
+  const [customerSearch, setCustomerSearch] = useState('');
+
   const filteredUsers = users.filter(u =>
     u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
     u.email.toLowerCase().includes(userSearch.toLowerCase()) ||
     u.phone.includes(userSearch)
   );
 
+  // Compute Customers (only users/contacts who placed 1+ orders)
+  const customerMap = {};
+  orders.forEach(order => {
+    const key = order.email || order.phone || order.name;
+    if (!key) return;
+    if (!customerMap[key]) {
+      customerMap[key] = {
+        _id: order.user?._id || order.user || key,
+        name: order.name,
+        email: order.email,
+        phone: order.phone,
+        address: [order.address, order.landmark, order.district, order.state, order.pinCode].filter(Boolean).join(', '),
+        orderCount: 0,
+        totalSpent: 0,
+        lastOrderDate: order.createdAt,
+      };
+    }
+    customerMap[key].orderCount += 1;
+    customerMap[key].totalSpent += (order.totalPrice || 0);
+    if (new Date(order.createdAt) > new Date(customerMap[key].lastOrderDate)) {
+      customerMap[key].lastOrderDate = order.createdAt;
+    }
+  });
+  const customersList = Object.values(customerMap).filter(c =>
+    c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
+    c.email.toLowerCase().includes(customerSearch.toLowerCase()) ||
+    c.phone.includes(customerSearch)
+  );
+
   const tabLabels = {
     dashboard: 'Dashboard Overview',
     orders: 'Manage Orders',
     products: 'Product Inventory',
-    users: 'User Accounts',
+    customers: 'Customer Accounts (1+ Orders)',
+    users: 'Registered Users',
   };
 
   if (loading && !stats) {
@@ -385,51 +417,91 @@ const AdminDashboard = () => {
   return (
     <div className="admin-page">
       {/* ── Topbar ── */}
-      <header className="admin-topbar">
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="admin-hamburger"
-          style={{
-            display: 'none',
-            background: 'none',
-            border: 'none',
-            color: 'var(--primary-green)',
-            cursor: 'pointer',
-            padding: '8px',
-            marginRight: '12px',
-          }}
-        >
-          <Menu size={24} />
-        </button>
-        <div className="admin-topbar-brand">
-          <img src="/images/logo.png" alt="Agadi Logo" style={{ maxHeight: '46px', objectFit: 'contain' }} />
-        </div>
-        <div className="admin-topbar-actions">
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--primary-green)' }}>
-              {admin?.name || 'Administrator'}
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '1px' }}>Admin Portal</div>
-          </div>
-          <div style={{ width: '1px', height: '32px', background: 'var(--border-color)' }} />
+      <header className="admin-topbar" style={{ position: 'fixed' }}>
+        {/* Left: Logo + hamburger */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '250px', flexShrink: 0 }}>
           <button
-            onClick={handleLogout}
+            onClick={() => setSidebarOpen(true)}
+            className="admin-hamburger"
             style={{
-              display: 'flex', alignItems: 'center', gap: '7px',
-              padding: '8px 16px',
-              border: '1.5px solid var(--border-color)',
-              borderRadius: 'var(--radius-xl)',
-              fontSize: '0.82rem', fontWeight: '600',
-              color: 'var(--text-muted)',
+              display: 'none',
+              background: 'none',
+              border: 'none',
+              color: 'var(--primary-green)',
               cursor: 'pointer',
-              background: 'var(--card-bg)',
-              transition: 'var(--transition)',
+              padding: '4px',
             }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#b91c1c'; e.currentTarget.style.borderColor = '#fca5a5'; e.currentTarget.style.background = '#fef2f2'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.background = 'var(--card-bg)'; }}
           >
-            <LogOut size={15} />
-            <span>Logout</span>
+            <Menu size={24} />
+          </button>
+          <img src="/images/logo.webp" alt="Agadi Logo" style={{ maxHeight: '64px', width: 'auto', objectFit: 'contain' }} />
+        </div>
+
+        {/* Center: Page title absolutely centered */}
+        <div style={{
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+          textAlign: 'center',
+          pointerEvents: 'none',
+        }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: '800', color: 'var(--primary-green)', margin: 0, lineHeight: 1.2, whiteSpace: 'nowrap' }}>
+            {tabLabels[activeTab]}
+          </h2>
+          <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: 0, marginTop: '2px', whiteSpace: 'nowrap' }}>
+            {activeTab === 'dashboard' && 'A real-time snapshot of your business metrics.'}
+            {activeTab === 'orders' && 'Track and manage all orders placed by customers.'}
+            {activeTab === 'products' && 'Add, edit, or remove products from your catalog.'}
+            {activeTab === 'customers' && 'Users who have successfully placed at least one order.'}
+            {activeTab === 'users' && 'View all registered user accounts.'}
+          </p>
+        </div>
+
+        {/* Right: Action buttons only */}
+        <div className="admin-topbar-actions" style={{ marginLeft: 'auto' }}>
+          {activeTab === 'products' && (
+            <button onClick={openAddProductModal} className="btn btn-primary" style={{ gap: '6px', borderRadius: '8px', padding: '8px 16px', fontSize: '0.82rem' }}>
+              <Plus size={16} />
+              <span>Add Product</span>
+            </button>
+          )}
+
+          {(activeTab === 'dashboard' || activeTab === 'orders') && orders.length > 0 && (
+            <button
+              onClick={() => {
+                setPdfFilterType('all');
+                setPdfFromDate('');
+                setExportModalOpen(true);
+              }}
+              title="Download orders report as PDF"
+              style={{
+                display: 'flex', alignItems: 'center', gap: '6px',
+                padding: '8px 16px',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '0.82rem', fontWeight: '700',
+                color: '#fff',
+                background: 'var(--primary-green)',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(47,79,30,0.2)',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#1a3d0f'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'var(--primary-green)'; }}
+            >
+              <Download size={15} />
+              <span>Download PDF</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => { fetchData(); }}
+            title="Refresh data"
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', border: '1.5px solid var(--border-color)', borderRadius: '8px', fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-muted)', background: '#fff', cursor: 'pointer' }}
+          >
+            <RefreshCw size={15} />
+            <span>Refresh</span>
           </button>
         </div>
       </header>
@@ -437,6 +509,7 @@ const AdminDashboard = () => {
       <div className="admin-body">
         {/* ── Sidebar ── */}
         <aside className={`admin-sidebar ${sidebarOpen ? 'admin-sidebar-open' : ''}`}>
+
           {/* Close button inside sidebar on mobile */}
           <div style={{ display: 'none', justifyContent: 'flex-end', padding: '0 16px 16px' }} className="admin-sidebar-close">
             <button
@@ -451,7 +524,7 @@ const AdminDashboard = () => {
             </button>
           </div>
           {/* sidebar section label */}
-          <div style={{ padding: '0 18px 16px', fontSize: '0.7rem', fontWeight: '700', color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>
+          <div style={{ padding: '0 18px 12px', fontSize: '0.68rem', fontWeight: '800', color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>
             Main Menu
           </div>
 
@@ -459,6 +532,7 @@ const AdminDashboard = () => {
             { id: 'dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
             { id: 'orders',    icon: <ShoppingCart size={18} />,    label: 'Orders' },
             { id: 'products',  icon: <ShoppingBag size={18} />,     label: 'Products' },
+            { id: 'customers', icon: <UserCheck size={18} />,       label: 'Customers' },
             { id: 'users',     icon: <Users size={18} />,           label: 'Users' },
           ].map(tab => (
             <button
@@ -475,11 +549,27 @@ const AdminDashboard = () => {
           ))}
 
           <div style={{ flex: 1 }} />
-          <div style={{ padding: '16px 18px 0', borderTop: '1px solid var(--border-color)', marginTop: '8px' }}>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-              <strong style={{ color: 'var(--primary-green)' }}>Agadi Admin</strong><br />
-              v1.0 — MVP Panel
-            </div>
+          <div style={{ padding: '12px 12px 16px', borderTop: '1px solid var(--border-color)', marginTop: '8px' }}>
+            <button
+              onClick={handleLogout}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '10px',
+                width: '100%',
+                padding: '11px 16px',
+                border: '1.5px solid #fca5a5',
+                borderRadius: '10px',
+                fontSize: '0.875rem', fontWeight: '600',
+                color: '#b91c1c',
+                cursor: 'pointer',
+                background: '#fef2f2',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.style.borderColor = '#f87171'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.borderColor = '#fca5a5'; }}
+            >
+              <LogOut size={16} />
+              <span>Logout</span>
+            </button>
           </div>
         </aside>
 
@@ -498,62 +588,7 @@ const AdminDashboard = () => {
 
         {/* ── Main Content ── */}
         <main className="admin-content">
-          {/* Page header row */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-            <div>
-              <h2 className="admin-content-title" style={{ margin: 0 }}>{tabLabels[activeTab]}</h2>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '5px' }}>
-                {activeTab === 'dashboard' && 'A real-time snapshot of your business metrics.'}
-                {activeTab === 'orders' && 'Track and manage all WhatsApp orders placed by customers.'}
-                {activeTab === 'products' && 'Add, edit, or remove products from your catalog.'}
-                {activeTab === 'users' && 'View and manage registered customer accounts.'}
-              </p>
-            </div>
-            {activeTab === 'products' && (
-              <button onClick={openAddProductModal} className="btn btn-primary" style={{ gap: '8px', borderRadius: '10px', padding: '11px 22px' }}>
-                <Plus size={17} />
-                <span>Add Product</span>
-              </button>
-            )}
-            {activeTab !== 'products' && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <button
-                  onClick={fetchData}
-                  style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '8px 16px', border: '1.5px solid var(--border-color)', borderRadius: '8px', fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-muted)', background: 'var(--card-bg)', cursor: 'pointer' }}
-                >
-                  <RefreshCw size={15} />
-                  Refresh
-                </button>
-                {(activeTab === 'dashboard' || activeTab === 'orders') && orders.length > 0 && (
-                  <button
-                    onClick={() => {
-                      setPdfFilterType('all');
-                      setPdfFromDate('');
-                      setExportModalOpen(true);
-                    }}
-                    title="Download orders report as PDF"
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '7px',
-                      padding: '8px 18px',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontSize: '0.82rem', fontWeight: '700',
-                      color: '#fff',
-                      background: 'var(--primary-green)',
-                      cursor: 'pointer',
-                      boxShadow: '0 2px 10px rgba(47,79,30,0.25)',
-                      transition: 'all 0.2s',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = '#1a3d0f'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'var(--primary-green)'; e.currentTarget.style.transform = 'none'; }}
-                  >
-                    <Download size={15} />
-                    Download PDF
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
+
 
           {success && <div className="alert alert-success">{success}</div>}
           {error && <div className="alert alert-danger">{error}</div>}
@@ -714,11 +749,13 @@ const AdminDashboard = () => {
                       <td data-label="Status">
                         <select value={order.status} onChange={e => handleStatusChange(order._id, e.target.value)} className="status-select">
                           <option value="Pending">Pending</option>
-                          <option value="Contacted">Contacted</option>
-                          <option value="Checked">Checked</option>
+                          <option value="Processing">Processing</option>
                           <option value="Shipped">Shipped</option>
-                          <option value="Completed">Completed</option>
+                          <option value="Delivered">Delivered</option>
                           <option value="Cancelled">Cancelled</option>
+                          {['Contacted', 'Checked', 'Completed'].includes(order.status) && (
+                            <option value={order.status}>{order.status}</option>
+                          )}
                         </select>
                       </td>
                       <td data-label="Actions">
@@ -789,6 +826,64 @@ const AdminDashboard = () => {
                   )}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {/* ── Customers Tab ── */}
+          {activeTab === 'customers' && (
+            <div>
+              <div style={{ position: 'relative', width: '100%', maxWidth: '380px', marginBottom: '22px' }}>
+                <input
+                  type="text"
+                  value={customerSearch}
+                  onChange={e => setCustomerSearch(e.target.value)}
+                  placeholder="Search customers by name, email, or phone..."
+                  style={{ paddingLeft: '42px' }}
+                />
+                <Search size={17} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#aaa' }} />
+              </div>
+
+              <div className="table-container">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Customer Name</th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th>Shipping Address</th>
+                      <th>Orders Placed</th>
+                      <th>Total Spent</th>
+                      <th>Last Order</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {customersList.map(c => (
+                      <tr key={c._id || c.email || c.phone}>
+                        <td data-label="Customer Name" style={{ fontWeight: '700', color: 'var(--primary-green)' }}>{c.name}</td>
+                        <td data-label="Email">{c.email}</td>
+                        <td data-label="Phone">{c.phone}</td>
+                        <td data-label="Shipping Address" style={{ maxWidth: '240px', whiteSpace: 'normal', lineHeight: '1.4', fontSize: '0.82rem' }}>
+                          {c.address || '—'}
+                        </td>
+                        <td data-label="Orders Placed" style={{ textAlign: 'center', fontWeight: '700' }}>
+                          <span className="badge badge-processing" style={{ padding: '4px 10px' }}>
+                            {c.orderCount} {c.orderCount === 1 ? 'Order' : 'Orders'}
+                          </span>
+                        </td>
+                        <td data-label="Total Spent" style={{ fontWeight: '800', color: 'var(--primary-green)' }}>
+                          ₹{c.totalSpent.toLocaleString('en-IN')}
+                        </td>
+                        <td data-label="Last Order">
+                          {c.lastOrderDate ? new Date(c.lastOrderDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                    {customersList.length === 0 && (
+                      <tr><td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No customers with orders found.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 

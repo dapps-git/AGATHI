@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Phone, MessageSquare, MapPin, Mail, ArrowRight, ShieldCheck, Dumbbell, Apple, UtensilsCrossed, Star, X, Leaf } from 'lucide-react';
+import { Phone, MessageSquare, MapPin, Mail, ArrowRight, ShieldCheck, Dumbbell, Apple, UtensilsCrossed, Star, X, Leaf, Users2, Users } from 'lucide-react';
 import API from '../utils/api';
 import ProductCard from '../components/ProductCard';
 import OrderModal from '../components/OrderModal';
@@ -28,6 +28,20 @@ const Home = () => {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Hero image slider state
+  const [slideIndex, setSlideIndex] = useState(0);
+  const sliderImages = [
+    '/images/product-pouch.webp',
+    '/images/product-pouch-alt.webp'
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSlideIndex((prevIndex) => (prevIndex + 1) % sliderImages.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
   const [contactSuccess, setContactSuccess] = useState(false);
   const [contactForm, setContactForm] = useState({
     name: '',
@@ -125,64 +139,54 @@ const Home = () => {
     <div>
       {/* Hero Section */}
       <section id="hero" className="hero">
-        {/* Floating background decorative leaves for mobile view */}
-        <div className="hero-deco-leaf-1 mobile-only">
-          <Leaf size={120} />
-        </div>
-        <div className="hero-deco-leaf-2 mobile-only">
-          <Leaf size={140} />
-        </div>
-
-        <div className="container hero-grid">
-          <div className="hero-content">
-            <div className="hero-logo-mobile">
-              <img src="/images/logo.png" alt="Agadi Choorna Logo" />
-            </div>
-            <div className="hero-tag">
-              <ShieldCheck size={16} />
-              <span>100% Ayurvedic & Certified Powder</span>
-            </div>
-            <h1 className="hero-title">
-              Gain Healthy Weight, <br />
-              <span style={{ color: 'var(--secondary-green)' }}>Naturally & Safely</span>
-            </h1>
-            <p className="hero-subtitle">
-              Agadi Choorna blends ancient Ayurvedic science with potent adaptogenic herbs like Cherukura and Venga to naturally enhance your appetite, improve nutrient absorption, and build lean muscle mass.
-            </p>
-            <div className="hero-buttons">
-              <button
-                onClick={() => {
-                  const element = document.getElementById('products');
-                  if (element) {
-                    window.scrollTo({
-                      top: element.offsetTop - 80,
-                      behavior: 'smooth',
-                    });
-                  }
-                }}
-                className="btn btn-primary"
-              >
-                <span>Order Now</span>
-                <ArrowRight size={18} />
-              </button>
-              <a href="tel:+919072888825" className="btn btn-outline">
-                <Phone size={18} />
-                <span>Call Expert</span>
-              </a>
-            </div>
-          </div>
-
-          <div className="hero-image-container">
-            <img
-              src="/images/product-pouch.jpg"
-              alt="Agadi Choorna Weight Gain Powder"
-              className="hero-img"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = '/images/product-pouch-alt.jpg';
+        <div className="hero-banner-wrap">
+          {/* Desktop hero image */}
+          <img
+            src="/images/hero-banner.webp"
+            alt="Agadi Choornam - Natural Weight Gain The Ayurvedic Way"
+            className="hero-banner-img"
+          />
+          {/* Mobile hero image */}
+          <img
+            src="/images/mobilehero.webp"
+            alt="Agadi Choornam - Natural Weight Gain The Ayurvedic Way"
+            className="hero-banner-img-mobile"
+          />
+          {/* Mobile-only: buttons overlaid at bottom of image */}
+          <div className="hero-mobile-cta">
+            <button
+              onClick={() => {
+                const element = document.getElementById('products');
+                if (element) window.scrollTo({ top: element.offsetTop - 80, behavior: 'smooth' });
               }}
-            />
+              className="hero-mobile-btn"
+            >
+              <span>Order Now</span>
+              <ArrowRight size={16} />
+            </button>
+            <a href="tel:+919072888825" className="hero-mobile-btn hero-mobile-btn--outline">
+              <Phone size={16} />
+              <span>Call Expert</span>
+            </a>
           </div>
+        </div>
+
+        {/* Desktop-only: green bar below image */}
+        <div className="hero-banner-cta">
+          <button
+            onClick={() => {
+              const element = document.getElementById('products');
+              if (element) window.scrollTo({ top: element.offsetTop - 80, behavior: 'smooth' });
+            }}
+            className="btn btn-primary hero-banner-btn"
+          >
+            <span>Order Now</span>
+            <ArrowRight size={18} />
+          </button>
+          <a href="tel:+919072888825" className="btn btn-outline hero-banner-btn">
+            <Phone size={18} />
+            <span>Call Expert</span>
+          </a>
         </div>
       </section>
 
@@ -289,6 +293,24 @@ const Home = () => {
               </div>
               <h3>Regulates Metabolism</h3>
               <p>Balances the hyperactive thyroid glands and stress markers to block unnecessary calorie combustion.</p>
+            </div>
+          </div>
+
+          {/* Benefits Trust Highlight Banner */}
+          <div className="benefits-trust-banner">
+            <div className="trust-banner-item">
+              <span className="trust-banner-number">1,000+</span>
+              <span className="trust-banner-text">Trusted Users</span>
+            </div>
+            <div className="trust-banner-divider"></div>
+            <div className="trust-banner-item">
+              <span className="trust-banner-number">Proven Results</span>
+              <span className="trust-banner-text">With Pure Herbs</span>
+            </div>
+            <div className="trust-banner-divider"></div>
+            <div className="trust-banner-item">
+              <span className="trust-banner-number">100% Safe</span>
+              <span className="trust-banner-text">Natural Formula</span>
             </div>
           </div>
         </div>
