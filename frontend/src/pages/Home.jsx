@@ -295,23 +295,23 @@ const Home = () => {
               <p>Balances the hyperactive thyroid glands and stress markers to block unnecessary calorie combustion.</p>
             </div>
           </div>
+        </div>
 
-          {/* Benefits Trust Highlight Banner */}
-          <div className="benefits-trust-banner">
-            <div className="trust-banner-item">
-              <span className="trust-banner-number">1,000+</span>
-              <span className="trust-banner-text">Trusted Users</span>
-            </div>
-            <div className="trust-banner-divider"></div>
-            <div className="trust-banner-item">
-              <span className="trust-banner-number">Proven Results</span>
-              <span className="trust-banner-text">With Pure Herbs</span>
-            </div>
-            <div className="trust-banner-divider"></div>
-            <div className="trust-banner-item">
-              <span className="trust-banner-number">100% Safe</span>
-              <span className="trust-banner-text">Natural Formula</span>
-            </div>
+        {/* Benefits Trust Highlight Banner */}
+        <div className="benefits-trust-banner">
+          <div className="trust-banner-item">
+            <span className="trust-banner-number">1,000+</span>
+            <span className="trust-banner-text">Trusted Users</span>
+          </div>
+          <div className="trust-banner-divider"></div>
+          <div className="trust-banner-item">
+            <span className="trust-banner-number">Proven Results</span>
+            <span className="trust-banner-text">With Pure Herbs</span>
+          </div>
+          <div className="trust-banner-divider"></div>
+          <div className="trust-banner-item">
+            <span className="trust-banner-number">100% Safe</span>
+            <span className="trust-banner-text">Natural Formula</span>
           </div>
         </div>
       </section>

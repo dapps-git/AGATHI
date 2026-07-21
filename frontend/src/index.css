@@ -219,6 +219,7 @@ input::placeholder, textarea::placeholder { color: #aab2a8; }
   background: #f0f3ee;
   margin-top: 68px;
   height: calc(100vh - 68px);
+  height: calc(100svh - 68px);
 }
 
 .hero-banner-wrap {
@@ -959,6 +960,7 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
     position: relative !important;
     margin-top: 60px !important;
     height: calc(100vh - 60px) !important;
+    height: calc(100svh - 60px) !important;
     padding: 0 !important;
     overflow: hidden !important;
   }
@@ -1640,7 +1642,7 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
   background: linear-gradient(135deg, #1d3313 0%, var(--primary-green) 100%);
   color: #fff;
   padding: 24px 40px;
-  border-radius: var(--radius-lg);
+  border-radius: 0;
   margin-top: 40px;
   display: flex;
   justify-content: space-around;
