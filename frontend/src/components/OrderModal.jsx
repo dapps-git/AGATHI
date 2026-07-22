@@ -320,79 +320,21 @@ const OrderModal = ({ product, onClose }) => {
     }
   };
 
+  const [waUrl, setWaUrl] = useState('');
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    try {
-      // Composite full address nicely
-      const compositedAddress = formData.city 
-        ? `${formData.address}, ${formData.city}`
-        : formData.address;
+    const compositedAddress = formData.city 
+      ? `${formData.address}, ${formData.city}`
+      : formData.address;
 
-      const orderPayload = {
-        user: user?._id || null,
-        ...formData,
-        address: compositedAddress,
-        productId: product._id,
-        quantity,
-      };
+    const calcTotalPrice = (product.price || 1550) * quantity;
+    const ownerWhatsApp = '918139800282';
 
-      const { data } = await API.post('/orders', orderPayload);
-
-      if (data.success) {
-        // Sync context user info address locally so it updates immediately
-        if (user) {
-          user.address = [compositedAddress, formData.landmark, formData.district, formData.state, formData.pinCode].filter(Boolean).join(', ');
-          const stored = JSON.parse(localStorage.getItem('userInfo'));
-          if (stored) {
-            stored.address = user.address;
-            localStorage.setItem('userInfo', JSON.stringify(stored));
-          }
-        }
-        
-        setStep(3);
-        const { order, ownerWhatsAppNumber } = data;
-
-        const waMessage = `*NEW ORDER PLACED* 🌿
-------------------------
-*Product:* ${order.product.name}
-*Quantity:* ${order.quantity}
-*Total Amount:* ₹${order.totalPrice}
-
-*Customer Details:*
-- Name: ${order.name}
-- Phone: ${order.phone}
-- Email: ${order.email}
-${order.alternatePhone ? `- Alt Phone: ${order.alternatePhone}\n` : ''}
-*Shipping Address:*
-- Address: ${order.address}
-${order.landmark ? `- Landmark: ${order.landmark}\n` : ''}- District: ${order.district}
-- State: ${order.state}
-- Country: ${order.country}
-- PIN Code: ${order.pinCode}`;
-
-        const encodedMessage = encodeURIComponent(waMessage);
-        
-        setTimeout(() => {
-          window.open(`https://wa.me/${ownerWhatsAppNumber}?text=${encodedMessage}`, '_blank');
-          onClose();
-        }, 2000);
-      } else {
-        throw new Error('API order creation returned unsuccessful');
-      }
-    } catch (err) {
-      console.warn('Backend API connection issue, executing direct WhatsApp order dispatch fallback:', err);
-      
-      const compositedAddress = formData.city 
-        ? `${formData.address}, ${formData.city}`
-        : formData.address;
-
-      const calcTotalPrice = (product.price || 1550) * quantity;
-      const ownerWhatsApp = '918139800282';
-
-      const waMessage = `*NEW ORDER PLACED (AGADI CHOORNA)* 🌿
+    const waMessage = `*NEW ORDER PLACED (AGADI CHOORNA)* 🌿
 ------------------------
 *Product:* ${product.name || 'Agadi Choorna'}
 *Quantity:* ${quantity}
@@ -410,17 +352,33 @@ ${formData.landmark ? `- Landmark: ${formData.landmark}\n` : ''}- District: ${fo
 - Country: ${formData.country || 'India'}
 - PIN Code: ${formData.pinCode || ''}`;
 
-      const encodedMsg = encodeURIComponent(waMessage);
+    const url = `https://wa.me/${ownerWhatsApp}?text=${encodeURIComponent(waMessage)}`;
+    setWaUrl(url);
 
-      setStep(3);
-
-      setTimeout(() => {
-        window.open(`https://wa.me/${ownerWhatsApp}?text=${encodedMsg}`, '_blank');
-        onClose();
-      }, 1800);
-    } finally {
-      setLoading(false);
+    // Save locally
+    if (user) {
+      user.address = [compositedAddress, formData.landmark, formData.district, formData.state, formData.pinCode].filter(Boolean).join(', ');
+      const stored = JSON.parse(localStorage.getItem('userInfo'));
+      if (stored) {
+        stored.address = user.address;
+        localStorage.setItem('userInfo', JSON.stringify(stored));
+      }
     }
+
+    // Fire API in background non-blocking
+    API.post('/orders', {
+      user: user?._id || null,
+      ...formData,
+      address: compositedAddress,
+      productId: product._id,
+      quantity,
+    }).catch(() => {});
+
+    setStep(3);
+    setLoading(false);
+
+    // Direct redirect to WhatsApp immediately
+    window.location.href = url;
   };
 
   const totalPrice = product.price * quantity;
@@ -951,14 +909,22 @@ ${formData.landmark ? `- Landmark: ${formData.landmark}\n` : ''}- District: ${fo
               <div style={{ color: 'var(--primary-green)', marginBottom: '16px', display: 'flex', justifyContent: 'center' }}>
                 <CheckCircle size={60} fill="rgba(47, 79, 30, 0.1)" />
               </div>
-              <h4 style={{ fontSize: '1.2rem', color: 'var(--primary-green)', marginBottom: '8px', fontWeight: '700' }}>Thank You for Your Order!</h4>
+              <h4 style={{ fontSize: '1.25rem', color: 'var(--primary-green)', marginBottom: '8px', fontWeight: '700' }}>Order Details Ready!</h4>
               <p style={{ color: 'var(--text-muted)', maxWidth: '380px', margin: '0 auto 16px auto', fontSize: '0.85rem', lineHeight: 1.5 }}>
-                Your order details have been registered in our database. We are now opening WhatsApp to send the order details to our support team.
+                Opening WhatsApp to send your order details directly to our support team (+91 8139800282).
               </p>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', color: 'var(--secondary-green)', fontSize: '0.85rem' }}>
-                <span className="spinner" style={{ width: '16px', height: '16px', border: '2px solid var(--secondary-green)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></span>
-                <span>Connecting to WhatsApp...</span>
-              </div>
+              {waUrl && (
+                <a
+                  href={waUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-primary"
+                  style={{ padding: '12px 24px', fontSize: '0.9rem', width: '100%', maxWidth: '280px', margin: '8px auto 0 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                >
+                  <Send size={18} />
+                  <span>Click to Open WhatsApp</span>
+                </a>
+              )}
               <style>{`
                 @keyframes spin {
                   to { transform: rotate(360deg); }
