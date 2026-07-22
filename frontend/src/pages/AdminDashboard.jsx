@@ -761,112 +761,182 @@ const AdminDashboard = () => {
           )}
 
           {/* ── Orders Tab ── */}
-          {activeTab === 'orders' && (
-            <div>
-              {/* Search Bar for Orders */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '16px', flexWrap: 'wrap' }}>
-                <div style={{ position: 'relative', flex: '1', minWidth: '260px', maxWidth: '420px' }}>
-                  <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                  <input
-                    type="text"
-                    placeholder="Search orders by customer, phone, status, product, PIN..."
-                    value={orderSearch}
-                    onChange={(e) => setOrderSearch(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 38px 10px 42px',
-                      fontSize: '0.875rem',
-                      borderRadius: '10px',
-                      border: '1px solid var(--border-color)',
-                      outline: 'none',
-                      background: '#fff',
-                      boxShadow: 'var(--shadow-sm)',
-                    }}
-                  />
-                  {orderSearch && (
-                    <button
-                      onClick={() => setOrderSearch('')}
-                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-                    >
-                      <X size={16} />
-                    </button>
-                  )}
-                </div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '600' }}>
-                  Showing {orders.filter((o) => {
-                    if (!orderSearch.trim()) return true;
-                    const q = orderSearch.toLowerCase().trim();
-                    return (
-                      (o.name && o.name.toLowerCase().includes(q)) ||
-                      (o.phone && o.phone.toLowerCase().includes(q)) ||
-                      (o.email && o.email.toLowerCase().includes(q)) ||
-                      (o.address && o.address.toLowerCase().includes(q)) ||
-                      (o.district && o.district.toLowerCase().includes(q)) ||
-                      (o.state && o.state.toLowerCase().includes(q)) ||
-                      (o.pinCode && o.pinCode.toLowerCase().includes(q)) ||
-                      (o.status && o.status.toLowerCase().includes(q)) ||
-                      (o.product?.name && o.product.name.toLowerCase().includes(q))
-                    );
-                  }).length} of {orders.length} orders
-                </div>
-              </div>
+          {activeTab === 'orders' && (() => {
+            const filterFn = (o) => {
+              if (!orderSearch.trim()) return true;
+              const q = orderSearch.toLowerCase().trim();
+              return (
+                (o.name && o.name.toLowerCase().includes(q)) ||
+                (o.phone && o.phone.toLowerCase().includes(q)) ||
+                (o.email && o.email.toLowerCase().includes(q)) ||
+                (o.address && o.address.toLowerCase().includes(q)) ||
+                (o.district && o.district.toLowerCase().includes(q)) ||
+                (o.state && o.state.toLowerCase().includes(q)) ||
+                (o.pinCode && o.pinCode.toLowerCase().includes(q)) ||
+                (o.status && o.status.toLowerCase().includes(q)) ||
+                (o.product?.name && o.product.name.toLowerCase().includes(q))
+              );
+            };
+            const filtered = orders.filter(filterFn);
 
-              <div className="table-container">
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      <th>Customer</th>
-                      <th>Contact</th>
-                      <th>Product</th>
-                      <th>Qty</th>
-                      <th>Total</th>
-                      <th>Address</th>
-                      <th>Order Time</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders
-                      .filter((o) => {
-                        if (!orderSearch.trim()) return true;
-                        const q = orderSearch.toLowerCase().trim();
-                        return (
-                          (o.name && o.name.toLowerCase().includes(q)) ||
-                          (o.phone && o.phone.toLowerCase().includes(q)) ||
-                          (o.email && o.email.toLowerCase().includes(q)) ||
-                          (o.address && o.address.toLowerCase().includes(q)) ||
-                          (o.district && o.district.toLowerCase().includes(q)) ||
-                          (o.state && o.state.toLowerCase().includes(q)) ||
-                          (o.pinCode && o.pinCode.toLowerCase().includes(q)) ||
-                          (o.status && o.status.toLowerCase().includes(q)) ||
-                          (o.product?.name && o.product.name.toLowerCase().includes(q))
-                        );
-                      })
-                      .map((order) => (
-                        <tr key={order._id}>
-                          <td data-label="Customer" style={{ fontWeight: '600' }}>{order.name}</td>
-                          <td data-label="Contact">
-                            <div style={{ fontSize: '0.875rem' }}>{order.email}</div>
-                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{order.phone}</div>
-                            {order.alternatePhone && <div style={{ fontSize: '0.75rem', color: '#aaa' }}>Alt: {order.alternatePhone}</div>}
-                          </td>
-                          <td data-label="Product">{order.product?.name || 'Deleted Product'}</td>
-                          <td data-label="Qty">{order.quantity}</td>
-                          <td data-label="Total" style={{ fontWeight: '700', color: 'var(--primary-green)' }}>₹{order.totalPrice}</td>
-                          <td data-label="Address" style={{ fontSize: '0.82rem', maxWidth: '200px' }}>
-                            <div>{order.address}</div>
-                            {order.landmark && <div style={{ color: '#aaa' }}>{order.landmark}</div>}
-                            <div style={{ color: 'var(--secondary-green)', fontWeight: '600' }}>{order.district}, {order.state} – {order.pinCode}</div>
-                          </td>
-                          <td data-label="Order Time">
-                            <div style={{ fontWeight: '500' }}>{new Date(order.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</div>
-                            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                              {new Date(order.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+            const statusConfig = {
+              Pending:    { bg: '#fef3c7', color: '#92400e', border: '#fde68a' },
+              Confirmed:  { bg: '#d1fae5', color: '#065f46', border: '#6ee7b7' },
+              Processing: { bg: '#eff6ff', color: '#1d4ed8', border: '#bfdbfe' },
+              Shipped:    { bg: '#f3e8ff', color: '#6b21a8', border: '#e9d5ff' },
+              Delivered:  { bg: '#dcfce7', color: '#15803d', border: '#86efac' },
+              Cancelled:  { bg: '#fef2f2', color: '#991b1b', border: '#fecaca' },
+              Contacted:  { bg: '#eff6ff', color: '#1d4ed8', border: '#bfdbfe' },
+              Checked:    { bg: '#e0f2fe', color: '#0369a1', border: '#bae6fd' },
+              Completed:  { bg: '#d1fae5', color: '#065f46', border: '#a7f3d0' },
+            };
+
+            return (
+              <div>
+                {/* ── Search + Count Bar ── */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px', gap: '16px', flexWrap: 'wrap' }}>
+                  <div style={{ position: 'relative', flex: '1', minWidth: '260px', maxWidth: '480px' }}>
+                    <Search size={17} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#aaa' }} />
+                    <input
+                      type="text"
+                      placeholder="Search by name, phone, status, PIN, product..."
+                      value={orderSearch}
+                      onChange={(e) => setOrderSearch(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '11px 38px 11px 44px',
+                        fontSize: '0.875rem',
+                        borderRadius: '12px',
+                        border: '1.5px solid #e2e8f0',
+                        outline: 'none',
+                        background: '#fff',
+                        boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+                        transition: 'border-color 0.2s',
+                      }}
+                      onFocus={e => e.target.style.borderColor = 'var(--primary-green)'}
+                      onBlur={e => e.target.style.borderColor = '#e2e8f0'}
+                    />
+                    {orderSearch && (
+                      <button onClick={() => setOrderSearch('')} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'none', color: '#aaa', cursor: 'pointer' }}>
+                        <X size={15} />
+                      </button>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f0f4ee', borderRadius: '10px', padding: '8px 16px' }}>
+                    <ShoppingCart size={15} style={{ color: 'var(--primary-green)' }} />
+                    <span style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--primary-green)' }}>
+                      {filtered.length} <span style={{ fontWeight: '500', color: 'var(--text-muted)' }}>of {orders.length} orders</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* ── Order Cards Grid ── */}
+                {filtered.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '60px 24px', color: 'var(--text-muted)', background: '#f8faf8', borderRadius: '16px', border: '2px dashed #d1d5db' }}>
+                    <ShoppingCart size={40} style={{ marginBottom: '12px', opacity: 0.3 }} />
+                    <p style={{ fontSize: '1rem', fontWeight: '600' }}>No orders found</p>
+                    <p style={{ fontSize: '0.82rem', marginTop: '4px' }}>Try adjusting your search query</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    {filtered.map((order) => {
+                      const sc = statusConfig[order.status] || statusConfig['Pending'];
+                      const initials = (order.name || 'C').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+                      return (
+                        <div
+                          key={order._id}
+                          style={{
+                            background: '#fff',
+                            border: '1.5px solid #eef0ea',
+                            borderRadius: '16px',
+                            padding: '18px 22px',
+                            boxShadow: '0 2px 8px rgba(47,79,30,0.05)',
+                            display: 'grid',
+                            gridTemplateColumns: 'auto 1fr auto',
+                            gap: '16px',
+                            alignItems: 'start',
+                            transition: 'box-shadow 0.2s, transform 0.2s',
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 6px 24px rgba(47,79,30,0.12)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                          onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(47,79,30,0.05)'; e.currentTarget.style.transform = 'none'; }}
+                        >
+                          {/* Avatar */}
+                          <div style={{
+                            width: '46px', height: '46px', borderRadius: '12px',
+                            background: 'linear-gradient(135deg, var(--primary-green), var(--secondary-green))',
+                            color: '#fff', fontWeight: '800', fontSize: '1rem',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            flexShrink: 0,
+                          }}>
+                            {initials}
+                          </div>
+
+                          {/* Main Info */}
+                          <div style={{ minWidth: 0 }}>
+                            {/* Row 1: Name + Status + Time */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '6px' }}>
+                              <span style={{ fontSize: '1rem', fontWeight: '700', color: '#1a2c11' }}>{order.name}</span>
+                              <span style={{
+                                display: 'inline-flex', alignItems: 'center',
+                                padding: '2px 10px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: '700',
+                                background: sc.bg, color: sc.color, border: `1px solid ${sc.border}`,
+                              }}>
+                                {order.status}
+                              </span>
+                              <span style={{ fontSize: '0.75rem', color: '#aaa', marginLeft: 'auto', whiteSpace: 'nowrap' }}>
+                                {new Date(order.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
+                                {' · '}
+                                {new Date(order.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                              </span>
                             </div>
-                          </td>
-                          <td data-label="Status">
-                            <select value={order.status} onChange={(e) => handleStatusChange(order._id, e.target.value)} className="status-select">
+
+                            {/* Row 2: Contact */}
+                            <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>📧 {order.email}</span>
+                              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>📞 {order.phone}{order.alternatePhone ? ` · ${order.alternatePhone}` : ''}</span>
+                            </div>
+
+                            {/* Row 3: Product + Qty + Price */}
+                            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '8px' }}>
+                              <span style={{
+                                background: '#f0f4ee', borderRadius: '8px', padding: '4px 12px',
+                                fontSize: '0.8rem', fontWeight: '600', color: 'var(--primary-green)',
+                              }}>
+                                📦 {order.product?.name || 'Deleted Product'}
+                              </span>
+                              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Qty: <b>{order.quantity}</b></span>
+                              <span style={{ fontSize: '0.92rem', fontWeight: '800', color: 'var(--primary-green)' }}>₹{order.totalPrice}</span>
+                            </div>
+
+                            {/* Row 4: Address */}
+                            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'flex-start', gap: '5px', flexWrap: 'wrap' }}>
+                              <span>📍</span>
+                              <span>
+                                {order.address}{order.landmark ? `, ${order.landmark}` : ''}
+                                {' · '}
+                                <span style={{ color: 'var(--secondary-green)', fontWeight: '600' }}>{order.district}, {order.state} – {order.pinCode}</span>
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Right: Status Selector + Actions */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end', flexShrink: 0 }}>
+                            <select
+                              value={order.status}
+                              onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                              style={{
+                                padding: '7px 12px',
+                                fontSize: '0.8rem',
+                                fontWeight: '700',
+                                borderRadius: '8px',
+                                border: `1.5px solid ${sc.border}`,
+                                background: sc.bg,
+                                color: sc.color,
+                                cursor: 'pointer',
+                                outline: 'none',
+                                minWidth: '130px',
+                              }}
+                            >
                               <option value="Pending">Pending</option>
                               <option value="Confirmed">Confirmed</option>
                               <option value="Processing">Processing</option>
@@ -877,44 +947,40 @@ const AdminDashboard = () => {
                                 <option value={order.status}>{order.status}</option>
                               )}
                             </select>
-                          </td>
-                          <td data-label="Actions" style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'flex-end' }}>
-                            <button
-                              onClick={() => openMsgModalForOrder(order, 'Custom')}
-                              className="action-btn"
-                              style={{ background: '#e0e7ff', color: '#3730a3', border: '1px solid #c7d2fe' }}
-                              title="Send WhatsApp / SMS message to customer"
-                            >
-                              <MessageSquare size={15} />
-                            </button>
-                            <button onClick={() => handleOrderDelete(order._id)} className="action-btn action-btn-danger" aria-label="Delete order" title="Delete order">
-                              <Trash2 size={15} />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    {orders.filter((o) => {
-                      if (!orderSearch.trim()) return true;
-                      const q = orderSearch.toLowerCase().trim();
-                      return (
-                        (o.name && o.name.toLowerCase().includes(q)) ||
-                        (o.phone && o.phone.toLowerCase().includes(q)) ||
-                        (o.email && o.email.toLowerCase().includes(q)) ||
-                        (o.address && o.address.toLowerCase().includes(q)) ||
-                        (o.district && o.district.toLowerCase().includes(q)) ||
-                        (o.state && o.state.toLowerCase().includes(q)) ||
-                        (o.pinCode && o.pinCode.toLowerCase().includes(q)) ||
-                        (o.status && o.status.toLowerCase().includes(q)) ||
-                        (o.product?.name && o.product.name.toLowerCase().includes(q))
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <button
+                                onClick={() => openMsgModalForOrder(order, 'Custom')}
+                                title="Notify customer via WhatsApp / SMS"
+                                style={{
+                                  padding: '7px 10px', borderRadius: '8px', border: '1.5px solid #c7d2fe',
+                                  background: '#e0e7ff', color: '#3730a3', cursor: 'pointer',
+                                  display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: '600',
+                                }}
+                              >
+                                <MessageSquare size={13} /> Notify
+                              </button>
+                              <button
+                                onClick={() => handleOrderDelete(order._id)}
+                                title="Delete order"
+                                style={{
+                                  padding: '7px 10px', borderRadius: '8px', border: '1.5px solid #fca5a5',
+                                  background: '#fee2e2', color: '#b91c1c', cursor: 'pointer',
+                                  display: 'flex', alignItems: 'center',
+                                }}
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                       );
-                    }).length === 0 && (
-                      <tr><td colSpan="9" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No matching orders found.</td></tr>
-                    )}
-                  </tbody>
-                </table>
+                    })}
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            );
+          })()}
+
 
           {/* ── Products Tab ── */}
           {activeTab === 'products' && (
