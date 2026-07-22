@@ -85,7 +85,7 @@ const Home = () => {
   const FALLBACK_PRODUCT = {
     _id: 'agadi-choorna-default',
     name: 'Agadi Choorna (Weight Gain Formula)',
-    price: 499,
+    price: 1550,
     description: 'Pure 100% Ayurvedic herbal blend for natural weight gain, appetite stimulation, and gut health.',
     images: ['/images/product-pouch.webp'],
     benefits: [
