@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ShoppingBag, Users, ShoppingCart,
   Plus, Edit2, Trash2, Search, X, LogOut, RefreshCw,
-  TrendingUp, Package, UserCheck, Menu, Download
+  TrendingUp, Package, UserCheck, Menu, Download,
+  MessageSquare, Send, MessageCircle
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -59,6 +60,7 @@ const AdminDashboard = () => {
   const [products, setProducts] = useState([]);
   const [users, setUsers] = useState([]);
   const [userSearch, setUserSearch] = useState('');
+  const [orderSearch, setOrderSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
@@ -219,14 +221,65 @@ const AdminDashboard = () => {
     setExportModalOpen(false);
   };
 
+  const [msgModalOpen, setMsgModalOpen] = useState(false);
+  const [msgOrder, setMsgOrder] = useState(null);
+  const [msgText, setMsgText] = useState('');
+
+  const formatPhoneForUrl = (phone) => {
+    if (!phone) return '';
+    let cleaned = phone.replace(/\D/g, '');
+    if (cleaned.length === 10) cleaned = '91' + cleaned;
+    return cleaned;
+  };
+
+  const getTemplateMsg = (order, type) => {
+    if (!order) return '';
+    const name = order.name || 'Customer';
+    const product = order.product?.name || 'Agadi Choorna';
+    switch (type) {
+      case 'Confirmed':
+        return `Dear ${name}, your order for ${product} (₹${order.totalPrice}) has been CONFIRMED! We are preparing your package. Thank you for choosing Agadi Choorna!`;
+      case 'Processing':
+        return `Dear ${name}, your order for ${product} is currently being PROCESSED and packed. Thank you for your patience!`;
+      case 'Shipped':
+        return `Dear ${name}, your order for ${product} has been SHIPPED! It is on its way to ${order.district || 'your address'}. Thank you for your trust!`;
+      case 'Delivered':
+        return `Dear ${name}, your order for ${product} has been DELIVERED successfully! Thank you for trusting Agadi Choorna.`;
+      case 'Cancelled':
+        return `Dear ${name}, your order for ${product} has been CANCELLED. Please contact support at 9072888825 for details.`;
+      case 'Delay':
+        return `Dear ${name}, regarding your order for ${product}: there is a slight delay in dispatch due to high demand. We are expediting it and will share tracking updates soon. Thank you for your patience!`;
+      default:
+        return `Dear ${name}, regarding your order for ${product}: status is updated to ${type}. Thank you for choosing Agadi Choorna!`;
+    }
+  };
+
+  const openMsgModalForOrder = (order, defaultType = 'Custom') => {
+    setMsgOrder(order);
+    if (defaultType && defaultType !== 'Custom') {
+      setMsgText(getTemplateMsg(order, defaultType));
+    } else {
+      setMsgText(`Dear ${order.name || 'Customer'}, regarding your order for ${order.product?.name || 'Agadi Choorna'}: `);
+    }
+    setMsgModalOpen(true);
+  };
+
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       const { data } = await adminAPI.put(`/orders/${orderId}/status`, { status: newStatus });
       setOrders(orders.map(o => o._id === orderId ? data : o));
-      setSuccess('Order status updated!');
+      setSuccess(`Order status updated to ${newStatus}!`);
       setTimeout(() => setSuccess(''), 3000);
       const statsRes = await adminAPI.get('/stats');
       setStats(statsRes.data);
+
+      // Automatically open notification modal pre-filled with status update message
+      const updatedOrder = data || orders.find(o => o._id === orderId);
+      if (updatedOrder) {
+        setMsgOrder(updatedOrder);
+        setMsgText(getTemplateMsg(updatedOrder, newStatus));
+        setMsgModalOpen(true);
+      }
     } catch (err) {
       setError('Failed to update status.');
       setTimeout(() => setError(''), 3000);
@@ -709,69 +762,157 @@ const AdminDashboard = () => {
 
           {/* ── Orders Tab ── */}
           {activeTab === 'orders' && (
-            <div className="table-container">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Customer</th>
-                    <th>Contact</th>
-                    <th>Product</th>
-                    <th>Qty</th>
-                    <th>Total</th>
-                    <th>Address</th>
-                    <th>Order Time</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map(order => (
-                    <tr key={order._id}>
-                      <td data-label="Customer" style={{ fontWeight: '600' }}>{order.name}</td>
-                      <td data-label="Contact">
-                        <div style={{ fontSize: '0.875rem' }}>{order.email}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{order.phone}</div>
-                        {order.alternatePhone && <div style={{ fontSize: '0.75rem', color: '#aaa' }}>Alt: {order.alternatePhone}</div>}
-                      </td>
-                      <td data-label="Product">{order.product?.name || 'Deleted Product'}</td>
-                      <td data-label="Qty">{order.quantity}</td>
-                      <td data-label="Total" style={{ fontWeight: '700', color: 'var(--primary-green)' }}>₹{order.totalPrice}</td>
-                      <td data-label="Address" style={{ fontSize: '0.82rem', maxWidth: '200px' }}>
-                        <div>{order.address}</div>
-                        {order.landmark && <div style={{ color: '#aaa' }}>{order.landmark}</div>}
-                        <div style={{ color: 'var(--secondary-green)', fontWeight: '600' }}>{order.district}, {order.state} – {order.pinCode}</div>
-                      </td>
-                      <td data-label="Order Time">
-                        <div style={{ fontWeight: '500' }}>{new Date(order.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</div>
-                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                          {new Date(order.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
-                        </div>
-                      </td>
-                      <td data-label="Status">
-                        <select value={order.status} onChange={e => handleStatusChange(order._id, e.target.value)} className="status-select">
-                          <option value="Pending">Pending</option>
-                          <option value="Confirmed">Confirmed</option>
-                          <option value="Processing">Processing</option>
-                          <option value="Shipped">Shipped</option>
-                          <option value="Delivered">Delivered</option>
-                          <option value="Cancelled">Cancelled</option>
-                          {['Contacted', 'Checked', 'Completed'].includes(order.status) && (
-                            <option value={order.status}>{order.status}</option>
-                          )}
-                        </select>
-                      </td>
-                      <td data-label="Actions">
-                        <button onClick={() => handleOrderDelete(order._id)} className="action-btn action-btn-danger" aria-label="Delete order">
-                          <Trash2 size={15} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {orders.length === 0 && (
-                    <tr><td colSpan="9" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No orders found.</td></tr>
+            <div>
+              {/* Search Bar for Orders */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '16px', flexWrap: 'wrap' }}>
+                <div style={{ position: 'relative', flex: '1', minWidth: '260px', maxWidth: '420px' }}>
+                  <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                  <input
+                    type="text"
+                    placeholder="Search orders by customer, phone, status, product, PIN..."
+                    value={orderSearch}
+                    onChange={(e) => setOrderSearch(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 38px 10px 42px',
+                      fontSize: '0.875rem',
+                      borderRadius: '10px',
+                      border: '1px solid var(--border-color)',
+                      outline: 'none',
+                      background: '#fff',
+                      boxShadow: 'var(--shadow-sm)',
+                    }}
+                  />
+                  {orderSearch && (
+                    <button
+                      onClick={() => setOrderSearch('')}
+                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                    >
+                      <X size={16} />
+                    </button>
                   )}
-                </tbody>
-              </table>
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+                  Showing {orders.filter((o) => {
+                    if (!orderSearch.trim()) return true;
+                    const q = orderSearch.toLowerCase().trim();
+                    return (
+                      (o.name && o.name.toLowerCase().includes(q)) ||
+                      (o.phone && o.phone.toLowerCase().includes(q)) ||
+                      (o.email && o.email.toLowerCase().includes(q)) ||
+                      (o.address && o.address.toLowerCase().includes(q)) ||
+                      (o.district && o.district.toLowerCase().includes(q)) ||
+                      (o.state && o.state.toLowerCase().includes(q)) ||
+                      (o.pinCode && o.pinCode.toLowerCase().includes(q)) ||
+                      (o.status && o.status.toLowerCase().includes(q)) ||
+                      (o.product?.name && o.product.name.toLowerCase().includes(q))
+                    );
+                  }).length} of {orders.length} orders
+                </div>
+              </div>
+
+              <div className="table-container">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Customer</th>
+                      <th>Contact</th>
+                      <th>Product</th>
+                      <th>Qty</th>
+                      <th>Total</th>
+                      <th>Address</th>
+                      <th>Order Time</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders
+                      .filter((o) => {
+                        if (!orderSearch.trim()) return true;
+                        const q = orderSearch.toLowerCase().trim();
+                        return (
+                          (o.name && o.name.toLowerCase().includes(q)) ||
+                          (o.phone && o.phone.toLowerCase().includes(q)) ||
+                          (o.email && o.email.toLowerCase().includes(q)) ||
+                          (o.address && o.address.toLowerCase().includes(q)) ||
+                          (o.district && o.district.toLowerCase().includes(q)) ||
+                          (o.state && o.state.toLowerCase().includes(q)) ||
+                          (o.pinCode && o.pinCode.toLowerCase().includes(q)) ||
+                          (o.status && o.status.toLowerCase().includes(q)) ||
+                          (o.product?.name && o.product.name.toLowerCase().includes(q))
+                        );
+                      })
+                      .map((order) => (
+                        <tr key={order._id}>
+                          <td data-label="Customer" style={{ fontWeight: '600' }}>{order.name}</td>
+                          <td data-label="Contact">
+                            <div style={{ fontSize: '0.875rem' }}>{order.email}</div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{order.phone}</div>
+                            {order.alternatePhone && <div style={{ fontSize: '0.75rem', color: '#aaa' }}>Alt: {order.alternatePhone}</div>}
+                          </td>
+                          <td data-label="Product">{order.product?.name || 'Deleted Product'}</td>
+                          <td data-label="Qty">{order.quantity}</td>
+                          <td data-label="Total" style={{ fontWeight: '700', color: 'var(--primary-green)' }}>₹{order.totalPrice}</td>
+                          <td data-label="Address" style={{ fontSize: '0.82rem', maxWidth: '200px' }}>
+                            <div>{order.address}</div>
+                            {order.landmark && <div style={{ color: '#aaa' }}>{order.landmark}</div>}
+                            <div style={{ color: 'var(--secondary-green)', fontWeight: '600' }}>{order.district}, {order.state} – {order.pinCode}</div>
+                          </td>
+                          <td data-label="Order Time">
+                            <div style={{ fontWeight: '500' }}>{new Date(order.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</div>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                              {new Date(order.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          </td>
+                          <td data-label="Status">
+                            <select value={order.status} onChange={(e) => handleStatusChange(order._id, e.target.value)} className="status-select">
+                              <option value="Pending">Pending</option>
+                              <option value="Confirmed">Confirmed</option>
+                              <option value="Processing">Processing</option>
+                              <option value="Shipped">Shipped</option>
+                              <option value="Delivered">Delivered</option>
+                              <option value="Cancelled">Cancelled</option>
+                              {['Contacted', 'Checked', 'Completed'].includes(order.status) && (
+                                <option value={order.status}>{order.status}</option>
+                              )}
+                            </select>
+                          </td>
+                          <td data-label="Actions" style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'flex-end' }}>
+                            <button
+                              onClick={() => openMsgModalForOrder(order, 'Custom')}
+                              className="action-btn"
+                              style={{ background: '#e0e7ff', color: '#3730a3', border: '1px solid #c7d2fe' }}
+                              title="Send WhatsApp / SMS message to customer"
+                            >
+                              <MessageSquare size={15} />
+                            </button>
+                            <button onClick={() => handleOrderDelete(order._id)} className="action-btn action-btn-danger" aria-label="Delete order" title="Delete order">
+                              <Trash2 size={15} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    {orders.filter((o) => {
+                      if (!orderSearch.trim()) return true;
+                      const q = orderSearch.toLowerCase().trim();
+                      return (
+                        (o.name && o.name.toLowerCase().includes(q)) ||
+                        (o.phone && o.phone.toLowerCase().includes(q)) ||
+                        (o.email && o.email.toLowerCase().includes(q)) ||
+                        (o.address && o.address.toLowerCase().includes(q)) ||
+                        (o.district && o.district.toLowerCase().includes(q)) ||
+                        (o.state && o.state.toLowerCase().includes(q)) ||
+                        (o.pinCode && o.pinCode.toLowerCase().includes(q)) ||
+                        (o.status && o.status.toLowerCase().includes(q)) ||
+                        (o.product?.name && o.product.name.toLowerCase().includes(q))
+                      );
+                    }).length === 0 && (
+                      <tr><td colSpan="9" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No matching orders found.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
@@ -1092,6 +1233,137 @@ const AdminDashboard = () => {
                     Generate PDF
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+      {/* ── Customer Notification Modal (WhatsApp / SMS) ── */}
+      {msgModalOpen && msgOrder && (
+        <div className="modal-overlay">
+          <div className="modal-container" style={{ maxWidth: '520px' }}>
+            <button onClick={() => setMsgModalOpen(false)} className="modal-close" aria-label="Close modal">
+              <X size={22} />
+            </button>
+            <div className="modal-body" style={{ padding: '28px' }}>
+              <div className="modal-header" style={{ marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '1.25rem', color: 'var(--primary-green)', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <MessageSquare size={20} /> Notify Customer
+                </h3>
+                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  Send order status update or custom message to <strong>{msgOrder.name}</strong> ({msgOrder.phone}).
+                </p>
+              </div>
+
+              {/* Quick Template Buttons */}
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ fontSize: '0.78rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '8px' }}>
+                  Quick Message Templates:
+                </label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {[
+                    { label: 'Confirmed', type: 'Confirmed', bg: '#d1fae5', color: '#065f46' },
+                    { label: 'Shipped', type: 'Shipped', bg: '#f3e8ff', color: '#6b21a8' },
+                    { label: 'Delivered', type: 'Delivered', bg: '#dcfce7', color: '#15803d' },
+                    { label: 'Delay Notice', type: 'Delay', bg: '#fef3c7', color: '#92400e' },
+                  ].map(t => (
+                    <button
+                      key={t.label}
+                      type="button"
+                      onClick={() => setMsgText(getTemplateMsg(msgOrder, t.type))}
+                      style={{
+                        padding: '5px 12px',
+                        borderRadius: '20px',
+                        fontSize: '0.75rem',
+                        fontWeight: '600',
+                        border: 'none',
+                        background: t.bg,
+                        color: t.color,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Editable Message Text Area */}
+              <div className="form-group" style={{ marginBottom: '20px' }}>
+                <label style={{ fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-color)', marginBottom: '6px', display: 'block' }}>
+                  Message Text (Customizable):
+                </label>
+                <textarea
+                  rows={4}
+                  value={msgText}
+                  onChange={(e) => setMsgText(e.target.value)}
+                  placeholder="Type your message here..."
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color)',
+                    fontSize: '0.875rem',
+                    fontFamily: 'inherit',
+                    resize: 'vertical',
+                    lineHeight: '1.5',
+                  }}
+                />
+              </div>
+
+              {msgOrder.alternatePhone && (
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '16px', background: '#f8faf8', padding: '8px 12px', borderRadius: '6px' }}>
+                  Primary Phone: <strong>{msgOrder.phone}</strong> | Alt: <strong>{msgOrder.alternatePhone}</strong>
+                </div>
+              )}
+
+              {/* Send Buttons */}
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <a
+                  href={`https://wa.me/${formatPhoneForUrl(msgOrder.phone)}?text=${encodeURIComponent(msgText)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn"
+                  style={{
+                    flex: 1,
+                    minWidth: '160px',
+                    padding: '11px',
+                    background: '#25D366',
+                    color: '#fff',
+                    fontWeight: '600',
+                    fontSize: '0.875rem',
+                    borderRadius: '8px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justify.content: 'center',
+                    gap: '8px',
+                    textDecoration: 'none',
+                  }}
+                >
+                  <MessageCircle size={18} />
+                  Send via WhatsApp
+                </a>
+
+                <a
+                  href={`sms:+${formatPhoneForUrl(msgOrder.phone)}?body=${encodeURIComponent(msgText)}`}
+                  className="btn"
+                  style={{
+                    flex: 1,
+                    minWidth: '160px',
+                    padding: '11px',
+                    background: '#4f46e5',
+                    color: '#fff',
+                    fontWeight: '600',
+                    fontSize: '0.875rem',
+                    borderRadius: '8px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    textDecoration: 'none',
+                  }}
+                >
+                  <Send size={16} />
+                  Send Normal SMS
+                </a>
               </div>
             </div>
           </div>
