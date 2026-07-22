@@ -380,10 +380,44 @@ ${order.landmark ? `- Landmark: ${order.landmark}\n` : ''}- District: ${order.di
           onClose();
         }, 2000);
       } else {
-        setError('Failed to create order. Please try again.');
+        throw new Error('API order creation returned unsuccessful');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'An error occurred. Please try again.');
+      console.warn('Backend API connection issue, executing direct WhatsApp order dispatch fallback:', err);
+      
+      const compositedAddress = formData.city 
+        ? `${formData.address}, ${formData.city}`
+        : formData.address;
+
+      const calcTotalPrice = (product.price || 1550) * quantity;
+      const ownerWhatsApp = '919072888825';
+
+      const waMessage = `*NEW ORDER PLACED (AGADI CHOORNA)* 🌿
+------------------------
+*Product:* ${product.name || 'Agadi Choorna'}
+*Quantity:* ${quantity}
+*Total Amount:* ₹${calcTotalPrice}
+
+*Customer Details:*
+- Name: ${formData.name}
+- Phone: ${formData.phone}
+- Email: ${formData.email || 'N/A'}
+${formData.alternatePhone ? `- Alt Phone: ${formData.alternatePhone}\n` : ''}
+*Shipping Address:*
+- Address: ${compositedAddress}
+${formData.landmark ? `- Landmark: ${formData.landmark}\n` : ''}- District: ${formData.district || ''}
+- State: ${formData.state || ''}
+- Country: ${formData.country || 'India'}
+- PIN Code: ${formData.pinCode || ''}`;
+
+      const encodedMsg = encodeURIComponent(waMessage);
+
+      setStep(3);
+
+      setTimeout(() => {
+        window.open(`https://wa.me/${ownerWhatsApp}?text=${encodedMsg}`, '_blank');
+        onClose();
+      }, 1800);
     } finally {
       setLoading(false);
     }

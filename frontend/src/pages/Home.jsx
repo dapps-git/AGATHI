@@ -22,12 +22,26 @@ const REVIEWS = [
   },
 ];
 
+const DEFAULT_AGADI_PRODUCT = {
+  _id: 'agadi-choorna-default',
+  name: 'Agadi Choorna (Weight Gain Formula)',
+  price: 1550,
+  description: 'Pure 100% Ayurvedic herbal blend for natural weight gain, appetite stimulation, and gut health.',
+  images: ['/images/product-pouch.webp'],
+  benefits: [
+    'Naturally Stimulates Appetite & Digestion',
+    'Promotes Healthy Weight & Muscle Gain',
+    '100% Herbal & Chemical Free Formula',
+    'Improves Intestinal Nutrient Absorption'
+  ]
+};
+
 const Home = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState([DEFAULT_AGADI_PRODUCT]);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   // Hero image slider state
   const [slideIndex, setSlideIndex] = useState(0);
@@ -82,35 +96,16 @@ const Home = () => {
     }
   }, [location]);
 
-  const FALLBACK_PRODUCT = {
-    _id: 'agadi-choorna-default',
-    name: 'Agadi Choorna (Weight Gain Formula)',
-    price: 1550,
-    description: 'Pure 100% Ayurvedic herbal blend for natural weight gain, appetite stimulation, and gut health.',
-    images: ['/images/product-pouch.webp'],
-    benefits: [
-      'Naturally Stimulates Appetite & Digestion',
-      'Promotes Healthy Weight & Muscle Gain',
-      '100% Herbal & Chemical Free Formula',
-      'Improves Intestinal Nutrient Absorption'
-    ]
-  };
-
-  // Fetch products
+  // Fetch products (updates dynamically if API available, else keeps static DEFAULT_AGADI_PRODUCT)
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const { data } = await API.get('/products');
         if (data && Array.isArray(data) && data.length > 0) {
           setProducts(data);
-        } else {
-          setProducts([FALLBACK_PRODUCT]);
         }
       } catch (error) {
-        console.warn('Backend API temporary issue, using default Agadi Choorna product fallback:', error);
-        setProducts([FALLBACK_PRODUCT]);
-      } finally {
-        setLoading(false);
+        // Keeps static DEFAULT_AGADI_PRODUCT seamlessly
       }
     };
     fetchProducts();
