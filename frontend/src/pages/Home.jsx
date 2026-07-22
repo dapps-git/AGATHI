@@ -82,15 +82,33 @@ const Home = () => {
     }
   }, [location]);
 
+  const FALLBACK_PRODUCT = {
+    _id: 'agadi-choorna-default',
+    name: 'Agadi Choorna (Weight Gain Formula)',
+    price: 499,
+    description: 'Pure 100% Ayurvedic herbal blend for natural weight gain, appetite stimulation, and gut health.',
+    images: ['/images/product-pouch.webp'],
+    benefits: [
+      'Naturally Stimulates Appetite & Digestion',
+      'Promotes Healthy Weight & Muscle Gain',
+      '100% Herbal & Chemical Free Formula',
+      'Improves Intestinal Nutrient Absorption'
+    ]
+  };
+
   // Fetch products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const { data } = await API.get('/products');
-        setProducts(data || []);
+        if (data && Array.isArray(data) && data.length > 0) {
+          setProducts(data);
+        } else {
+          setProducts([FALLBACK_PRODUCT]);
+        }
       } catch (error) {
-        console.error('Error fetching products:', error);
-        setProducts([]);
+        console.warn('Backend API temporary issue, using default Agadi Choorna product fallback:', error);
+        setProducts([FALLBACK_PRODUCT]);
       } finally {
         setLoading(false);
       }
@@ -327,8 +345,22 @@ const Home = () => {
           </div>
 
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '40px', fontSize: '1.2rem', color: 'var(--primary-green)' }}>
-              Loading products...
+            <div className="products-grid products-grid--single">
+              <div className="product-skeleton-card">
+                <div className="skeleton-box" style={{ width: '100%', height: '220px', borderRadius: '14px' }} />
+                <div className="skeleton-box" style={{ width: '65%', height: '24px', borderRadius: '6px', marginTop: '6px' }} />
+                <div className="skeleton-box" style={{ width: '95%', height: '14px', borderRadius: '4px' }} />
+                <div className="skeleton-box" style={{ width: '80%', height: '14px', borderRadius: '4px' }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
+                  <div className="skeleton-box" style={{ width: '55%', height: '14px', borderRadius: '4px' }} />
+                  <div className="skeleton-box" style={{ width: '60%', height: '14px', borderRadius: '4px' }} />
+                  <div className="skeleton-box" style={{ width: '50%', height: '14px', borderRadius: '4px' }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
+                  <div className="skeleton-box" style={{ width: '85px', height: '30px', borderRadius: '6px' }} />
+                  <div className="skeleton-box" style={{ width: '125px', height: '40px', borderRadius: '25px' }} />
+                </div>
+              </div>
             </div>
           ) : (
             <div className={`products-grid${products.length === 1 ? ' products-grid--single' : ''}`}>

@@ -42,6 +42,34 @@ body {
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
 }
+
+/* ===== Skeleton Loader ===== */
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-box {
+  background: linear-gradient(90deg, #eef2eb 25%, #f9fcf7 37%, #eef2eb 63%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s infinite linear;
+  border-radius: var(--radius-sm);
+}
+
+.product-skeleton-card {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 20px rgba(47,79,30,0.06);
+  overflow: hidden;
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font);
   font-weight: 600;
