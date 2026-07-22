@@ -124,14 +124,7 @@ const Home = () => {
   }, [user, products]);
 
   const handleBuyNow = (product) => {
-    if (!user) {
-      localStorage.setItem('selectedProductId', product._id);
-      navigate('/login');
-    } else if (user.isAdmin) {
-      alert('Admin accounts cannot place orders. Please log out and sign in with a customer account.');
-    } else {
-      setSelectedProduct(product);
-    }
+    setSelectedProduct(product);
   };
 
   const handleContactSubmit = (e) => {
