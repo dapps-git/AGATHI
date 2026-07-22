@@ -1236,6 +1236,9 @@ const AdminDashboard = () => {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
       {/* ── Customer Notification Modal (WhatsApp / SMS) ── */}
       {msgModalOpen && msgOrder && (
         <div className="modal-overlay">
