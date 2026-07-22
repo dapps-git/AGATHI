@@ -196,20 +196,20 @@ input::placeholder, textarea::placeholder { color: #aab2a8; }
 .nav-link {
   font-size: 0.875rem;
   font-weight: 500;
-  color: rgba(255,255,255,0.82);
+  color: var(--primary-green);
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
   transition: color 0.2s;
 }
-.nav-link:hover { color: #fff; }
+.nav-link:hover { color: #1a3010; }
 .hamburger {
   display: none;
   background: none;
   border: none;
   cursor: pointer;
-  color: #fff;
+  color: var(--primary-green);
   padding: 6px;
   border-radius: 8px;
   align-items: center;
@@ -217,16 +217,15 @@ input::placeholder, textarea::placeholder { color: #aab2a8; }
   transition: var(--transition);
   flex-shrink: 0;
 }
-.hamburger:hover { background: rgba(255,255,255,0.12); }
+.hamburger:hover { background: rgba(47,79,30,0.08); }
 
 /* ===== Hero ===== */
 .hero {
   position: relative;
-  overflow: hidden;
   background: #f0f3ee;
   margin-top: 68px;
-  height: calc(100vh - 68px);
-  height: calc(100svh - 68px);
+  height: calc(var(--vh, 1vh) * 100 - 68px);
+  overflow: hidden;
 }
 
 .hero-banner-wrap {
@@ -966,8 +965,7 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
   .hero {
     position: relative !important;
     margin-top: 60px !important;
-    height: calc(100vh - 60px) !important;
-    height: calc(100svh - 60px) !important;
+    height: calc(var(--vh, 1vh) * 100 - 60px) !important;
     padding: 0 !important;
     overflow: hidden !important;
     touch-action: pan-y;

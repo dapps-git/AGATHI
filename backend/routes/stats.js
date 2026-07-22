@@ -22,6 +22,7 @@ router.get('/', protect, admin, async (req, res) => {
       const totalRevenue = activeOrders.reduce((sum, o) => sum + (o.totalPrice || 0), 0);
 
       const pendingOrders = await Order.countDocuments({ status: 'Pending' });
+      const confirmedOrders = await Order.countDocuments({ status: 'Confirmed' });
       const processingOrders = await Order.countDocuments({ status: 'Processing' });
       const shippedOrders = await Order.countDocuments({ status: 'Shipped' });
       const deliveredOrders = await Order.countDocuments({ status: 'Delivered' });
@@ -36,6 +37,7 @@ router.get('/', protect, admin, async (req, res) => {
         totalRevenue,
         statusBreakdown: {
           pending: pendingOrders,
+          confirmed: confirmedOrders,
           processing: processingOrders,
           shipped: shippedOrders,
           delivered: deliveredOrders,
@@ -54,6 +56,7 @@ router.get('/', protect, admin, async (req, res) => {
       const totalRevenue = activeOrders.reduce((sum, o) => sum + (o.totalPrice || 0), 0);
 
       const pending = db.orders.filter(o => o.status === 'Pending').length;
+      const confirmed = db.orders.filter(o => o.status === 'Confirmed').length;
       const processing = db.orders.filter(o => o.status === 'Processing').length;
       const shipped = db.orders.filter(o => o.status === 'Shipped').length;
       const delivered = db.orders.filter(o => o.status === 'Delivered').length;
@@ -66,7 +69,7 @@ router.get('/', protect, admin, async (req, res) => {
         totalProducts,
         totalOrders,
         totalRevenue,
-        statusBreakdown: { pending, processing, shipped, delivered, cancelled, contacted, completed },
+        statusBreakdown: { pending, confirmed, processing, shipped, delivered, cancelled, contacted, completed },
       });
     }
   } catch (error) {

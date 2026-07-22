@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { AdminAuthProvider, AdminAuthContext } from './context/AdminAuthContext';
@@ -41,6 +41,16 @@ const AdminRoute = ({ children }) => {
 function PublicAppContent() {
   const location = useLocation();
   const hideLayout = ['/login', '/signup', '/forgot-password'].includes(location.pathname);
+
+  // Set --vh CSS variable to real inner height (fixes iOS hero zoom on scroll)
+  useEffect(() => {
+    const setVh = () => {
+      document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+    };
+    setVh();
+    window.addEventListener('resize', setVh);
+    return () => window.removeEventListener('resize', setVh);
+  }, []);
 
   return (
     <div className="app-layout" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>

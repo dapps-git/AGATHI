@@ -38,7 +38,11 @@ const MyOrders = () => {
     let color = '#92400e';
     let icon = <Clock size={14} />;
 
-    if (s === 'processing' || s === 'contacted' || s === 'checked') {
+    if (s === 'confirmed') {
+      bg = '#d1fae5';
+      color = '#065f46';
+      icon = <CheckCircle size={14} />;
+    } else if (s === 'processing' || s === 'contacted' || s === 'checked') {
       bg = '#eff6ff';
       color = '#1d4ed8';
       icon = <Package size={14} />;

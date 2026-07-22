@@ -633,6 +633,7 @@ const AdminDashboard = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '16px' }}>
                   {[
                     { label: 'Pending', count: stats.statusBreakdown?.pending || 0, color: '#92400e', bg: '#fef3c7', border: '#fde68a' },
+                    { label: 'Confirmed', count: stats.statusBreakdown?.confirmed || 0, color: '#065f46', bg: '#d1fae5', border: '#6ee7b7' },
                     { label: 'Contacted', count: stats.statusBreakdown?.contacted || 0, color: '#1d4ed8', bg: '#eff6ff', border: '#bfdbfe' },
                     { label: 'Checked', count: stats.statusBreakdown?.checked || 0, color: '#0369a1', bg: '#e0f2fe', border: '#bae6fd' },
                     { label: 'Shipped', count: stats.statusBreakdown?.shipped || 0, color: '#6b21a8', bg: '#f3e8ff', border: '#e9d5ff' },
@@ -749,6 +750,7 @@ const AdminDashboard = () => {
                       <td data-label="Status">
                         <select value={order.status} onChange={e => handleStatusChange(order._id, e.target.value)} className="status-select">
                           <option value="Pending">Pending</option>
+                          <option value="Confirmed">Confirmed</option>
                           <option value="Processing">Processing</option>
                           <option value="Shipped">Shipped</option>
                           <option value="Delivered">Delivered</option>
