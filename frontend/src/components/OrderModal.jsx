@@ -390,7 +390,7 @@ ${order.landmark ? `- Landmark: ${order.landmark}\n` : ''}- District: ${order.di
         : formData.address;
 
       const calcTotalPrice = (product.price || 1550) * quantity;
-      const ownerWhatsApp = '919072888825';
+      const ownerWhatsApp = '918139800282';
 
       const waMessage = `*NEW ORDER PLACED (AGADI CHOORNA)* 🌿
 ------------------------

@@ -422,7 +422,7 @@ const Home = () => {
 
           <div className="contact-grid">
             <div className="contact-info">
-              <a href="https://wa.me/919072888825?text=Hello,%20I'd%20like%20to%20place%20an%20order%20for%20Agadi%20Choornam." target="_blank" rel="noopener noreferrer" className="contact-card">
+              <a href="https://wa.me/918139800282?text=Hello,%20I'd%20like%20to%20place%20an%20order%20for%20Agadi%20Choornam." target="_blank" rel="noopener noreferrer" className="contact-card">
                 <div className="contact-icon-wrapper">
                   <MessageSquare size={24} />
                 </div>
