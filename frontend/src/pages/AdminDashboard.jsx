@@ -1333,7 +1333,7 @@ const AdminDashboard = () => {
                     borderRadius: '8px',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    justify.content: 'center',
+                    justifyContent: 'center',
                     gap: '8px',
                     textDecoration: 'none',
                   }}
