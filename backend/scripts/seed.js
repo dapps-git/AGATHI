@@ -20,23 +20,32 @@ const seedData = async () => {
     console.log('Cleared existing database data...');
 
     // Create Admin User
-    const adminSalt = await bcrypt.genSalt(10);
-    const hashedAdminPassword = await bcrypt.hash('Admin@123', adminSalt);
-
     const admin = await User.create({
       name: 'Agadi Administrator',
       email: 'admin@agadi.com',
       phone: '9072888825',
-      password: 'Admin@123', // Will be hashed automatically by userSchema.pre('save') hook
+      password: 'Admin@123',
       isAdmin: true,
     });
     console.log('Admin user seeded: admin@agadi.com / Admin@123');
 
-
-
+    // Create Agadi Choorna Product
+    const product = await Product.create({
+      name: 'Agadi Choorna (Weight Gain Formula)',
+      description: 'Pure 100% Ayurvedic herbal blend for natural weight gain, appetite stimulation, and gut health.',
+      price: 1550,
+      images: ['/images/product-pouch.webp'],
+      benefits: [
+        'Naturally Stimulates Appetite & Digestion',
+        'Promotes Healthy Weight & Muscle Gain',
+        '100% Herbal & Chemical Free Formula',
+        'Improves Intestinal Nutrient Absorption'
+      ],
+    });
+    console.log(`Product seeded: ${product.name} (₹${product.price})`);
 
     console.log('Data Seeding Completed successfully!');
-    process.exit();
+    process.exit(0);
   } catch (error) {
     console.error(`Error during seeding: ${error.message}`);
     process.exit(1);
