@@ -203,32 +203,34 @@ input::placeholder, textarea::placeholder { color: #aab2a8; }
   box-shadow: 0 2px 12px rgba(23,38,16,0.08);
 }
 .logo-img {
-  max-height: 90px;
+  max-height: 48px;
   width: auto;
   object-fit: contain;
   background: none;
   border-radius: 0;
   transition: max-height 0.3s ease;
 }
-.nav-container { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.nav-container { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1280px; margin: 0 auto; }
 .logo-link {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   font-size: 1.25rem;
   font-weight: 700;
   color: #fff;
+  flex-shrink: 0;
 }
 .logo-icon { color: var(--accent-green); }
-.nav-menu { display: flex; list-style: none; gap: 28px; align-items: center; }
+.nav-menu { display: flex; list-style: none; gap: 16px; align-items: center; }
 .nav-link {
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 0.85rem;
+  font-weight: 600;
   color: var(--primary-green);
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
+  white-space: nowrap;
   transition: color 0.2s;
 }
 .nav-link:hover { color: #1a3010; }
@@ -1834,20 +1836,22 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
    ENQUIRY PAGE & MEDIA PLAYER STYLES
    ========================================================================== */
 
-/* Navbar Enquiry Button */
+/* Navbar Enquiry Link */
 .nav-link--enquiry {
-  background: var(--accent-green) !important;
+  background: transparent !important;
   color: var(--primary-green) !important;
-  padding: 6px 14px !important;
-  border-radius: 100px !important;
-  font-weight: 700 !important;
-  border: 1px solid rgba(47, 79, 30, 0.2) !important;
-  transition: all 0.25s ease !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  border: none !important;
+  white-space: nowrap !important;
+  transition: color 0.2s ease !important;
 }
 .nav-link--enquiry:hover {
-  background: var(--primary-green) !important;
-  color: #fff !important;
-  transform: translateY(-1px);
+  color: var(--secondary-green) !important;
+  background: transparent !important;
+  transform: none !important;
 }
 
 /* Product Card Enquiry Button */

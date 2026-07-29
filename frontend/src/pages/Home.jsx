@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Phone, MessageSquare, MapPin, Mail, ArrowRight, ShieldCheck, Dumbbell, Apple, UtensilsCrossed, Star, X, Leaf, Users2, Users } from 'lucide-react';
+import { Phone, MessageSquare, MapPin, Mail, ArrowRight, ShieldCheck, Dumbbell, Apple, UtensilsCrossed, Star, X, Leaf, Users2, Users, Video } from 'lucide-react';
 import API from '../utils/api';
 import ProductCard from '../components/ProductCard';
 import OrderModal from '../components/OrderModal';
@@ -319,7 +319,7 @@ const Home = () => {
         {/* Benefits Trust Highlight Banner */}
         <div className="benefits-trust-banner">
           <div className="trust-banner-item">
-            <span className="trust-banner-number">1,000+</span>
+            <span className="trust-banner-number">10,000+</span>
             <span className="trust-banner-text">Trusted Users</span>
           </div>
           <div className="trust-banner-divider"></div>
@@ -331,6 +331,31 @@ const Home = () => {
           <div className="trust-banner-item">
             <span className="trust-banner-number">100% Safe</span>
             <span className="trust-banner-text">Natural Formula</span>
+          </div>
+        </div>
+
+        {/* Video Showcase Section */}
+        <div className="container" style={{ marginTop: '56px' }}>
+          <div className="text-center" style={{ marginBottom: '24px' }}>
+            <span className="enquiry-badge">
+              <Video size={14} /> Product Presentation
+            </span>
+            <h3 style={{ fontSize: '1.6rem', fontWeight: '700', color: 'var(--primary-green)', marginTop: '8px' }}>
+              Watch Agadi Choorna Overview
+            </h3>
+            <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', maxWidth: '560px', margin: '6px auto 0', lineHeight: '1.6' }}>
+              Watch our product presentation, natural ingredients, and authentic Ayurvedic formulation details.
+            </p>
+          </div>
+
+          <div className="home-video-wrapper" style={{ maxWidth: '780px', margin: '0 auto', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.1)', border: '1px solid var(--border-color)', background: '#000' }}>
+            <video
+              src="/images/WhatsApp Video 2026-07-29 at 3.56.51 PM.mp4"
+              controls
+              playsInline
+              preload="metadata"
+              style={{ width: '100%', maxHeight: '440px', display: 'block', objectFit: 'contain' }}
+            />
           </div>
         </div>
       </section>
@@ -410,7 +435,7 @@ const Home = () => {
 
           <div style={{ textAlign: 'center' }}>
             <button onClick={() => navigate('/results')} className="view-all-results-link">
-              View All 1000+ Customer Results &rarr;
+              View All 10,000+ Customer Results &rarr;
             </button>
           </div>
         </div>

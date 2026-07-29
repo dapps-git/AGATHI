@@ -99,7 +99,7 @@ const Navbar = () => {
               }}
               className="nav-link nav-link--enquiry"
             >
-              Enquiry Now
+              Enquiry
             </button>
           </li>
           <li>
