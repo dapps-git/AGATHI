@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Phone, MessageSquare, MapPin, Mail, ArrowRight, ShieldCheck, Dumbbell, Apple, UtensilsCrossed, Star, X, Leaf, Users2, Users, Video } from 'lucide-react';
+import { Phone, MessageSquare, MapPin, Mail, ArrowRight, ShieldCheck, Dumbbell, Apple, UtensilsCrossed, Star, X, Leaf, Users2, Users, Video, Stethoscope } from 'lucide-react';
 import API from '../utils/api';
 import ProductCard from '../components/ProductCard';
 import OrderModal from '../components/OrderModal';
@@ -334,27 +334,27 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Video Showcase Section */}
+        {/* Doctor Video Guidance Section */}
         <div className="container" style={{ marginTop: '56px' }}>
           <div className="text-center" style={{ marginBottom: '24px' }}>
-            <span className="enquiry-badge">
-              <Video size={14} /> Product Presentation
+            <span className="doctor-emblem-badge">
+              <Stethoscope size={18} className="doctor-emblem-icon" /> Doctor Advice &amp; Explanation
             </span>
-            <h3 style={{ fontSize: '1.6rem', fontWeight: '700', color: 'var(--primary-green)', marginTop: '8px' }}>
-              Watch Agadi Choorna Overview
+            <h3 style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--primary-green)', marginTop: '12px' }}>
+              Doctor Advice &amp; Explanation
             </h3>
-            <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', maxWidth: '560px', margin: '6px auto 0', lineHeight: '1.6' }}>
-              Watch our product presentation, natural ingredients, and authentic Ayurvedic formulation details.
+            <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', maxWidth: '580px', margin: '6px auto 0', lineHeight: '1.6' }}>
+              Watch our certified Ayurvedic practitioner explain the natural ingredients, dosage instructions, and root-cause weight gain benefits of Agadi Choorna.
             </p>
           </div>
 
-          <div className="home-video-wrapper" style={{ maxWidth: '780px', margin: '0 auto', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.1)', border: '1px solid var(--border-color)', background: '#000' }}>
+          <div className="home-video-wrapper" style={{ maxWidth: '440px', margin: '0 auto', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 12px 36px rgba(47,79,30,0.18)', border: '2px solid rgba(47,79,30,0.15)', background: '#000' }}>
             <video
               src="/images/WhatsApp Video 2026-07-29 at 3.56.51 PM.mp4"
               controls
               playsInline
               preload="metadata"
-              style={{ width: '100%', maxHeight: '440px', display: 'block', objectFit: 'contain' }}
+              style={{ width: '100%', maxHeight: '580px', display: 'block', objectFit: 'contain' }}
             />
           </div>
         </div>

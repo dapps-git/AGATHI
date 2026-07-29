@@ -1854,6 +1854,27 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
   transform: none !important;
 }
 
+/* Highlighted Doctor Emblem Badge */
+.doctor-emblem-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #1d3313 0%, var(--primary-green) 100%);
+  color: #ffffff;
+  padding: 8px 22px;
+  border-radius: 100px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  border: 1.5px solid rgba(251, 191, 36, 0.6);
+  box-shadow: 0 4px 18px rgba(47, 79, 30, 0.25);
+  text-transform: uppercase;
+}
+.doctor-emblem-icon {
+  color: #fbbf24;
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.4));
+}
+
 /* Product Card Enquiry Button */
 .product-btn-enquiry {
   background: #ffffff !important;
@@ -2091,8 +2112,8 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
   color: var(--primary-green);
 }
 .video-icon-bg {
-  background: rgba(37, 99, 235, 0.1);
-  color: #2563eb;
+  background: rgba(47, 79, 30, 0.12);
+  color: var(--primary-green);
 }
 .media-card-header h3 {
   font-size: 1.1rem;
@@ -2306,27 +2327,540 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
   line-height: 1.5;
 }
 
-/* Mobile Media Queries for Enquiry Page */
-@media (max-width: 900px) {
-  .enquiry-grid {
-    grid-template-columns: 1fr;
+/* ==========================================================================
+   REFERENCE MODEL SECTION LAYOUT STYLES
+   ========================================================================== */
+
+.model-page {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.model-sections-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1040px;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 auto 40px;
+}
+
+.model-card {
+  background: #ffffff;
+  border-radius: 24px;
+  border: 1.5px solid rgba(47, 79, 30, 0.12);
+  padding: 36px;
+  box-shadow: 0 8px 30px rgba(47, 79, 30, 0.05);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease;
+}
+.model-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 42px rgba(47, 79, 30, 0.09);
+  border-color: rgba(47, 79, 30, 0.25);
+}
+
+.model-card-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 36px;
+  align-items: center;
+}
+
+/* Icon Badges */
+.model-icon-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  box-shadow: 0 6px 16px rgba(47, 79, 30, 0.1);
+  transition: transform 0.25s ease;
+}
+.model-card:hover .model-icon-circle {
+  transform: scale(1.06);
+}
+
+.doctor-bg {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  color: var(--primary-green);
+  border: 1.5px solid #bbf7d0;
+}
+.audio-bg {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  color: var(--primary-green);
+  border: 1.5px solid #bbf7d0;
+}
+.pdf-bg {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  color: var(--primary-green);
+  border: 1.5px solid #bbf7d0;
+}
+.mic-bg {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  color: var(--primary-green);
+  border: 1.5px solid #bbf7d0;
+}
+.whatsapp-bg {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  color: #166534;
+  border: 1.5px solid #86efac;
+}
+
+.model-card-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--primary-green);
+  margin-bottom: 10px;
+  letter-spacing: -0.2px;
+}
+.model-card-desc {
+  font-size: 0.94rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+  margin-bottom: 22px;
+}
+
+.model-cta-btn {
+  padding: 12px 28px !important;
+  border-radius: 100px !important;
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  box-shadow: 0 6px 20px rgba(47,79,30,0.25) !important;
+  transition: all 0.25s ease !important;
+}
+.model-cta-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(47,79,30,0.35) !important;
+}
+
+/* Video Wrapper inside Model Card */
+.model-video-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  background: #000;
+}
+.model-video-element {
+  width: 100%;
+  max-height: 480px;
+  display: block;
+  object-fit: contain;
+}
+
+/* Audio Player inside Model Card */
+.model-audio-player {
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 16px;
+}
+.audio-duration-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--primary-green);
+  margin-top: 10px;
+}
+
+/* Product Showcase Image */
+.model-product-img-wrap {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  border: 1px solid var(--border-color);
+}
+.model-product-img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+}
+
+/* PDF Results Preview */
+.results-pages-subtext {
+  font-size: 0.78rem;
+  color: var(--text-light);
+  margin-top: 10px;
+  font-weight: 600;
+}
+.model-results-preview-wrap {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  border: 1px solid var(--border-color);
+}
+.model-results-img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+}
+.results-preview-overlay {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+  color: #ffffff;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.badge-10k {
+  background: var(--accent-green);
+  color: var(--primary-green);
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  width: max-content;
+}
+
+/* Customer Voices List */
+.model-voices-stats {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--primary-green);
+}
+.customer-voices-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 440px;
+  overflow-y: auto;
+  padding-right: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.voice-review-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--bg-color);
+  border: 1.5px solid var(--border-color);
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+.voice-review-item:hover,
+.voice-review-item.active-playing {
+  border-color: var(--primary-green);
+  background: #f0fdf4;
+  box-shadow: 0 4px 12px rgba(47,79,30,0.08);
+}
+.voice-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary-green);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+.voice-review-body {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+.voice-user-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 0.85rem;
+  margin-bottom: 2px;
+}
+.voice-duration-badge {
+  font-size: 0.68rem;
+  color: var(--primary-green);
+  font-weight: 700;
+  background: rgba(47,79,30,0.08);
+  padding: 1px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.voice-quote {
+  font-size: 0.76rem;
+  color: var(--text-color);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.voice-play-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--primary-green);
+  color: #ffffff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(47,79,30,0.2);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.voice-play-btn:hover,
+.voice-play-btn.playing {
+  transform: scale(1.08);
+  background: #166534;
+}
+.view-more-voices-btn {
+  background: transparent;
+  border: 1px dashed var(--primary-green);
+  color: var(--primary-green);
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 10px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+  transition: background 0.2s ease;
+}
+.view-more-voices-btn:hover {
+  background: var(--accent-green);
+}
+
+/* WhatsApp Help Card */
+.whatsapp-help-card {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-color: #86efac;
+}
+.btn-whatsapp {
+  background: #25d366 !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(37,211,102,0.3) !important;
+}
+.btn-whatsapp:hover {
+  background: #1eb956 !important;
+  transform: translateY(-2px);
+}
+.whatsapp-help-box {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 16px;
+  text-align: center;
+  border: 1px solid #bbf7d0;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+}
+.help-box-sub {
+  font-size: 0.82rem;
+  color: var(--text-light);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.help-phone-number {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #166534;
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+}
+.help-trust-pills {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--primary-green);
+  flex-wrap: wrap;
+}
+
+/* Doctor Video Poster Card & Modal Popup */
+.doctor-video-poster-card {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  background: #000;
+  border: 1px solid var(--border-color);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.doctor-video-poster-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 12px 32px rgba(47, 79, 30, 0.2);
+}
+.doctor-poster-img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+  opacity: 0.85;
+}
+.poster-play-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #ffffff;
+}
+.poster-play-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--primary-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition: transform 0.25s ease;
+}
+.doctor-video-poster-card:hover .poster-play-circle {
+  transform: scale(1.1);
+  background: #1d3313;
+}
+.poster-play-text {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+}
+
+/* Video Modal Container */
+.video-modal-container {
+  position: relative;
+  width: 90vw;
+  max-width: 480px;
+  max-height: 85vh;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+.modal-video-element {
+  width: 100%;
+  max-height: 80vh;
+  display: block;
+  object-fit: contain;
+}
+
+/* Mobile Media Queries for Model Sections */
+@media (max-width: 960px) {
+  .model-sections-container {
+    padding: 0 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
   }
-  .enquiry-title {
-    font-size: 1.6rem;
+  .model-card {
+    padding: 20px 14px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    border-radius: 18px !important;
   }
-  .enquiry-subtitle {
-    font-size: 0.88rem;
+  .model-card-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    width: 100% !important;
   }
-  .audio-floating-bar {
-    top: 60px;
-    padding: 8px 0;
+  .model-card-info,
+  .model-card-media {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    min-width: 0 !important;
   }
-  .audio-seek-container {
-    display: none; /* Hide seek bar in floating sticky bar on small screens to fit cleanly */
+  .model-card-title {
+    font-size: 1.25rem !important;
   }
-  .enquiry-quick-contacts {
-    grid-template-columns: 1fr;
+  .model-card-desc {
+    font-size: 0.84rem !important;
+    margin-bottom: 14px !important;
+  }
+  .model-voices-stats {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    margin-top: 10px !important;
+    width: 100% !important;
+  }
+  .stat-pill {
+    padding: 4px 10px !important;
+    font-size: 0.72rem !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .customer-voices-list {
+    padding-right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .voice-review-item {
+    padding: 8px 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    gap: 8px !important;
+  }
+  .voice-review-body {
+    flex: 1 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+  .voice-quote {
+    font-size: 0.72rem !important;
+  }
+  .voice-play-btn {
+    width: 36px !important;
+    height: 36px !important;
+    flex-shrink: 0 !important;
   }
 }
+
+
 
 
