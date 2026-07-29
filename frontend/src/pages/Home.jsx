@@ -158,12 +158,18 @@ const Home = () => {
             src="/images/hero-banner.webp"
             alt="Agadi Choornam - Natural Weight Gain The Ayurvedic Way"
             className="hero-banner-img"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
           />
           {/* Mobile hero image */}
           <img
             src="/images/mobilehero.webp"
             alt="Agadi Choornam - Natural Weight Gain The Ayurvedic Way"
             className="hero-banner-img-mobile"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
           />
           {/* Mobile-only: buttons overlaid at bottom of image */}
           <div className="hero-mobile-cta">

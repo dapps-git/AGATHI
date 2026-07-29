@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Leaf, Menu, X, LogOut, User as UserIcon, ShoppingBag } from 'lucide-react';
+import { Leaf, Menu, X, LogOut, User as UserIcon, ShoppingBag, HelpCircle } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 
 const Navbar = () => {
@@ -89,6 +89,17 @@ const Navbar = () => {
           <li>
             <button onClick={() => handleNavClick('results')} className="nav-link">
               Results
+            </button>
+          </li>
+          <li>
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                navigate('/enquiry');
+              }}
+              className="nav-link nav-link--enquiry"
+            >
+              Enquiry Now
             </button>
           </li>
           <li>

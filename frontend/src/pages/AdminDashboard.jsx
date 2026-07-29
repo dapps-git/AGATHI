@@ -81,19 +81,63 @@ const AdminDashboard = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  const DEFAULT_STATS = {
+    totalUsers: 0,
+    totalProducts: 1,
+    totalOrders: 0,
+    totalRevenue: 0,
+    statusBreakdown: {
+      pending: 0,
+      confirmed: 0,
+      processing: 0,
+      shipped: 0,
+      delivered: 0,
+      cancelled: 0,
+    },
+  };
+
   const fetchData = async () => {
     setLoading(true);
+    setError('');
+    let hasError = false;
+
     try {
-      const statsRes = await adminAPI.get('/stats');
-      setStats(statsRes.data);
-      const ordersRes = await adminAPI.get('/orders');
-      setOrders(ordersRes.data);
-      const productsRes = await adminAPI.get('/products');
-      setProducts(productsRes.data);
-      const usersRes = await adminAPI.get('/stats/users');
-      setUsers(usersRes.data);
+      const statsRes = await adminAPI.get('/stats').catch(() => null);
+      if (statsRes && statsRes.data) {
+        setStats(statsRes.data);
+      } else {
+        setStats(DEFAULT_STATS);
+        hasError = true;
+      }
+
+      const ordersRes = await adminAPI.get('/orders').catch(() => null);
+      if (ordersRes && Array.isArray(ordersRes.data)) {
+        setOrders(ordersRes.data);
+      } else {
+        setOrders([]);
+        hasError = true;
+      }
+
+      const productsRes = await adminAPI.get('/products').catch(() => null);
+      if (productsRes && Array.isArray(productsRes.data)) {
+        setProducts(productsRes.data);
+      } else {
+        setProducts([]);
+      }
+
+      const usersRes = await adminAPI.get('/stats/users').catch(() => null);
+      if (usersRes && Array.isArray(usersRes.data)) {
+        setUsers(usersRes.data);
+      } else {
+        setUsers([]);
+      }
+
+      if (hasError) {
+        setError('Unable to reach backend API or database. Once you update your MONGO_URI in Namecheap cPanel and click "Restart App", click Refresh to reload.');
+      }
     } catch (err) {
-      setError('Failed to fetch dashboard data.');
+      setStats(DEFAULT_STATS);
+      setError('Unable to connect to backend server. Please verify your backend deployment and MongoDB URI.');
     } finally {
       setLoading(false);
     }

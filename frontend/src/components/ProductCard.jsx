@@ -1,7 +1,15 @@
 import React from 'react';
-import { Check, ShoppingBag } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Check, ShoppingBag, HelpCircle } from 'lucide-react';
 
 const ProductCard = ({ product, onBuyNow }) => {
+  const navigate = useNavigate();
+
+  const handleEnquiry = (e) => {
+    e.stopPropagation();
+    navigate('/enquiry', { state: { product } });
+  };
+
   return (
     <div className="product-card">
       <div className="product-img-wrapper">
@@ -17,7 +25,7 @@ const ProductCard = ({ product, onBuyNow }) => {
             }}
           />
         ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifycontent: 'center', backgroundColor: 'var(--accent-green)' }}>
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--accent-green)' }}>
             <span style={{ color: 'var(--primary-green)', fontWeight: 'bold' }}>Agadi Choorna</span>
           </div>
         )}
@@ -40,10 +48,16 @@ const ProductCard = ({ product, onBuyNow }) => {
 
         <div className="product-card-footer">
           <div className="product-price">₹{product.price}</div>
-          <button onClick={() => onBuyNow(product)} className="btn btn-primary" style={{ padding: '8px 18px', fontSize: '0.85rem' }}>
-            <ShoppingBag size={16} />
-            <span>Buy Now</span>
-          </button>
+          <div className="product-card-actions" style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button onClick={handleEnquiry} className="btn btn-outline product-btn-enquiry" style={{ padding: '8px 14px', fontSize: '0.85rem' }}>
+              <HelpCircle size={16} />
+              <span>Enquiry Now</span>
+            </button>
+            <button onClick={() => onBuyNow(product)} className="btn btn-primary" style={{ padding: '8px 14px', fontSize: '0.85rem' }}>
+              <ShoppingBag size={16} />
+              <span>Buy Now</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
