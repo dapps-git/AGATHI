@@ -2337,6 +2337,45 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
   overflow-x: hidden;
 }
 
+/* Pretty Enquiry Hero Banner */
+.pretty-enquiry-hero {
+  padding: 36px 20px 24px;
+  background: radial-gradient(circle at 50% 0%, rgba(47, 79, 30, 0.09) 0%, transparent 70%);
+  margin-bottom: 24px;
+}
+
+.hero-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #1d3313 0%, var(--primary-green) 100%);
+  color: #ffffff;
+  padding: 6px 18px;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  box-shadow: 0 4px 16px rgba(47, 79, 30, 0.18);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  margin-bottom: 14px;
+}
+
+.pretty-hero-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--primary-green);
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
+}
+
+.pretty-hero-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  max-width: 660px;
+  margin: 0 auto;
+  line-height: 1.65;
+}
+
 .model-sections-container {
   display: flex;
   flex-direction: column;

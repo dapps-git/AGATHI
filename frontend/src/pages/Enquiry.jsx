@@ -203,7 +203,6 @@ const Enquiry = () => {
     setCurrentTime(seekTime);
   };
 
-  // Watch Doctor Video Action: Opens video modal popup
   const handleWatchDoctorVideo = () => {
     if (audioRef.current && isPlaying) {
       audioRef.current.pause();
@@ -216,7 +215,6 @@ const Enquiry = () => {
     setShowVideoModal(true);
   };
 
-  // Customer voice review playback toggle
   const toggleVoicePlay = (voice) => {
     const custAudio = customerAudioRef.current;
     if (!custAudio) return;
@@ -318,13 +316,25 @@ const Enquiry = () => {
         </div>
       </div>
 
-      {/* Top Header */}
-      <div className="enquiry-hero section-padding" style={{ paddingBottom: '16px' }}>
-        <div className="container">
-          <button onClick={() => navigate('/')} className="back-link-btn">
+      {/* Top Pretty Hero Banner */}
+      <div className="pretty-enquiry-hero">
+        <div className="container text-center">
+          <button onClick={() => navigate('/')} className="back-link-btn" style={{ marginBottom: '16px' }}>
             <ArrowLeft size={16} />
             <span>Back to Home</span>
           </button>
+
+          <div className="hero-pill-badge">
+            <Sparkles size={14} style={{ color: '#fbbf24' }} />
+            <span>Official Agadi Choorna Product Guidance</span>
+          </div>
+
+          <h1 className="pretty-hero-title">
+            Agadi Choorna Guidance &amp; Voice Center
+          </h1>
+          <p className="pretty-hero-subtitle">
+            Listen to complete audio details, watch doctor explanation videos, view 10,000+ happy customer transformations, and hear authentic voice reviews from Kerala customers.
+          </p>
         </div>
       </div>
 
@@ -335,7 +345,7 @@ const Enquiry = () => {
         <div className="model-card">
           <div className="model-card-info" style={{ maxWidth: '680px' }}>
             <div className="model-icon-circle doctor-bg">
-              <Stethoscope size={26} className="doctor-emblem-icon" />
+              <Stethoscope size={28} className="doctor-emblem-icon" />
             </div>
             <h2 className="model-card-title">Doctor's Explanation</h2>
             <p className="model-card-desc">
@@ -353,7 +363,7 @@ const Enquiry = () => {
           <div className="model-card-grid">
             <div className="model-card-info">
               <div className="model-icon-circle audio-bg">
-                <Headphones size={26} />
+                <Headphones size={28} />
               </div>
               <h2 className="model-card-title">Listen to Product Details</h2>
               <p className="model-card-desc">
@@ -366,7 +376,7 @@ const Enquiry = () => {
                     {isPlaying ? <Pause size={22} /> : <Play size={22} style={{ marginLeft: '2px' }} />}
                   </button>
                   <div className="player-progress-area">
-                    <div className="player-title">Agadi Choorna Product Audio</div>
+                    <div className="player-title">Agadi Choorna Voice Guide</div>
                     <input
                       type="range"
                       min="0"
@@ -408,14 +418,14 @@ const Enquiry = () => {
           <div className="model-card-grid">
             <div className="model-card-info">
               <div className="model-icon-circle pdf-bg">
-                <FileText size={26} />
+                <FileText size={28} />
               </div>
               <h2 className="model-card-title">10,000+ Customer Results</h2>
               <p className="model-card-desc">
                 Real results from real people. See 100+ pages of amazing weight gain transformations from our happy customers across Kerala.
               </p>
-              <div className="results-pages-subtext" style={{ color: 'var(--primary-green)', fontWeight: '700', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <CheckCircle2 size={16} /> 100+ Pages of Before &amp; After Transformations
+              <div className="results-pages-subtext" style={{ color: 'var(--primary-green)', fontWeight: '700', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <CheckCircle2 size={18} /> 100+ Pages of Before &amp; After Transformations
               </div>
             </div>
 
@@ -432,19 +442,19 @@ const Enquiry = () => {
                 />
                 <div className="results-preview-overlay">
                   <span className="badge-10k">10,000+ Happy Transformations</span>
-                  <span style={{ fontWeight: '700', color: 'var(--accent-green)', marginTop: '2px' }}>Explore All 10,000+ Results &rarr;</span>
+                  <span style={{ fontWeight: '700', color: 'var(--accent-green)', marginTop: '4px' }}>Explore All 10,000+ Results &rarr;</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* ROW 4: Customer Voices (Audio Reviews formatted as Customer 1, 2, ...) */}
+        {/* ROW 4: Customer Voices */}
         <div className="model-card">
           <div className="model-card-grid">
             <div className="model-card-info">
               <div className="model-icon-circle mic-bg">
-                <Mic size={26} />
+                <Mic size={28} />
               </div>
               <h2 className="model-card-title">Customer Voices</h2>
               <p className="model-card-desc">
@@ -503,9 +513,9 @@ const Enquiry = () => {
           <div className="model-card-grid">
             <div className="model-card-info">
               <div className="model-icon-circle whatsapp-bg">
-                <MessageSquare size={26} />
+                <MessageSquare size={28} />
               </div>
-              <h2 className="model-card-title">Need Help?</h2>
+              <h2 className="model-card-title" style={{ color: '#166534' }}>Need Help?</h2>
               <p className="model-card-desc">
                 Our Ayurvedic support team is here to help you. Chat with us on WhatsApp for any queries or orders.
               </p>
