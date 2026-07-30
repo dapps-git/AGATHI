@@ -363,14 +363,14 @@ const Home = () => {
             <div className="model-card home-media-card">
               <div className="model-card-header-row">
                 <div className="model-icon-circle doctor-bg">
-                  <Stethoscope size={22} className="doctor-emblem-icon" />
+                  <img src="/doctor.webp" alt="Doctor Advice Logo" className="doctor-emblem-img" />
                 </div>
                 <h4 className="model-card-title">Doctor's Explanation</h4>
               </div>
               <p className="model-card-desc">
                 Watch certified Ayurvedic doctor explain weight gain formula &amp; benefits.
               </p>
-              <div className="home-video-wrapper" style={{ borderRadius: '14px', overflow: 'hidden', background: '#000', border: '1px solid var(--border-color)' }}>
+              <div className="home-video-wrapper" style={{ borderRadius: '4px', overflow: 'hidden', background: '#000', border: '1px solid var(--border-color)' }}>
                 <video
                   src="/images/WhatsApp Video 2026-07-29 at 3.56.51 PM.mp4"
                   controls
@@ -395,7 +395,7 @@ const Home = () => {
             <div className="model-card home-media-card">
               <div className="model-card-header-row">
                 <div className="model-icon-circle audio-bg">
-                  <Headphones size={22} />
+                  <Headphones size={20} />
                 </div>
                 <h4 className="model-card-title">Listen to Product Details</h4>
               </div>
@@ -463,7 +463,7 @@ const Home = () => {
             <div className="model-card home-media-card">
               <div className="model-card-header-row">
                 <div className="model-icon-circle mic-bg">
-                  <Mic size={22} />
+                  <Mic size={20} />
                 </div>
                 <h4 className="model-card-title">Customer Voices</h4>
               </div>
@@ -482,7 +482,7 @@ const Home = () => {
                   { id: 4, name: 'Customer 4', src: '/images/customer4.mp3', duration: '0:42', quote: 'Gained 4 kgs cleanly.' }
                 ].map((voice) => (
                   <div key={voice.id} className={`voice-review-item ${playingHomeVoiceId === voice.id ? 'active-playing' : ''}`}>
-                    <div className="voice-user-avatar">{voice.id}</div>
+                    <img src="/contact.webp" alt="Customer Contact" className="voice-contact-img" />
                     <div className="voice-review-body">
                       <div className="voice-user-header">
                         <strong>{voice.name}</strong>

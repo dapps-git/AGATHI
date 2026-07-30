@@ -396,7 +396,7 @@ const Enquiry = () => {
           <div className="model-card-info" style={{ maxWidth: '680px' }}>
             <div className="model-card-header-row">
               <div className="model-icon-circle doctor-bg">
-                <Stethoscope size={24} className="doctor-emblem-icon" />
+                <img src="/doctor.webp" alt="Doctor Advice Logo" className="doctor-logo-img" />
               </div>
               <h2 className="model-card-title">Doctor's Explanation</h2>
             </div>
@@ -534,9 +534,7 @@ const Enquiry = () => {
               <div className="customer-voices-list">
                 {visibleVoices.map((voice) => (
                   <div key={voice.id} className={`voice-review-item ${playingVoiceId === voice.id ? 'active-playing' : ''}`}>
-                    <div className="voice-user-avatar">
-                      {voice.id}
-                    </div>
+                    <img src="/contact.webp" alt="Customer Contact" className="voice-contact-img" />
                     <div className="voice-review-body">
                       <div className="voice-user-header">
                         <strong>Customer {voice.id}</strong>
