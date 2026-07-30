@@ -512,28 +512,16 @@ const Home = () => {
 
                         newAudio.onended = () => setPlayingHomeVoiceId(null);
                         newAudio.onerror = () => {
-                          const fallback = new Audio('/images/enquiry-audio.mp3');
-                          homeVoiceAudioRef.current = fallback;
-                          fallback.onended = () => setPlayingHomeVoiceId(null);
-                          fallback.play()
-                            .then(() => setPlayingHomeVoiceId(voice.id))
-                            .catch(() => setPlayingHomeVoiceId(null));
+                          console.log('Customer voice audio error:', voice.src);
+                          setPlayingHomeVoiceId(null);
                         };
 
-                        const playPromise = newAudio.play();
-                        if (playPromise !== undefined) {
-                          playPromise
-                            .then(() => setPlayingHomeVoiceId(voice.id))
-                            .catch((err) => {
-                              console.warn('Home voice play error, using fallback audio:', err);
-                              const fallback = new Audio('/images/enquiry-audio.mp3');
-                              homeVoiceAudioRef.current = fallback;
-                              fallback.onended = () => setPlayingHomeVoiceId(null);
-                              fallback.play()
-                                .then(() => setPlayingHomeVoiceId(voice.id))
-                                .catch(() => setPlayingHomeVoiceId(null));
-                            });
-                        }
+                        newAudio.play()
+                          .then(() => setPlayingHomeVoiceId(voice.id))
+                          .catch((err) => {
+                            console.log('Customer voice play error:', err);
+                            setPlayingHomeVoiceId(null);
+                          });
                       }}
                       className={`voice-play-btn ${playingHomeVoiceId === voice.id ? 'playing' : ''}`}
                     >

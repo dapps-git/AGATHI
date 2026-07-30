@@ -240,29 +240,16 @@ const Enquiry = () => {
 
     newAudio.onended = () => setPlayingVoiceId(null);
     newAudio.onerror = () => {
-      console.warn('Voice ogg audio format error, using fallback audio');
-      const fallback = new Audio('/images/enquiry-audio.mp3');
-      voiceAudioRef.current = fallback;
-      fallback.onended = () => setPlayingVoiceId(null);
-      fallback.play()
-        .then(() => setPlayingVoiceId(voice.id))
-        .catch(() => setPlayingVoiceId(null));
+      console.log('Customer voice audio error:', voice.src);
+      setPlayingVoiceId(null);
     };
 
-    const playPromise = newAudio.play();
-    if (playPromise !== undefined) {
-      playPromise
-        .then(() => setPlayingVoiceId(voice.id))
-        .catch((err) => {
-          console.warn('Audio play error, triggering fallback:', err);
-          const fallback = new Audio('/images/enquiry-audio.mp3');
-          voiceAudioRef.current = fallback;
-          fallback.onended = () => setPlayingVoiceId(null);
-          fallback.play()
-            .then(() => setPlayingVoiceId(voice.id))
-            .catch(() => setPlayingVoiceId(null));
-        });
-    }
+    newAudio.play()
+      .then(() => setPlayingVoiceId(voice.id))
+      .catch((err) => {
+        console.log('Customer voice play error:', err);
+        setPlayingVoiceId(null);
+      });
   };
 
   const handleFormChange = (e) => {
