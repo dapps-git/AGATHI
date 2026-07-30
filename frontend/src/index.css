@@ -2936,6 +2936,10 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
     min-width: 0 !important;
     overflow: hidden !important;
   }
+  .home-media-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
   .voice-quote {
     font-size: 0.72rem !important;
   }

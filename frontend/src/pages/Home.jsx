@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useContext } from 'react';
+import React, { useState, useEffect, useCallback, useContext, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Phone, MessageSquare, MapPin, Mail, ArrowRight, ShieldCheck, Dumbbell, Apple, UtensilsCrossed, Star, X, Leaf, Users2, Users, Video, Stethoscope } from 'lucide-react';
+import { Phone, MessageSquare, MapPin, Mail, ArrowRight, ShieldCheck, Dumbbell, Apple, UtensilsCrossed, Star, X, Leaf, Users2, Users, Video, Stethoscope, Headphones, Mic, Volume2, Play, Pause } from 'lucide-react';
 import API from '../utils/api';
 import ProductCard from '../components/ProductCard';
 import OrderModal from '../components/OrderModal';
@@ -42,6 +42,16 @@ const Home = () => {
   const [products, setProducts] = useState([DEFAULT_AGADI_PRODUCT]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Home Audio Guidance state
+  const homeAudioRef = useRef(null);
+  const [isHomeAudioPlaying, setIsHomeAudioPlaying] = useState(false);
+  const [homeAudioTime, setHomeAudioTime] = useState(0);
+  const [homeAudioDuration, setHomeAudioDuration] = useState(0);
+
+  // Home Customer Voice state
+  const homeVoiceAudioRef = useRef(null);
+  const [playingHomeVoiceId, setPlayingHomeVoiceId] = useState(null);
 
   // Hero image slider state
   const [slideIndex, setSlideIndex] = useState(0);
@@ -334,28 +344,181 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Doctor Video Guidance Section */}
-        <div className="container" style={{ marginTop: '56px' }}>
-          <div className="text-center" style={{ marginBottom: '24px' }}>
-            <span className="doctor-emblem-badge">
-              <Stethoscope size={18} className="doctor-emblem-icon" /> Doctor Advice &amp; Explanation
+        {/* Doctor Video, Audio Guide & Customer Voices Section */}
+        <div className="container" style={{ marginTop: '40px' }}>
+          <div className="text-center" style={{ marginBottom: '20px' }}>
+            <span className="doctor-emblem-badge" style={{ fontSize: '0.74rem', padding: '4px 14px', fontWeight: '600' }}>
+              <Stethoscope size={15} className="doctor-emblem-icon" /> Doctor Advice &amp; Audio Guidance
             </span>
-            <h3 style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--primary-green)', marginTop: '12px' }}>
-              Doctor Advice &amp; Explanation
+            <h3 style={{ fontSize: '1.35rem', fontWeight: '700', color: 'var(--primary-green)', marginTop: '8px' }}>
+              Doctor Explanation &amp; Audio Guidance
             </h3>
-            <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', maxWidth: '580px', margin: '6px auto 0', lineHeight: '1.6' }}>
-              Watch our certified Ayurvedic practitioner explain the natural ingredients, dosage instructions, and root-cause weight gain benefits of Agadi Choorna.
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', maxWidth: '560px', margin: '4px auto 0', lineHeight: '1.5' }}>
+              Watch certified doctor advice, listen to complete product details, and hear real customer voice reviews.
             </p>
           </div>
 
-          <div className="home-video-wrapper" style={{ maxWidth: '440px', margin: '0 auto', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 12px 36px rgba(47,79,30,0.18)', border: '2px solid rgba(47,79,30,0.15)', background: '#000' }}>
-            <video
-              src="/images/WhatsApp Video 2026-07-29 at 3.56.51 PM.mp4"
-              controls
-              playsInline
-              preload="metadata"
-              style={{ width: '100%', maxHeight: '580px', display: 'block', objectFit: 'contain' }}
-            />
+          <div className="home-media-grid">
+            {/* Card 1: Doctor's Video */}
+            <div className="model-card home-media-card">
+              <div className="model-card-header-row">
+                <div className="model-icon-circle doctor-bg">
+                  <Stethoscope size={22} className="doctor-emblem-icon" />
+                </div>
+                <h4 className="model-card-title">Doctor's Explanation</h4>
+              </div>
+              <p className="model-card-desc">
+                Watch certified Ayurvedic doctor explain weight gain formula &amp; benefits.
+              </p>
+              <div className="home-video-wrapper" style={{ borderRadius: '14px', overflow: 'hidden', background: '#000', border: '1px solid var(--border-color)' }}>
+                <video
+                  src="/images/WhatsApp Video 2026-07-29 at 3.56.51 PM.mp4"
+                  controls
+                  playsInline
+                  preload="metadata"
+                  onPlay={() => {
+                    if (homeAudioRef.current && isHomeAudioPlaying) {
+                      homeAudioRef.current.pause();
+                      setIsHomeAudioPlaying(false);
+                    }
+                    if (homeVoiceAudioRef.current) {
+                      homeVoiceAudioRef.current.pause();
+                      setPlayingHomeVoiceId(null);
+                    }
+                  }}
+                  style={{ width: '100%', maxHeight: '340px', display: 'block', objectFit: 'contain' }}
+                />
+              </div>
+            </div>
+
+            {/* Card 2: Listen to Product Details */}
+            <div className="model-card home-media-card">
+              <div className="model-card-header-row">
+                <div className="model-icon-circle audio-bg">
+                  <Headphones size={22} />
+                </div>
+                <h4 className="model-card-title">Listen to Product Details</h4>
+              </div>
+              <p className="model-card-desc">
+                Listen to complete product details, ingredients &amp; dosage guide.
+              </p>
+
+              <div className="model-audio-player">
+                <audio
+                  ref={homeAudioRef}
+                  onPlay={() => setIsHomeAudioPlaying(true)}
+                  onPause={() => setIsHomeAudioPlaying(false)}
+                  onTimeUpdate={() => {
+                    if (homeAudioRef.current) {
+                      setHomeAudioTime(homeAudioRef.current.currentTime);
+                      setHomeAudioDuration(homeAudioRef.current.duration || 168);
+                    }
+                  }}
+                  onEnded={() => setIsHomeAudioPlaying(false)}
+                >
+                  <source src="/images/WhatsApp Audio 2026-07-29 at 3.56.51 PM.mp4" />
+                  <source src="/images/enquiry-audio.mp3" type="audio/mp3" />
+                </audio>
+                <div className="player-main">
+                  <button
+                    onClick={() => {
+                      if (!homeAudioRef.current) return;
+                      if (isHomeAudioPlaying) {
+                        homeAudioRef.current.pause();
+                      } else {
+                        if (homeVoiceAudioRef.current) homeVoiceAudioRef.current.pause();
+                        setPlayingHomeVoiceId(null);
+                        homeAudioRef.current.play();
+                      }
+                    }}
+                    className="player-play-btn"
+                  >
+                    {isHomeAudioPlaying ? <Pause size={20} /> : <Play size={20} style={{ marginLeft: '2px' }} />}
+                  </button>
+                  <div className="player-progress-area">
+                    <div className="player-title">Agadi Choorna Voice Guide</div>
+                    <input
+                      type="range"
+                      min="0"
+                      max={homeAudioDuration || 168}
+                      value={homeAudioTime}
+                      onChange={(e) => {
+                        if (homeAudioRef.current) {
+                          const val = parseFloat(e.target.value);
+                          homeAudioRef.current.currentTime = val;
+                          setHomeAudioTime(val);
+                        }
+                      }}
+                      className="player-slider"
+                    />
+                  </div>
+                </div>
+                <div className="audio-duration-meta">
+                  <Volume2 size={14} /> Duration: 2:48 min
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3: Customer Voices */}
+            <div className="model-card home-media-card">
+              <div className="model-card-header-row">
+                <div className="model-icon-circle mic-bg">
+                  <Mic size={22} />
+                </div>
+                <h4 className="model-card-title">Customer Voices</h4>
+              </div>
+              <p className="model-card-desc">
+                Hear real audio reviews from happy Kerala customers.
+              </p>
+              <audio
+                ref={homeVoiceAudioRef}
+                onEnded={() => setPlayingHomeVoiceId(null)}
+              />
+              <div className="customer-voices-list" style={{ maxHeight: '250px' }}>
+                {[
+                  { id: 1, name: 'Customer 1', src: '/images/customer1.ogg', duration: '0:45', quote: 'Gained 5 kgs in 35 days!' },
+                  { id: 2, name: 'Customer 2', src: '/images/customer2.ogg', duration: '0:38', quote: 'Improved appetite & energy.' },
+                  { id: 3, name: 'Customer 3', src: '/images/customer3.ogg', duration: '0:51', quote: 'Natural & effective.' },
+                  { id: 4, name: 'Customer 4', src: '/images/customer4.ogg', duration: '0:42', quote: 'Gained 4 kgs cleanly.' }
+                ].map((voice) => (
+                  <div key={voice.id} className={`voice-review-item ${playingHomeVoiceId === voice.id ? 'active-playing' : ''}`}>
+                    <div className="voice-user-avatar">{voice.id}</div>
+                    <div className="voice-review-body">
+                      <div className="voice-user-header">
+                        <strong>{voice.name}</strong>
+                        <span className="voice-duration-badge">{voice.duration}</span>
+                      </div>
+                      <p className="voice-quote">"{voice.quote}"</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const vAudio = homeVoiceAudioRef.current;
+                        if (!vAudio) return;
+                        if (playingHomeVoiceId === voice.id) {
+                          vAudio.pause();
+                          setPlayingHomeVoiceId(null);
+                        } else {
+                          if (homeAudioRef.current && isHomeAudioPlaying) {
+                            homeAudioRef.current.pause();
+                            setIsHomeAudioPlaying(false);
+                          }
+                          vAudio.src = voice.src;
+                          vAudio.play()
+                            .then(() => setPlayingHomeVoiceId(voice.id))
+                            .catch(() => {});
+                        }
+                      }}
+                      className={`voice-play-btn ${playingHomeVoiceId === voice.id ? 'playing' : ''}`}
+                    >
+                      {playingHomeVoiceId === voice.id ? <Pause size={14} /> : <Play size={14} style={{ marginLeft: '1px' }} />}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => navigate('/enquiry')} className="view-more-voices-btn" style={{ width: '100%', marginTop: '10px' }}>
+                View All 33 Voice Reviews &rarr;
+              </button>
+            </div>
           </div>
         </div>
       </section>
