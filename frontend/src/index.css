@@ -2528,8 +2528,8 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
 
 /* Audio Player inside Model Card */
 .model-audio-player {
-  background: var(--bg-color);
-  border: 1px solid var(--border-color);
+  background: #f9fbf8;
+  border: none;
   border-radius: 4px;
   padding: 10px 12px;
 }
@@ -2624,7 +2624,7 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
 .customer-voices-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0;
   max-height: 380px;
   overflow-y: auto;
   padding-right: 4px;
@@ -2634,20 +2634,25 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
 .voice-review-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border-radius: 4px;
-  background: var(--bg-color);
-  border: 1px solid var(--border-color);
+  gap: 10px;
+  padding: 8px 6px;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(47, 79, 30, 0.08);
   transition: all 0.2s ease;
   width: 100%;
   box-sizing: border-box;
 }
+.voice-review-item:last-child {
+  border-bottom: none;
+}
 .voice-review-item:hover,
 .voice-review-item.active-playing {
-  border-color: var(--primary-green);
-  background: #f0fdf4;
-  box-shadow: 0 2px 8px rgba(47,79,30,0.06);
+  border-color: transparent;
+  border-bottom: 1px solid var(--primary-green);
+  background: rgba(47,79,30,0.05);
+  box-shadow: none;
 }
 .voice-user-avatar {
   width: 36px;
