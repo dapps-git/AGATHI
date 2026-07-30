@@ -476,10 +476,10 @@ const Home = () => {
               />
               <div className="customer-voices-list" style={{ maxHeight: '250px' }}>
                 {[
-                  { id: 1, name: 'Customer 1', src: '/images/customer1.ogg', duration: '0:45', quote: 'Gained 5 kgs in 35 days!' },
-                  { id: 2, name: 'Customer 2', src: '/images/customer2.ogg', duration: '0:38', quote: 'Improved appetite & energy.' },
-                  { id: 3, name: 'Customer 3', src: '/images/customer3.ogg', duration: '0:51', quote: 'Natural & effective.' },
-                  { id: 4, name: 'Customer 4', src: '/images/customer4.ogg', duration: '0:42', quote: 'Gained 4 kgs cleanly.' }
+                  { id: 1, name: 'Customer 1', src: '/images/customer1.mp3', duration: '0:45', quote: 'Gained 5 kgs in 35 days!' },
+                  { id: 2, name: 'Customer 2', src: '/images/customer2.mp3', duration: '0:38', quote: 'Improved appetite & energy.' },
+                  { id: 3, name: 'Customer 3', src: '/images/customer3.mp3', duration: '0:51', quote: 'Natural & effective.' },
+                  { id: 4, name: 'Customer 4', src: '/images/customer4.mp3', duration: '0:42', quote: 'Gained 4 kgs cleanly.' }
                 ].map((voice) => (
                   <div key={voice.id} className={`voice-review-item ${playingHomeVoiceId === voice.id ? 'active-playing' : ''}`}>
                     <div className="voice-user-avatar">{voice.id}</div>

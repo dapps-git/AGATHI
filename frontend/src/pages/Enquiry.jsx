@@ -51,7 +51,7 @@ const CUSTOMER_VOICE_REVIEWS = Array.from({ length: 33 }, (_, i) => {
     id: index,
     name: `Customer ${index}`,
     location: `Kerala`,
-    src: `/images/customer${index}.ogg`,
+    src: `/images/customer${index}.mp3`,
     duration: durations[i % durations.length],
     quote: quotes[i % quotes.length]
   };
