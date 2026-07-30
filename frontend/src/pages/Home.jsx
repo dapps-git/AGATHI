@@ -492,20 +492,47 @@ const Home = () => {
                     </div>
                     <button
                       onClick={() => {
-                        const vAudio = homeVoiceAudioRef.current;
-                        if (!vAudio) return;
                         if (playingHomeVoiceId === voice.id) {
-                          vAudio.pause();
+                          if (homeVoiceAudioRef.current) homeVoiceAudioRef.current.pause();
                           setPlayingHomeVoiceId(null);
-                        } else {
-                          if (homeAudioRef.current && isHomeAudioPlaying) {
-                            homeAudioRef.current.pause();
-                            setIsHomeAudioPlaying(false);
-                          }
-                          vAudio.src = voice.src;
-                          vAudio.play()
+                          return;
+                        }
+
+                        if (homeAudioRef.current && isHomeAudioPlaying) {
+                          homeAudioRef.current.pause();
+                          setIsHomeAudioPlaying(false);
+                        }
+
+                        if (homeVoiceAudioRef.current) {
+                          homeVoiceAudioRef.current.pause();
+                        }
+
+                        const newAudio = new Audio(voice.src);
+                        homeVoiceAudioRef.current = newAudio;
+
+                        newAudio.onended = () => setPlayingHomeVoiceId(null);
+                        newAudio.onerror = () => {
+                          const fallback = new Audio('/images/enquiry-audio.mp3');
+                          homeVoiceAudioRef.current = fallback;
+                          fallback.onended = () => setPlayingHomeVoiceId(null);
+                          fallback.play()
                             .then(() => setPlayingHomeVoiceId(voice.id))
-                            .catch(() => {});
+                            .catch(() => setPlayingHomeVoiceId(null));
+                        };
+
+                        const playPromise = newAudio.play();
+                        if (playPromise !== undefined) {
+                          playPromise
+                            .then(() => setPlayingHomeVoiceId(voice.id))
+                            .catch((err) => {
+                              console.warn('Home voice play error, using fallback audio:', err);
+                              const fallback = new Audio('/images/enquiry-audio.mp3');
+                              homeVoiceAudioRef.current = fallback;
+                              fallback.onended = () => setPlayingHomeVoiceId(null);
+                              fallback.play()
+                                .then(() => setPlayingHomeVoiceId(voice.id))
+                                .catch(() => setPlayingHomeVoiceId(null));
+                            });
                         }
                       }}
                       className={`voice-play-btn ${playingHomeVoiceId === voice.id ? 'playing' : ''}`}

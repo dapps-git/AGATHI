@@ -215,22 +215,53 @@ const Enquiry = () => {
     setShowVideoModal(true);
   };
 
-  const toggleVoicePlay = (voice) => {
-    const custAudio = customerAudioRef.current;
-    if (!custAudio) return;
+  const voiceAudioRef = useRef(null);
 
+  const toggleVoicePlay = (voice) => {
     if (playingVoiceId === voice.id) {
-      custAudio.pause();
-      setPlayingVoiceId(null);
-    } else {
-      if (audioRef.current && isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
+      if (voiceAudioRef.current) {
+        voiceAudioRef.current.pause();
       }
-      custAudio.src = voice.src;
-      custAudio.play()
+      setPlayingVoiceId(null);
+      return;
+    }
+
+    if (audioRef.current && isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+
+    if (voiceAudioRef.current) {
+      voiceAudioRef.current.pause();
+    }
+
+    const newAudio = new Audio(voice.src);
+    voiceAudioRef.current = newAudio;
+
+    newAudio.onended = () => setPlayingVoiceId(null);
+    newAudio.onerror = () => {
+      console.warn('Voice ogg audio format error, using fallback audio');
+      const fallback = new Audio('/images/enquiry-audio.mp3');
+      voiceAudioRef.current = fallback;
+      fallback.onended = () => setPlayingVoiceId(null);
+      fallback.play()
         .then(() => setPlayingVoiceId(voice.id))
-        .catch((err) => console.log('Voice audio error:', err));
+        .catch(() => setPlayingVoiceId(null));
+    };
+
+    const playPromise = newAudio.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => setPlayingVoiceId(voice.id))
+        .catch((err) => {
+          console.warn('Audio play error, triggering fallback:', err);
+          const fallback = new Audio('/images/enquiry-audio.mp3');
+          voiceAudioRef.current = fallback;
+          fallback.onended = () => setPlayingVoiceId(null);
+          fallback.play()
+            .then(() => setPlayingVoiceId(voice.id))
+            .catch(() => setPlayingVoiceId(null));
+        });
     }
   };
 

@@ -43,6 +43,11 @@ function PublicAppContent() {
   const location = useLocation();
   const hideLayout = ['/login', '/signup', '/forgot-password'].includes(location.pathname);
 
+  // Scroll to top on every route change across all pages
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   // Set --vh CSS variable to real inner height (fixes iOS hero zoom on scroll)
   useEffect(() => {
     const setVh = () => {
