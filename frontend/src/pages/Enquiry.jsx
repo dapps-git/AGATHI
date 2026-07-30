@@ -319,7 +319,7 @@ const Enquiry = () => {
       {/* Top Pretty Hero Banner */}
       <div className="pretty-enquiry-hero">
         <div className="container text-center">
-          <button onClick={() => navigate('/')} className="back-link-btn" style={{ marginBottom: '16px' }}>
+          <button onClick={() => navigate('/')} className="back-link-btn" style={{ marginBottom: '14px' }}>
             <ArrowLeft size={16} />
             <span>Back to Home</span>
           </button>
@@ -344,15 +344,17 @@ const Enquiry = () => {
         {/* ROW 1: Doctor's Explanation */}
         <div className="model-card">
           <div className="model-card-info" style={{ maxWidth: '680px' }}>
-            <div className="model-icon-circle doctor-bg">
-              <Stethoscope size={28} className="doctor-emblem-icon" />
+            <div className="model-card-header-row">
+              <div className="model-icon-circle doctor-bg">
+                <Stethoscope size={24} className="doctor-emblem-icon" />
+              </div>
+              <h2 className="model-card-title">Doctor's Explanation</h2>
             </div>
-            <h2 className="model-card-title">Doctor's Explanation</h2>
             <p className="model-card-desc">
               Watch the doctor's complete explanation about AGADI CHOORNAM and how it helps in healthy weight gain.
             </p>
             <button onClick={handleWatchDoctorVideo} className="btn btn-primary model-cta-btn">
-              <Play size={18} style={{ fill: '#fff' }} />
+              <Play size={16} style={{ fill: '#fff' }} />
               <span>Watch Now</span>
             </button>
           </div>
@@ -362,10 +364,12 @@ const Enquiry = () => {
         <div className="model-card">
           <div className="model-card-grid">
             <div className="model-card-info">
-              <div className="model-icon-circle audio-bg">
-                <Headphones size={28} />
+              <div className="model-card-header-row">
+                <div className="model-icon-circle audio-bg">
+                  <Headphones size={24} />
+                </div>
+                <h2 className="model-card-title">Listen to Product Details</h2>
               </div>
-              <h2 className="model-card-title">Listen to Product Details</h2>
               <p className="model-card-desc">
                 Listen to the complete product details, ingredients, benefits, dosage and usage instructions.
               </p>
@@ -373,7 +377,7 @@ const Enquiry = () => {
               <div className="model-audio-player">
                 <div className="player-main">
                   <button onClick={togglePlay} className="player-play-btn">
-                    {isPlaying ? <Pause size={22} /> : <Play size={22} style={{ marginLeft: '2px' }} />}
+                    {isPlaying ? <Pause size={20} /> : <Play size={20} style={{ marginLeft: '2px' }} />}
                   </button>
                   <div className="player-progress-area">
                     <div className="player-title">Agadi Choorna Voice Guide</div>
@@ -417,15 +421,17 @@ const Enquiry = () => {
         <div className="model-card">
           <div className="model-card-grid">
             <div className="model-card-info">
-              <div className="model-icon-circle pdf-bg">
-                <FileText size={28} />
+              <div className="model-card-header-row">
+                <div className="model-icon-circle pdf-bg">
+                  <FileText size={24} />
+                </div>
+                <h2 className="model-card-title">10,000+ Customer Results</h2>
               </div>
-              <h2 className="model-card-title">10,000+ Customer Results</h2>
               <p className="model-card-desc">
                 Real results from real people. See 100+ pages of amazing weight gain transformations from our happy customers across Kerala.
               </p>
-              <div className="results-pages-subtext" style={{ color: 'var(--primary-green)', fontWeight: '700', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <CheckCircle2 size={18} /> 100+ Pages of Before &amp; After Transformations
+              <div className="results-pages-subtext" style={{ color: 'var(--primary-green)', fontWeight: '700', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <CheckCircle2 size={16} /> 100+ Pages of Before &amp; After Transformations
               </div>
             </div>
 
@@ -453,10 +459,12 @@ const Enquiry = () => {
         <div className="model-card">
           <div className="model-card-grid">
             <div className="model-card-info">
-              <div className="model-icon-circle mic-bg">
-                <Mic size={28} />
+              <div className="model-card-header-row">
+                <div className="model-icon-circle mic-bg">
+                  <Mic size={24} />
+                </div>
+                <h2 className="model-card-title">Customer Voices</h2>
               </div>
-              <h2 className="model-card-title">Customer Voices</h2>
               <p className="model-card-desc">
                 Hear what our real customers have to say about their experience with AGADI CHOORNAM.
               </p>
@@ -512,10 +520,12 @@ const Enquiry = () => {
         <div className="model-card whatsapp-help-card">
           <div className="model-card-grid">
             <div className="model-card-info">
-              <div className="model-icon-circle whatsapp-bg">
-                <MessageSquare size={28} />
+              <div className="model-card-header-row">
+                <div className="model-icon-circle whatsapp-bg">
+                  <MessageSquare size={24} />
+                </div>
+                <h2 className="model-card-title" style={{ color: '#166534' }}>Need Help?</h2>
               </div>
-              <h2 className="model-card-title" style={{ color: '#166534' }}>Need Help?</h2>
               <p className="model-card-desc">
                 Our Ayurvedic support team is here to help you. Chat with us on WhatsApp for any queries or orders.
               </p>
