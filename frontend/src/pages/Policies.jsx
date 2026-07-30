@@ -127,7 +127,7 @@ const Policies = () => {
                 <p>We may update this Privacy Policy periodically. Continued use of our website after any changes constitutes acceptance of the revised policy.</p>
               </Section>
               <Section title="8. Contact Us">
-                <p>For any privacy-related concerns, please contact us at:<br /><strong>Email:</strong> agadichoornam@gmail.com<br /><strong>Phone:</strong> +91 9072888825</p>
+                <p>For any privacy-related concerns, please contact us at:<br /><strong>Email:</strong> agadichoornam@gmail.com<br /><strong>Phone:</strong> +91 8139800282</p>
               </Section>
             </PolicyContent>
           )}
@@ -177,7 +177,7 @@ const Policies = () => {
                 <p>These Terms and Conditions are governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of the courts in Kerala, India.</p>
               </Section>
               <Section title="9. Contact Us">
-                <p>For any queries regarding these terms, please contact:<br /><strong>Email:</strong> agadichoornam@gmail.com<br /><strong>Phone:</strong> +91 9072888825</p>
+                <p>For any queries regarding these terms, please contact:<br /><strong>Email:</strong> agadichoornam@gmail.com<br /><strong>Phone:</strong> +91 8139800282</p>
               </Section>
             </PolicyContent>
           )}
@@ -200,7 +200,7 @@ const Policies = () => {
                 <p>To raise a complaint, please:</p>
                 <ul>
                   <li>Contact us within <strong>48 hours</strong> of delivery.</li>
-                  <li>WhatsApp us at <strong>+91 9072888825</strong> with your order details and clear photographs of the damaged or incorrect product.</li>
+                  <li>WhatsApp us at <strong>+91 8139800282</strong> with your order details and clear photographs of the damaged or incorrect product.</li>
                 </ul>
                 <p>Complaints raised after 48 hours of delivery will not be entertained.</p>
               </Section>
@@ -213,7 +213,7 @@ const Policies = () => {
                 <p>Approved refunds are typically processed within <strong>7–10 business days</strong>, depending on your bank or payment provider.</p>
               </Section>
               <Section title="5. Order Cancellation">
-                <p>Orders may be cancelled before they are dispatched. Once dispatched, cancellation is not possible. To cancel an order, contact us immediately via WhatsApp at <strong>+91 9072888825</strong> with your order details.</p>
+                <p>Orders may be cancelled before they are dispatched. Once dispatched, cancellation is not possible. To cancel an order, contact us immediately via WhatsApp at <strong>+91 8139800282</strong> with your order details.</p>
               </Section>
               <Section title="6. Non-Refundable Situations">
                 <p>Refunds will <strong>not</strong> be provided in the following situations:</p>
@@ -225,7 +225,7 @@ const Policies = () => {
                 </ul>
               </Section>
               <Section title="7. Contact Us">
-                <p>For refund or cancellation requests:<br /><strong>WhatsApp / Phone:</strong> +91 9072888825<br /><strong>Email:</strong> agadichoornam@gmail.com</p>
+                <p>For refund or cancellation requests:<br /><strong>WhatsApp / Phone:</strong> +91 8139800282<br /><strong>Email:</strong> agadichoornam@gmail.com</p>
               </Section>
             </PolicyContent>
           )}
@@ -257,7 +257,7 @@ const Policies = () => {
                 <p>If your product arrives visibly damaged, please contact us within <strong>48 hours</strong> of delivery with photographs. We will arrange a replacement or refund as per our Refund Policy.</p>
               </Section>
               <Section title="8. Contact Us">
-                <p>For shipping-related queries:<br /><strong>WhatsApp / Phone:</strong> +91 9072888825<br /><strong>Email:</strong> agadichoornam@gmail.com</p>
+                <p>For shipping-related queries:<br /><strong>WhatsApp / Phone:</strong> +91 8139800282<br /><strong>Email:</strong> agadichoornam@gmail.com</p>
               </Section>
             </PolicyContent>
           )}

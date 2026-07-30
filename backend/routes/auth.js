@@ -142,7 +142,7 @@ router.post('/login', async (req, res) => {
         await User.create({
           name: 'Agadi Administrator',
           email: 'admin@agadi.com',
-          phone: '9072888825',
+          phone: '8139800282',
           password: 'Admin@123',
           isAdmin: true
         });

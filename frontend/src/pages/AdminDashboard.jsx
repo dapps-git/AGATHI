@@ -290,7 +290,7 @@ const AdminDashboard = () => {
       case 'Delivered':
         return `Dear ${name}, your order for ${product} has been DELIVERED successfully! Thank you for trusting Agadi Choorna.`;
       case 'Cancelled':
-        return `Dear ${name}, your order for ${product} has been CANCELLED. Please contact support at 9072888825 for details.`;
+        return `Dear ${name}, your order for ${product} has been CANCELLED. Please contact support at 8139800282 for details.`;
       case 'Delay':
         return `Dear ${name}, regarding your order for ${product}: there is a slight delay in dispatch due to high demand. We are expediting it and will share tracking updates soon. Thank you for your patience!`;
       default:

@@ -113,10 +113,9 @@ const OrderModal = ({ product, onClose }) => {
   const validateField = (name, value) => {
     let err = '';
     if (name === 'name' && !value.trim()) err = 'Name is required.';
-    if (name === 'email') {
+    if (name === 'email' && value) {
       const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-      if (!value) err = 'Email is required.';
-      else if (!emailRegex.test(value)) err = 'Invalid email.';
+      if (!emailRegex.test(value)) err = 'Invalid email.';
     }
     if (name === 'phone') {
       if (!value) err = 'Mobile is required.';
@@ -463,7 +462,7 @@ ${formData.landmark ? `- Landmark: ${formData.landmark}\n` : ''}- District: ${fo
                   {fieldErrors.name && <span className="field-error-msg">{fieldErrors.name}</span>}
                 </div>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label htmlFor="email" style={{ fontSize: '0.72rem', marginBottom: '3px' }}>Email Address *</label>
+                  <label htmlFor="email" style={{ fontSize: '0.72rem', marginBottom: '3px' }}>Email Address (Optional)</label>
                   <input
                     type="email"
                     id="email"
@@ -472,7 +471,6 @@ ${formData.landmark ? `- Landmark: ${formData.landmark}\n` : ''}- District: ${fo
                     onChange={handleChange}
                     placeholder="name@example.com"
                     style={{ padding: '8px 12px', fontSize: '0.85rem' }}
-                    required
                   />
                   {fieldErrors.email && <span className="field-error-msg">{fieldErrors.email}</span>}
                 </div>
