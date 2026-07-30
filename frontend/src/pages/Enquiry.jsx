@@ -327,8 +327,14 @@ const Enquiry = () => {
             <button onClick={toggleMute} className="audio-control-btn" title={isMuted ? 'Unmute Audio' : 'Mute Audio'}>
               {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
             </button>
-            <button onClick={togglePlay} className="audio-control-btn audio-control-btn--play" title={isPlaying ? 'Pause Audio' : 'Play Audio'}>
-              {isPlaying ? <Pause size={18} /> : <Play size={18} />}
+            <button
+              onClick={togglePlay}
+              className="audio-control-btn audio-control-btn--play"
+              title={isPlaying ? 'Pause Audio' : 'Play Audio'}
+              style={{ width: 'auto', padding: '0 14px', borderRadius: '100px', gap: '5px' }}
+            >
+              {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+              <span style={{ fontSize: '0.78rem', fontWeight: '700' }}>{isPlaying ? 'Pause' : 'Play'}</span>
             </button>
           </div>
         </div>
@@ -337,10 +343,36 @@ const Enquiry = () => {
       {/* Top Pretty Hero Banner */}
       <div className="pretty-enquiry-hero">
         <div className="container text-center">
-          <button onClick={() => navigate('/')} className="back-link-btn" style={{ marginBottom: '14px' }}>
-            <ArrowLeft size={16} />
-            <span>Back to Home</span>
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '14px' }}>
+            <button onClick={() => navigate('/')} className="back-link-btn">
+              <ArrowLeft size={16} />
+              <span>Back to Home</span>
+            </button>
+
+            {isPlaying && (
+              <button
+                onClick={togglePlay}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: '#dc2626',
+                  color: '#ffffff',
+                  padding: '6px 16px',
+                  borderRadius: '100px',
+                  fontSize: '0.78rem',
+                  fontWeight: '700',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)',
+                  transition: 'transform 0.2s ease'
+                }}
+              >
+                <Pause size={14} style={{ fill: '#fff' }} />
+                <span>Pause Audio Guide</span>
+              </button>
+            )}
+          </div>
 
           <div className="hero-pill-badge">
             <Sparkles size={14} style={{ color: '#fbbf24' }} />
