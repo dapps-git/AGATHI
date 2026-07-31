@@ -350,26 +350,9 @@ const Enquiry = () => {
             </button>
 
             {isPlaying && (
-              <button
-                onClick={togglePlay}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  background: '#dc2626',
-                  color: '#ffffff',
-                  padding: '6px 16px',
-                  borderRadius: '100px',
-                  fontSize: '0.78rem',
-                  fontWeight: '700',
-                  border: 'none',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)',
-                  transition: 'transform 0.2s ease'
-                }}
-              >
-                <Pause size={14} style={{ fill: '#fff' }} />
-                <span>Pause Audio Guide</span>
+              <button onClick={togglePlay} className="hero-pause-btn" title="Pause Audio">
+                <Pause size={12} style={{ fill: '#fff' }} />
+                <span>Pause</span>
               </button>
             )}
           </div>
