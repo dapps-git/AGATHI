@@ -300,6 +300,15 @@ const Enquiry = () => {
       {/* Floating Audio Bar */}
       <div className={`audio-floating-bar ${isPlaying ? 'active' : ''}`}>
         <div className="container audio-bar-content">
+          <button
+            onClick={togglePlay}
+            className="audio-control-btn audio-control-btn--play"
+            title={isPlaying ? 'Pause Audio' : 'Play Audio'}
+            aria-label={isPlaying ? 'Pause Audio' : 'Play Audio'}
+          >
+            {isPlaying ? <Pause size={18} style={{ fill: 'currentColor' }} /> : <Play size={18} style={{ fill: 'currentColor', marginLeft: '2px' }} />}
+          </button>
+
           <div className="audio-info">
             <div className={`audio-equalizer ${isPlaying ? 'playing' : ''}`}>
               <span></span>
@@ -326,15 +335,6 @@ const Enquiry = () => {
           <div className="audio-controls">
             <button onClick={toggleMute} className="audio-control-btn" title={isMuted ? 'Unmute Audio' : 'Mute Audio'}>
               {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-            </button>
-            <button
-              onClick={togglePlay}
-              className="audio-control-btn audio-control-btn--play"
-              title={isPlaying ? 'Pause Audio' : 'Play Audio'}
-              style={{ width: 'auto', padding: '0 14px', borderRadius: '100px', gap: '5px' }}
-            >
-              {isPlaying ? <Pause size={16} /> : <Play size={16} />}
-              <span style={{ fontSize: '0.78rem', fontWeight: '700' }}>{isPlaying ? 'Pause' : 'Play'}</span>
             </button>
           </div>
         </div>
