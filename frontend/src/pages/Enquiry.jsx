@@ -340,31 +340,6 @@ const Enquiry = () => {
         </div>
       </div>
 
-      {/* Top Pretty Hero Banner */}
-      <div className="pretty-enquiry-hero">
-        <div className="container text-center">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '14px' }}>
-            <button onClick={() => navigate('/')} className="back-link-btn">
-              <ArrowLeft size={16} />
-              <span>Back to Home</span>
-            </button>
-
-            {isPlaying && (
-              <button onClick={togglePlay} className="hero-pause-btn" title="Pause Audio">
-                <Pause size={12} style={{ fill: '#fff' }} />
-                <span>Pause</span>
-              </button>
-            )}
-          </div>
-
-          <h1 className="pretty-hero-title">
-            Agadi Choorna Guidance &amp; Voice Center
-          </h1>
-          <p className="pretty-hero-subtitle">
-            Listen to complete audio details, watch doctor explanation videos, view 10,000+ happy customer transformations, and hear authentic voice reviews from Kerala customers.
-          </p>
-        </div>
-      </div>
 
       {/* Main Model Sections Container */}
       <div className="container model-sections-container">

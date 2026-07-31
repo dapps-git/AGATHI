@@ -2405,7 +2405,7 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
   max-width: 1040px;
   width: 100%;
   box-sizing: border-box;
-  margin: 0 auto 24px;
+  margin: 16px auto 24px;
 }
 
 .model-card {
