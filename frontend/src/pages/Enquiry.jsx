@@ -357,11 +357,6 @@ const Enquiry = () => {
             )}
           </div>
 
-          <div className="hero-pill-badge">
-            <Sparkles size={14} style={{ color: '#fbbf24' }} />
-            <span>Official Agadi Choorna Product Guidance</span>
-          </div>
-
           <h1 className="pretty-hero-title">
             Agadi Choorna Guidance &amp; Voice Center
           </h1>
