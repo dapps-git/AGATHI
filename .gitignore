@@ -20,6 +20,10 @@ build/
 logs/
 request_log.txt
 
+# Runtime Data / Fallback DB
+database.json
+backend/database.json
+
 # OS files
 .DS_Store
 Thumbs.db
