@@ -1,10 +1,19 @@
 import axios from 'axios';
 
-// In production, all API calls go through Vercel's proxy (/api → tweaki.pw/agadi/api)
-// This avoids CORS entirely. In dev, hit localhost directly.
-const BASE_URL = import.meta.env.DEV
-  ? (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8080/api')
-  : '/api';
+const getBaseUrl = () => {
+  if (import.meta.env.DEV) {
+    return import.meta.env.VITE_API_URL || 'http://127.0.0.1:8080/api';
+  }
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  if (typeof window !== 'undefined' && window.location.hostname.includes('agadichoornam.com')) {
+    return 'https://tweaki.pw/agadi/api';
+  }
+  return '/api';
+};
+
+const BASE_URL = getBaseUrl();
 
 const API = axios.create({
   baseURL: BASE_URL,
