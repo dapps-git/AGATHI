@@ -518,8 +518,8 @@ const AdminDashboard = () => {
   const handleAudioFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      setError('Audio file size must be less than 10MB.');
+    if (file.size > 3 * 1024 * 1024) {
+      setError('Audio file size must be under 3MB for fast web streaming. Please choose a smaller audio file.');
       return;
     }
     setError('');
