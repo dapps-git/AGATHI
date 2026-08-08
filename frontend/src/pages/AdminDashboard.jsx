@@ -10,6 +10,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import adminAPI from '../utils/adminApi';
 import { AdminAuthContext } from '../context/AdminAuthContext';
+import { compressAudioFile } from '../utils/audioCompressor.js';
 
 const compressImageToWebP = (file, maxWidth = 1000, maxHeight = 1000, quality = 0.7) => {
   return new Promise((resolve, reject) => {
@@ -92,6 +93,7 @@ const AdminDashboard = () => {
   const [audioPhotoBase64, setAudioPhotoBase64] = useState('');
   const [audioUrlPreview, setAudioUrlPreview] = useState('');
   const [playingAdminAudioId, setPlayingAdminAudioId] = useState(null);
+  const [compressingAudio, setCompressingAudio] = useState(false);
 
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -515,30 +517,23 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleAudioFileChange = (e) => {
+  const handleAudioFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 3 * 1024 * 1024) {
-      setError('Audio file size must be under 3MB for fast web streaming. Please choose a smaller audio file.');
-      return;
-    }
     setError('');
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target.result;
-      setAudioUrlPreview(dataUrl);
-
-      const tempAudio = new Audio(dataUrl);
-      tempAudio.onloadedmetadata = () => {
-        const secs = Math.round(tempAudio.duration);
-        if (!isNaN(secs) && secs > 0) {
-          const m = Math.floor(secs / 60);
-          const s = secs % 60;
-          setAudioForm(prev => ({ ...prev, duration: `${m}:${s < 10 ? '0' : ''}${s}` }));
-        }
-      };
-    };
-    reader.readAsDataURL(file);
+    setCompressingAudio(true);
+    try {
+      const result = await compressAudioFile(file);
+      setAudioUrlPreview(result.dataUrl);
+      if (result.duration) {
+        setAudioForm(prev => ({ ...prev, duration: result.duration }));
+      }
+    } catch (err) {
+      console.error('Audio compression error:', err);
+      setError('Failed to process audio file. Please try another audio clip.');
+    } finally {
+      setCompressingAudio(false);
+    }
   };
 
   const handleAudioSubmit = async (e) => {
@@ -1741,7 +1736,13 @@ const AdminDashboard = () => {
                       accept="audio/*"
                       onChange={handleAudioFileChange}
                       style={{ display: 'none' }}
+                      disabled={compressingAudio}
                     />
+                    {compressingAudio && (
+                      <div style={{ fontSize: '0.75rem', color: 'var(--primary-green)', marginTop: '4px', fontWeight: '600' }}>
+                        ⚡ Optimizing audio recording...
+                      </div>
+                    )}
                   </div>
                 </div>
 
