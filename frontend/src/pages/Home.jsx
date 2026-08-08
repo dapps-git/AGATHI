@@ -106,6 +106,14 @@ const Home = () => {
     }
   }, [location]);
 
+  const DEFAULT_CUSTOMER_VOICES = [
+    { _id: '1', name: 'Customer 1', photo: '/contact.webp', audioUrl: '/images/customer1.mp3', duration: '0:45', quote: 'Gained 5 kgs in 35 days!' },
+    { _id: '2', name: 'Customer 2', photo: '/contact.webp', audioUrl: '/images/customer2.mp3', duration: '0:38', quote: 'Improved appetite & energy.' },
+    { _id: '3', name: 'Customer 3', photo: '/contact.webp', audioUrl: '/images/customer3.mp3', duration: '0:51', quote: 'Natural & effective.' },
+    { _id: '4', name: 'Customer 4', photo: '/contact.webp', audioUrl: '/images/customer4.mp3', duration: '0:42', quote: 'Gained 4 kgs cleanly.' }
+  ];
+  const [customerVoices, setCustomerVoices] = useState(DEFAULT_CUSTOMER_VOICES);
+
   // Fetch products (updates dynamically if API available, else keeps static DEFAULT_AGADI_PRODUCT)
   useEffect(() => {
     const fetchProducts = async () => {
@@ -119,6 +127,21 @@ const Home = () => {
       }
     };
     fetchProducts();
+  }, []);
+
+  // Fetch audio reviews (updates dynamically if API available, else keeps static DEFAULT_CUSTOMER_VOICES)
+  useEffect(() => {
+    const fetchAudioReviews = async () => {
+      try {
+        const { data } = await API.get('/audio-reviews');
+        if (data && Array.isArray(data) && data.length > 0) {
+          setCustomerVoices(data);
+        }
+      } catch (error) {
+        // Keeps static DEFAULT_CUSTOMER_VOICES seamlessly
+      }
+    };
+    fetchAudioReviews();
   }, []);
 
   // Auto-open order modal if user clicked Buy Now as a guest and has logged in
@@ -475,60 +498,60 @@ const Home = () => {
                 onEnded={() => setPlayingHomeVoiceId(null)}
               />
               <div className="customer-voices-list" style={{ maxHeight: '250px' }}>
-                {[
-                  { id: 1, name: 'Customer 1', src: '/images/customer1.mp3', duration: '0:45', quote: 'Gained 5 kgs in 35 days!' },
-                  { id: 2, name: 'Customer 2', src: '/images/customer2.mp3', duration: '0:38', quote: 'Improved appetite & energy.' },
-                  { id: 3, name: 'Customer 3', src: '/images/customer3.mp3', duration: '0:51', quote: 'Natural & effective.' },
-                  { id: 4, name: 'Customer 4', src: '/images/customer4.mp3', duration: '0:42', quote: 'Gained 4 kgs cleanly.' }
-                ].map((voice) => (
-                  <div key={voice.id} className={`voice-review-item ${playingHomeVoiceId === voice.id ? 'active-playing' : ''}`}>
-                    <img src="/contact.webp" alt="Customer Contact" className="voice-contact-img" />
-                    <div className="voice-review-body">
-                      <div className="voice-user-header">
-                        <strong>{voice.name}</strong>
-                        <span className="voice-duration-badge">{voice.duration}</span>
+                {customerVoices.slice(0, 4).map((voice) => {
+                  const voiceId = voice._id || voice.id;
+                  const audioSrc = voice.audioUrl || voice.src;
+                  const isPlayingThis = playingHomeVoiceId === voiceId;
+                  return (
+                    <div key={voiceId} className={`voice-review-item ${isPlayingThis ? 'active-playing' : ''}`}>
+                      <img src={voice.photo || '/contact.webp'} alt={voice.name} className="voice-contact-img" onError={e => { e.target.onerror = null; e.target.src = '/contact.webp'; }} />
+                      <div className="voice-review-body">
+                        <div className="voice-user-header">
+                          <strong>{voice.name}</strong>
+                          <span className="voice-duration-badge">{voice.duration || '0:45'}</span>
+                        </div>
+                        <p className="voice-quote">"{voice.quote}"</p>
                       </div>
-                      <p className="voice-quote">"{voice.quote}"</p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        if (playingHomeVoiceId === voice.id) {
-                          if (homeVoiceAudioRef.current) homeVoiceAudioRef.current.pause();
-                          setPlayingHomeVoiceId(null);
-                          return;
-                        }
-
-                        if (homeAudioRef.current && isHomeAudioPlaying) {
-                          homeAudioRef.current.pause();
-                          setIsHomeAudioPlaying(false);
-                        }
-
-                        if (homeVoiceAudioRef.current) {
-                          homeVoiceAudioRef.current.pause();
-                        }
-
-                        const newAudio = new Audio(voice.src);
-                        homeVoiceAudioRef.current = newAudio;
-
-                        newAudio.onended = () => setPlayingHomeVoiceId(null);
-                        newAudio.onerror = () => {
-                          console.log('Customer voice audio error:', voice.src);
-                          setPlayingHomeVoiceId(null);
-                        };
-
-                        newAudio.play()
-                          .then(() => setPlayingHomeVoiceId(voice.id))
-                          .catch((err) => {
-                            console.log('Customer voice play error:', err);
+                      <button
+                        onClick={() => {
+                          if (isPlayingThis) {
+                            if (homeVoiceAudioRef.current) homeVoiceAudioRef.current.pause();
                             setPlayingHomeVoiceId(null);
-                          });
-                      }}
-                      className={`voice-play-btn ${playingHomeVoiceId === voice.id ? 'playing' : ''}`}
-                    >
-                      {playingHomeVoiceId === voice.id ? <Pause size={14} /> : <Play size={14} style={{ marginLeft: '1px' }} />}
-                    </button>
-                  </div>
-                ))}
+                            return;
+                          }
+
+                          if (homeAudioRef.current && isHomeAudioPlaying) {
+                            homeAudioRef.current.pause();
+                            setIsHomeAudioPlaying(false);
+                          }
+
+                          if (homeVoiceAudioRef.current) {
+                            homeVoiceAudioRef.current.pause();
+                          }
+
+                          const newAudio = new Audio(audioSrc);
+                          homeVoiceAudioRef.current = newAudio;
+
+                          newAudio.onended = () => setPlayingHomeVoiceId(null);
+                          newAudio.onerror = () => {
+                            console.log('Customer voice audio error:', audioSrc);
+                            setPlayingHomeVoiceId(null);
+                          };
+
+                          newAudio.play()
+                            .then(() => setPlayingHomeVoiceId(voiceId))
+                            .catch((err) => {
+                              console.log('Customer voice play error:', err);
+                              setPlayingHomeVoiceId(null);
+                            });
+                        }}
+                        className={`voice-play-btn ${isPlayingThis ? 'playing' : ''}`}
+                      >
+                        {isPlayingThis ? <Pause size={14} /> : <Play size={14} style={{ marginLeft: '1px' }} />}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
               <button onClick={() => navigate('/enquiry')} className="view-more-voices-btn" style={{ width: '100%', marginTop: '10px' }}>
                 View All 33 Voice Reviews &rarr;

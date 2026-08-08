@@ -7,6 +7,7 @@ import {
   Lock, MessageCircle, X
 } from 'lucide-react';
 import reviewImages from '../utils/reviewImages';
+import API from '../utils/api';
 
 const CUSTOMER_VOICE_REVIEWS = Array.from({ length: 33 }, (_, i) => {
   const index = i + 1;
@@ -77,6 +78,21 @@ const Enquiry = () => {
   const customerAudioRef = useRef(null);
   const [playingVoiceId, setPlayingVoiceId] = useState(null);
   const [showAllVoices, setShowAllVoices] = useState(false);
+  const [customerVoices, setCustomerVoices] = useState(CUSTOMER_VOICE_REVIEWS);
+
+  useEffect(() => {
+    const fetchAudioReviews = async () => {
+      try {
+        const { data } = await API.get('/audio-reviews');
+        if (data && Array.isArray(data) && data.length > 0) {
+          setCustomerVoices(data);
+        }
+      } catch (error) {
+        // Keeps static CUSTOMER_VOICE_REVIEWS fallback
+      }
+    };
+    fetchAudioReviews();
+  }, []);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -218,7 +234,10 @@ const Enquiry = () => {
   const voiceAudioRef = useRef(null);
 
   const toggleVoicePlay = (voice) => {
-    if (playingVoiceId === voice.id) {
+    const voiceId = voice._id || voice.id;
+    const audioSrc = voice.audioUrl || voice.src;
+
+    if (playingVoiceId === voiceId) {
       if (voiceAudioRef.current) {
         voiceAudioRef.current.pause();
       }
@@ -235,17 +254,17 @@ const Enquiry = () => {
       voiceAudioRef.current.pause();
     }
 
-    const newAudio = new Audio(voice.src);
+    const newAudio = new Audio(audioSrc);
     voiceAudioRef.current = newAudio;
 
     newAudio.onended = () => setPlayingVoiceId(null);
     newAudio.onerror = () => {
-      console.log('Customer voice audio error:', voice.src);
+      console.log('Customer voice audio error:', audioSrc);
       setPlayingVoiceId(null);
     };
 
     newAudio.play()
-      .then(() => setPlayingVoiceId(voice.id))
+      .then(() => setPlayingVoiceId(voiceId))
       .catch((err) => {
         console.log('Customer voice play error:', err);
         setPlayingVoiceId(null);
@@ -270,7 +289,7 @@ const Enquiry = () => {
     window.open(`https://wa.me/918139800282?text=${text}`, '_blank');
   };
 
-  const visibleVoices = showAllVoices ? CUSTOMER_VOICE_REVIEWS : CUSTOMER_VOICE_REVIEWS.slice(0, 4);
+  const visibleVoices = showAllVoices ? customerVoices : customerVoices.slice(0, 4);
 
   return (
     <div className="enquiry-page model-page">
@@ -485,31 +504,35 @@ const Enquiry = () => {
 
             <div className="model-card-media">
               <div className="customer-voices-list">
-                {visibleVoices.map((voice) => (
-                  <div key={voice.id} className={`voice-review-item ${playingVoiceId === voice.id ? 'active-playing' : ''}`}>
-                    <img src="/contact.webp" alt="Customer Contact" className="voice-contact-img" />
-                    <div className="voice-review-body">
-                      <div className="voice-user-header">
-                        <strong>Customer {voice.id}</strong>
-                        <span className="voice-duration-badge">{voice.duration}</span>
+                {visibleVoices.map((voice) => {
+                  const voiceId = voice._id || voice.id;
+                  const isPlayingThis = playingVoiceId === voiceId;
+                  return (
+                    <div key={voiceId} className={`voice-review-item ${isPlayingThis ? 'active-playing' : ''}`}>
+                      <img src={voice.photo || '/contact.webp'} alt={voice.name || 'Customer Contact'} className="voice-contact-img" onError={e => { e.target.onerror = null; e.target.src = '/contact.webp'; }} />
+                      <div className="voice-review-body">
+                        <div className="voice-user-header">
+                          <strong>{voice.name || `Customer ${voice.id}`}</strong>
+                          <span className="voice-duration-badge">{voice.duration || '0:45'}</span>
+                        </div>
+                        <p className="voice-quote">"{voice.quote}"</p>
                       </div>
-                      <p className="voice-quote">"{voice.quote}"</p>
+                      <button
+                        onClick={() => toggleVoicePlay(voice)}
+                        className={`voice-play-btn ${isPlayingThis ? 'playing' : ''}`}
+                        title={isPlayingThis ? 'Pause Voice' : 'Play Voice'}
+                      >
+                        {isPlayingThis ? <Pause size={16} /> : <Play size={16} style={{ marginLeft: '2px' }} />}
+                      </button>
                     </div>
-                    <button
-                      onClick={() => toggleVoicePlay(voice)}
-                      className={`voice-play-btn ${playingVoiceId === voice.id ? 'playing' : ''}`}
-                      title={playingVoiceId === voice.id ? 'Pause Voice' : 'Play Voice'}
-                    >
-                      {playingVoiceId === voice.id ? <Pause size={16} /> : <Play size={16} style={{ marginLeft: '2px' }} />}
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
 
                 <button
                   onClick={() => setShowAllVoices(!showAllVoices)}
                   className="view-more-voices-btn"
                 >
-                  <span>{showAllVoices ? 'Show Less Voices' : `View More Voices (${CUSTOMER_VOICE_REVIEWS.length} total)`}</span>
+                  <span>{showAllVoices ? 'Show Less Voices' : `View More Voices (${customerVoices.length} total)`}</span>
                   {showAllVoices ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
               </div>

@@ -7,6 +7,7 @@ const dbPath = path.resolve('database.json');
 const defaultDb = {
   products: [],
   orders: [],
+  audioReviews: [],
   users: [
     {
       _id: "66723e7f4a56a6452ba3be81",
@@ -24,13 +25,16 @@ export const getFallbackDb = () => {
     fs.writeFileSync(dbPath, JSON.stringify(defaultDb, null, 2));
   }
   try {
-    return JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+    const data = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+    if (!data.audioReviews) data.audioReviews = [];
+    return data;
   } catch (err) {
     return defaultDb;
   }
 };
 
 export const saveFallbackDb = (data) => {
+  if (!data.audioReviews) data.audioReviews = [];
   fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
 };
 

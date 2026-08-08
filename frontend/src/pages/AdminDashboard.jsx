@@ -4,7 +4,7 @@ import {
   LayoutDashboard, ShoppingBag, Users, ShoppingCart,
   Plus, Edit2, Trash2, Search, X, LogOut, RefreshCw,
   TrendingUp, Package, UserCheck, Menu, Download,
-  MessageSquare, Send, MessageCircle
+  MessageSquare, Send, MessageCircle, Mic, Volume2, Play, Pause, Headphones
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -78,6 +78,21 @@ const AdminDashboard = () => {
   const [imagePreview, setImagePreview] = useState(null);  // base64 or existing URL
   const [imageBase64, setImageBase64] = useState('');      // base64 to submit
 
+  // Audio Reviews State
+  const [audioReviews, setAudioReviews] = useState([]);
+  const [audioModalOpen, setAudioModalOpen] = useState(false);
+  const [editingAudioReview, setEditingAudioReview] = useState(null);
+  const [audioForm, setAudioForm] = useState({
+    name: '',
+    duration: '0:45',
+    quote: '',
+    location: 'Kerala',
+  });
+  const [audioPhotoPreview, setAudioPhotoPreview] = useState(null);
+  const [audioPhotoBase64, setAudioPhotoBase64] = useState('');
+  const [audioUrlPreview, setAudioUrlPreview] = useState('');
+  const [playingAdminAudioId, setPlayingAdminAudioId] = useState(null);
+
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -130,6 +145,13 @@ const AdminDashboard = () => {
         setUsers(usersRes.data);
       } else {
         setUsers([]);
+      }
+
+      const audioRes = await adminAPI.get('/audio-reviews').catch(() => null);
+      if (audioRes && Array.isArray(audioRes.data)) {
+        setAudioReviews(audioRes.data);
+      } else {
+        setAudioReviews([]);
       }
 
       if (hasError) {
@@ -456,6 +478,125 @@ const AdminDashboard = () => {
     }
   };
 
+  // ── Audio Review Actions ──
+  const openAddAudioModal = () => {
+    setEditingAudioReview(null);
+    setAudioForm({ name: '', duration: '0:45', quote: '', location: 'Kerala' });
+    setAudioPhotoPreview('/contact.webp');
+    setAudioPhotoBase64('');
+    setAudioUrlPreview('');
+    setAudioModalOpen(true);
+  };
+
+  const openEditAudioModal = (rev) => {
+    setEditingAudioReview(rev);
+    setAudioForm({
+      name: rev.name || '',
+      duration: rev.duration || '0:45',
+      quote: rev.quote || '',
+      location: rev.location || 'Kerala',
+    });
+    setAudioPhotoPreview(rev.photo || '/contact.webp');
+    setAudioPhotoBase64('');
+    setAudioUrlPreview(rev.audioUrl || '');
+    setAudioModalOpen(true);
+  };
+
+  const handleAudioPhotoChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      setError('');
+      const webpDataUrl = await compressImageToWebP(file, 400, 400, 0.7);
+      setAudioPhotoBase64(webpDataUrl);
+      setAudioPhotoPreview(webpDataUrl);
+    } catch (err) {
+      setError('Failed to compress customer photo.');
+    }
+  };
+
+  const handleAudioFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Audio file size must be less than 10MB.');
+      return;
+    }
+    setError('');
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target.result;
+      setAudioUrlPreview(dataUrl);
+
+      const tempAudio = new Audio(dataUrl);
+      tempAudio.onloadedmetadata = () => {
+        const secs = Math.round(tempAudio.duration);
+        if (!isNaN(secs) && secs > 0) {
+          const m = Math.floor(secs / 60);
+          const s = secs % 60;
+          setAudioForm(prev => ({ ...prev, duration: `${m}:${s < 10 ? '0' : ''}${s}` }));
+        }
+      };
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAudioSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!audioForm.name.trim()) {
+      setError('Customer name is required.');
+      return;
+    }
+    if (!audioUrlPreview) {
+      setError('Customer audio file is required.');
+      return;
+    }
+
+    const photo = audioPhotoBase64 || audioPhotoPreview || '/contact.webp';
+
+    const payload = {
+      name: audioForm.name,
+      photo,
+      audioUrl: audioUrlPreview,
+      duration: audioForm.duration || '0:45',
+      quote: audioForm.quote,
+      location: audioForm.location || 'Kerala',
+    };
+
+    try {
+      if (editingAudioReview) {
+        const { data } = await adminAPI.put(`/audio-reviews/${editingAudioReview._id}`, payload);
+        setAudioReviews(audioReviews.map(r => r._id === editingAudioReview._id ? data : r));
+        setSuccess('Audio review updated!');
+      } else {
+        const { data } = await adminAPI.post('/audio-reviews', payload);
+        setAudioReviews([data, ...audioReviews]);
+        setSuccess('Audio review created!');
+      }
+      setAudioModalOpen(false);
+      setTimeout(() => setSuccess(''), 3000);
+      fetchData();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Audio review action failed.');
+    }
+  };
+
+  const handleAudioDelete = async (id) => {
+    if (window.confirm('Delete this audio review?')) {
+      try {
+        await adminAPI.delete(`/audio-reviews/${id}`);
+        setAudioReviews(audioReviews.filter(r => r._id !== id));
+        setSuccess('Audio review deleted.');
+        setTimeout(() => setSuccess(''), 3000);
+      } catch (err) {
+        setError(err.response?.data?.message || 'Delete failed.');
+        setTimeout(() => setError(''), 3000);
+      }
+    }
+  };
+
   const [customerSearch, setCustomerSearch] = useState('');
 
   const filteredUsers = users.filter(u =>
@@ -497,6 +638,7 @@ const AdminDashboard = () => {
     dashboard: 'Dashboard Overview',
     orders: 'Manage Orders',
     products: 'Product Inventory',
+    audioReviews: 'Customer Audio Reviews',
     customers: 'Customer Accounts (1+ Orders)',
     users: 'Registered Users',
   };
@@ -550,6 +692,7 @@ const AdminDashboard = () => {
             {activeTab === 'dashboard' && 'A real-time snapshot of your business metrics.'}
             {activeTab === 'orders' && 'Track and manage all orders placed by customers.'}
             {activeTab === 'products' && 'Add, edit, or remove products from your catalog.'}
+            {activeTab === 'audioReviews' && 'Upload and manage customer audio reviews with photo & name.'}
             {activeTab === 'customers' && 'Users who have successfully placed at least one order.'}
             {activeTab === 'users' && 'View all registered user accounts.'}
           </p>
@@ -561,6 +704,13 @@ const AdminDashboard = () => {
             <button onClick={openAddProductModal} className="btn btn-primary" style={{ gap: '6px', borderRadius: '8px', padding: '8px 16px', fontSize: '0.82rem' }}>
               <Plus size={16} />
               <span>Add Product</span>
+            </button>
+          )}
+
+          {activeTab === 'audioReviews' && (
+            <button onClick={openAddAudioModal} className="btn btn-primary" style={{ gap: '6px', borderRadius: '8px', padding: '8px 16px', fontSize: '0.82rem' }}>
+              <Plus size={16} />
+              <span>Add Audio Review</span>
             </button>
           )}
 
@@ -629,6 +779,7 @@ const AdminDashboard = () => {
             { id: 'dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
             { id: 'orders', icon: <ShoppingCart size={18} />, label: 'Orders' },
             { id: 'products', icon: <ShoppingBag size={18} />, label: 'Products' },
+            { id: 'audioReviews', icon: <Mic size={18} />, label: 'Audio Reviews' },
             { id: 'customers', icon: <UserCheck size={18} />, label: 'Customers' },
             { id: 'users', icon: <Users size={18} />, label: 'Users' },
           ].map(tab => (
@@ -1013,6 +1164,78 @@ const AdminDashboard = () => {
                   )}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {/* ── Audio Reviews Tab ── */}
+          {activeTab === 'audioReviews' && (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: '700', color: 'var(--primary-green)' }}>
+                  Customer Audio Reviews ({audioReviews.length})
+                </h3>
+                <button onClick={openAddAudioModal} className="btn btn-primary" style={{ gap: '6px', borderRadius: '8px', padding: '8px 14px', fontSize: '0.82rem' }}>
+                  <Plus size={15} /> Add Customer Audio
+                </button>
+              </div>
+
+              <div className="table-container">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Photo</th>
+                      <th>Customer Name</th>
+                      <th>Audio Preview</th>
+                      <th>Duration</th>
+                      <th>Quote / Review</th>
+                      <th>Location</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {audioReviews.map((rev) => (
+                      <tr key={rev._id}>
+                        <td data-label="Photo">
+                          <img
+                            src={rev.photo || '/contact.webp'}
+                            alt={rev.name}
+                            style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--primary-green)', background: '#fff' }}
+                            onError={e => { e.target.onerror = null; e.target.src = '/contact.webp'; }}
+                          />
+                        </td>
+                        <td data-label="Customer Name" style={{ fontWeight: '700', color: 'var(--primary-green)' }}>{rev.name}</td>
+                        <td data-label="Audio Preview" style={{ minWidth: '220px' }}>
+                          <audio controls src={rev.audioUrl} style={{ width: '100%', height: '36px' }} />
+                        </td>
+                        <td data-label="Duration">
+                          <span className="badge badge-confirmed" style={{ padding: '4px 10px' }}>{rev.duration || '0:45'}</span>
+                        </td>
+                        <td data-label="Quote / Review" style={{ fontSize: '0.82rem', maxWidth: '240px', color: 'var(--text-color)' }}>
+                          "{rev.quote || 'No quote specified'}"
+                        </td>
+                        <td data-label="Location" style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{rev.location || 'Kerala'}</td>
+                        <td data-label="Actions">
+                          <div className="actions-cell">
+                            <button onClick={() => openEditAudioModal(rev)} className="action-btn" aria-label="Edit review">
+                              <Edit2 size={15} />
+                            </button>
+                            <button onClick={() => handleAudioDelete(rev._id)} className="action-btn action-btn-danger" aria-label="Delete review">
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {audioReviews.length === 0 && (
+                      <tr>
+                        <td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                          No customer audio reviews uploaded yet. Click <strong>"Add Customer Audio"</strong> to upload your first audio review!
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
@@ -1412,6 +1635,156 @@ const AdminDashboard = () => {
                   Send Normal SMS
                 </a>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Audio Review Modal ── */}
+      {audioModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-container" style={{ maxWidth: '520px' }}>
+            <button onClick={() => setAudioModalOpen(false)} className="modal-close" aria-label="Close modal">
+              <X size={22} />
+            </button>
+            <div className="modal-body" style={{ padding: '28px' }}>
+              <div className="modal-header" style={{ marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '1.25rem', color: 'var(--primary-green)', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Mic size={22} />
+                  {editingAudioReview ? 'Edit Audio Review' : 'Upload Customer Audio Review'}
+                </h3>
+                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                  Upload customer photo and audio file along with name and quote.
+                </p>
+              </div>
+
+              {error && <div className="alert alert-danger" style={{ marginBottom: '16px' }}>{error}</div>}
+
+              <form onSubmit={handleAudioSubmit}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                  <div className="form-group">
+                    <label htmlFor="audio-cust-name" style={{ fontSize: '0.82rem', fontWeight: '600' }}>Customer Name *</label>
+                    <input
+                      type="text"
+                      id="audio-cust-name"
+                      value={audioForm.name}
+                      onChange={e => setAudioForm({ ...audioForm, name: e.target.value })}
+                      placeholder="e.g. Suresh Kumar"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="audio-cust-location" style={{ fontSize: '0.82rem', fontWeight: '600' }}>Location / City</label>
+                    <input
+                      type="text"
+                      id="audio-cust-location"
+                      value={audioForm.location}
+                      onChange={e => setAudioForm({ ...audioForm, location: e.target.value })}
+                      placeholder="e.g. Wayanad, Kerala"
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                  {/* Photo Upload */}
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.82rem', fontWeight: '600' }}>Customer Photo</label>
+                    <label
+                      htmlFor="audio-photo-upload"
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        gap: '6px', padding: '8px 12px', border: '1.5px dashed var(--border-color)',
+                        borderRadius: '8px', cursor: 'pointer', fontSize: '0.82rem',
+                        color: 'var(--primary-green)', fontWeight: '600',
+                        background: 'var(--card-bg)', minHeight: '42px',
+                      }}
+                    >
+                      📷 Pick Photo
+                    </label>
+                    <input
+                      type="file"
+                      id="audio-photo-upload"
+                      accept="image/*"
+                      onChange={handleAudioPhotoChange}
+                      style={{ display: 'none' }}
+                    />
+                    {audioPhotoPreview && (
+                      <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <img
+                          src={audioPhotoPreview}
+                          alt="Preview"
+                          style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border-color)' }}
+                        />
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Photo Ready</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Audio File Upload */}
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.82rem', fontWeight: '600' }}>Audio File (MP3 / WAV) *</label>
+                    <label
+                      htmlFor="audio-file-upload"
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        gap: '6px', padding: '8px 12px', border: '1.5px dashed var(--primary-green)',
+                        borderRadius: '8px', cursor: 'pointer', fontSize: '0.82rem',
+                        color: 'var(--primary-green)', fontWeight: '600',
+                        background: 'rgba(47,79,30,0.05)', minHeight: '42px',
+                      }}
+                    >
+                      🎙️ Select Audio
+                    </label>
+                    <input
+                      type="file"
+                      id="audio-file-upload"
+                      accept="audio/*"
+                      onChange={handleAudioFileChange}
+                      style={{ display: 'none' }}
+                    />
+                  </div>
+                </div>
+
+                {/* Audio Live Preview Player */}
+                {audioUrlPreview && (
+                  <div style={{ marginBottom: '16px', background: '#f4faf2', padding: '12px', borderRadius: '8px', border: '1px solid #d1fae5' }}>
+                    <div style={{ fontSize: '0.78rem', fontWeight: '700', color: 'var(--primary-green)', marginBottom: '6px' }}>
+                      ✓ Audio Preview Test:
+                    </div>
+                    <audio controls src={audioUrlPreview} style={{ width: '100%', height: '36px' }} />
+                  </div>
+                )}
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '16px', marginBottom: '16px' }}>
+                  <div className="form-group">
+                    <label htmlFor="audio-cust-duration" style={{ fontSize: '0.82rem', fontWeight: '600' }}>Duration</label>
+                    <input
+                      type="text"
+                      id="audio-cust-duration"
+                      value={audioForm.duration}
+                      onChange={e => setAudioForm({ ...audioForm, duration: e.target.value })}
+                      placeholder="0:45"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="audio-cust-quote" style={{ fontSize: '0.82rem', fontWeight: '600' }}>Customer Quote / Highlight</label>
+                    <input
+                      type="text"
+                      id="audio-cust-quote"
+                      value={audioForm.quote}
+                      onChange={e => setAudioForm({ ...audioForm, quote: e.target.value })}
+                      placeholder="e.g. Gained 5 kgs in 35 days!"
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '14px', marginTop: '20px' }}>
+                  <button type="button" onClick={() => setAudioModalOpen(false)} className="btn btn-outline" style={{ flexGrow: 1 }}>Cancel</button>
+                  <button type="submit" className="btn btn-primary" style={{ flexGrow: 2 }}>
+                    {editingAudioReview ? 'Save Changes' : 'Upload Audio Review'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

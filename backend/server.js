@@ -13,6 +13,7 @@ import authRoutes from './routes/auth.js';
 import productRoutes from './routes/products.js';
 import orderRoutes from './routes/orders.js';
 import statsRoutes from './routes/stats.js';
+import audioReviewRoutes from './routes/audioReviews.js';
 
 // Load env vars
 dotenv.config();
@@ -23,7 +24,6 @@ connectDB();
 const app = express();
 
 // ── RAW CORS middleware (MUST be first — before everything including subfolder strip)
-// Directly writes headers so Apache reverse-proxy cannot strip them.
 const ALLOWED_ORIGINS = [
   'https://www.agadichoornam.com',
   'https://agadichoornam.com',
@@ -107,6 +107,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/audio-reviews', audioReviewRoutes);
 
 // Base route
 app.get('/', (req, res) => {
@@ -127,5 +128,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });
-
-// Trigger reload for new env vars
