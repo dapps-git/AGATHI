@@ -67,6 +67,7 @@ const AdminDashboard = () => {
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [pdfFilterType, setPdfFilterType] = useState('all');
   const [pdfFromDate, setPdfFromDate] = useState('');
+  const [pdfToDate, setPdfToDate] = useState('');
 
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -194,16 +195,46 @@ const AdminDashboard = () => {
       monthlyStart.setDate(now.getDate() - 30);
       filteredOrders = orders.filter(o => new Date(o.createdAt) >= monthlyStart);
       rangeLabel = 'Last 30 Days';
-    } else if (pdfFilterType === 'custom' && pdfFromDate) {
-      const start = new Date(pdfFromDate);
-      start.setHours(0, 0, 0, 0);
-      const end = new Date();
-      end.setHours(23, 59, 59, 999);
+    } else if (pdfFilterType === 'custom') {
+      if (!pdfFromDate && !pdfToDate) {
+        alert('Please select a From Date or To Date for custom date range!');
+        return;
+      }
+      let start = null;
+      let end = null;
+      if (pdfFromDate) {
+        start = new Date(pdfFromDate);
+        start.setHours(0, 0, 0, 0);
+      }
+      if (pdfToDate) {
+        end = new Date(pdfToDate);
+        end.setHours(23, 59, 59, 999);
+      } else {
+        end = new Date();
+        end.setHours(23, 59, 59, 999);
+      }
+
+      if (start && end && start > end) {
+        alert('From Date cannot be later than To Date!');
+        return;
+      }
+
       filteredOrders = orders.filter(o => {
         const d = new Date(o.createdAt);
-        return d >= start && d <= end;
+        if (start && d < start) return false;
+        if (end && d > end) return false;
+        return true;
       });
-      rangeLabel = `From ${new Date(pdfFromDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })} to Today`;
+
+      const formatDateStr = (dStr) => new Date(dStr).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+
+      if (pdfFromDate && pdfToDate) {
+        rangeLabel = `From ${formatDateStr(pdfFromDate)} to ${formatDateStr(pdfToDate)}`;
+      } else if (pdfFromDate) {
+        rangeLabel = `From ${formatDateStr(pdfFromDate)} to Today`;
+      } else if (pdfToDate) {
+        rangeLabel = `Up to ${formatDateStr(pdfToDate)}`;
+      }
     }
 
     if (filteredOrders.length === 0) {
@@ -714,6 +745,7 @@ const AdminDashboard = () => {
               onClick={() => {
                 setPdfFilterType('all');
                 setPdfFromDate('');
+                setPdfToDate('');
                 setExportModalOpen(true);
               }}
               title="Download orders report as PDF"
@@ -1467,18 +1499,35 @@ const AdminDashboard = () => {
                 </div>
 
                 {pdfFilterType === 'custom' && (
-                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', animation: 'fadeIn 0.2s ease' }}>
-                    <label htmlFor="pdf-from-date" style={{ fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-color)' }}>From Date (Start Date) *</label>
-                    <input
-                      type="date"
-                      id="pdf-from-date"
-                      value={pdfFromDate}
-                      onChange={e => setPdfFromDate(e.target.value)}
-                      max={new Date().toISOString().split('T')[0]}
-                      required
-                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.875rem' }}
-                    />
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>The report will include orders from this date up to today.</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', animation: 'fadeIn 0.2s ease' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <label htmlFor="pdf-from-date" style={{ fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-color)' }}>From Date *</label>
+                        <input
+                          type="date"
+                          id="pdf-from-date"
+                          value={pdfFromDate}
+                          onChange={e => setPdfFromDate(e.target.value)}
+                          max={pdfToDate || new Date().toISOString().split('T')[0]}
+                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}
+                        />
+                      </div>
+                      <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <label htmlFor="pdf-to-date" style={{ fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-color)' }}>To Date *</label>
+                        <input
+                          type="date"
+                          id="pdf-to-date"
+                          value={pdfToDate}
+                          onChange={e => setPdfToDate(e.target.value)}
+                          min={pdfFromDate || undefined}
+                          max={new Date().toISOString().split('T')[0]}
+                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}
+                        />
+                      </div>
+                    </div>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      Select start and end dates to filter orders in the PDF report.
+                    </p>
                   </div>
                 )}
 
@@ -1488,7 +1537,7 @@ const AdminDashboard = () => {
                     type="button"
                     onClick={downloadFilteredPDF}
                     className="btn btn-primary"
-                    disabled={pdfFilterType === 'custom' && !pdfFromDate}
+                    disabled={pdfFilterType === 'custom' && !pdfFromDate && !pdfToDate}
                     style={{ flex: 2, padding: '10px', gap: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   >
                     <Download size={16} />
