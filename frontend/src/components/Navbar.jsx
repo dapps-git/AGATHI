@@ -156,7 +156,13 @@ const Navbar = () => {
           )}
         </ul>
 
-        <button className="hamburger" onClick={() => setIsOpen(!isOpen)} style={{ position: 'relative', zIndex: 999 }}>
+        <button
+          className={`hamburger ${isOpen ? 'open' : ''}`}
+          onClick={() => setIsOpen(!isOpen)}
+          style={{ position: 'relative', zIndex: 999 }}
+          aria-label={isOpen ? "Close menu" : "Open menu"}
+          aria-expanded={isOpen}
+        >
           {isOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
       </div>

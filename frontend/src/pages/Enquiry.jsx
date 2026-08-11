@@ -74,6 +74,9 @@ const Enquiry = () => {
   // Video Modal state
   const [showVideoModal, setShowVideoModal] = useState(false);
 
+  // Floating Audio Bar Dismiss state
+  const [isFloatingBarDismissed, setIsFloatingBarDismissed] = useState(false);
+
   // Customer voices audio state
   const customerAudioRef = useRef(null);
   const [playingVoiceId, setPlayingVoiceId] = useState(null);
@@ -317,47 +320,57 @@ const Enquiry = () => {
       />
 
       {/* Floating Audio Bar */}
-      <div className={`audio-floating-bar ${isPlaying ? 'active' : ''}`}>
-        <div className="container audio-bar-content">
-          <button
-            onClick={togglePlay}
-            className="audio-control-btn audio-control-btn--play"
-            title={isPlaying ? 'Pause Audio' : 'Play Audio'}
-            aria-label={isPlaying ? 'Pause Audio' : 'Play Audio'}
-          >
-            {isPlaying ? <Pause size={18} style={{ fill: 'currentColor' }} /> : <Play size={18} style={{ fill: 'currentColor', marginLeft: '2px' }} />}
-          </button>
-
-          <div className="audio-info">
-            <div className={`audio-equalizer ${isPlaying ? 'playing' : ''}`}>
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
-            <div className="audio-text-wrap">
-              <span className="audio-label">Listen to Product Details</span>
-              <span className="audio-time">{formatTime(currentTime)} / {formatTime(duration || 168)}</span>
-            </div>
-          </div>
-
-          <div className="audio-seek-container">
-            <input
-              type="range"
-              min="0"
-              max={duration || 168}
-              value={currentTime}
-              onChange={handleSeek}
-              className="audio-seek-bar"
-            />
-          </div>
-
-          <div className="audio-controls">
-            <button onClick={toggleMute} className="audio-control-btn" title={isMuted ? 'Unmute Audio' : 'Mute Audio'}>
-              {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+      {!isFloatingBarDismissed && (
+        <div className={`audio-floating-bar ${isPlaying ? 'active' : ''}`}>
+          <div className="audio-bar-content">
+            <button
+              onClick={togglePlay}
+              className="audio-control-btn audio-control-btn--play"
+              title={isPlaying ? 'Pause Audio' : 'Play Audio'}
+              aria-label={isPlaying ? 'Pause Audio' : 'Play Audio'}
+            >
+              {isPlaying ? <Pause size={18} style={{ fill: 'currentColor' }} /> : <Play size={18} style={{ fill: 'currentColor', marginLeft: '2px' }} />}
             </button>
+
+            <div className="audio-info">
+              <div className={`audio-equalizer ${isPlaying ? 'playing' : ''}`}>
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div className="audio-text-wrap">
+                <span className="audio-label">Listen to Product Details</span>
+                <span className="audio-time">{formatTime(currentTime)} / {formatTime(duration || 168)}</span>
+              </div>
+            </div>
+
+            <div className="audio-seek-container">
+              <input
+                type="range"
+                min="0"
+                max={duration || 168}
+                value={currentTime}
+                onChange={handleSeek}
+                className="audio-seek-bar"
+              />
+            </div>
+
+            <div className="audio-controls">
+              <button onClick={toggleMute} className="audio-control-btn" title={isMuted ? 'Unmute Audio' : 'Mute Audio'}>
+                {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+              </button>
+              <button
+                onClick={() => setIsFloatingBarDismissed(true)}
+                className="audio-control-btn audio-control-btn--close"
+                title="Dismiss Audio Bar"
+                aria-label="Dismiss Audio Bar"
+              >
+                <X size={16} />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
 
       {/* Main Model Sections Container */}
