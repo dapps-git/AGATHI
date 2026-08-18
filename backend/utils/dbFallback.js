@@ -21,12 +21,18 @@ const defaultDb = {
 };
 
 export const getFallbackDb = () => {
-  if (!fs.existsSync(dbPath)) {
-    fs.writeFileSync(dbPath, JSON.stringify(defaultDb, null, 2));
-  }
   try {
+    if (!fs.existsSync(dbPath)) {
+      try {
+        fs.writeFileSync(dbPath, JSON.stringify(defaultDb, null, 2));
+      } catch (writeErr) {
+        console.error('Fallback DB write error:', writeErr.message);
+      }
+      return defaultDb;
+    }
     const data = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
     if (!data.audioReviews) data.audioReviews = [];
+    if (!data.users) data.users = defaultDb.users;
     return data;
   } catch (err) {
     return defaultDb;
@@ -34,8 +40,12 @@ export const getFallbackDb = () => {
 };
 
 export const saveFallbackDb = (data) => {
-  if (!data.audioReviews) data.audioReviews = [];
-  fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
+  try {
+    if (!data.audioReviews) data.audioReviews = [];
+    fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
+  } catch (err) {
+    console.error('Failed to save fallback DB:', err.message);
+  }
 };
 
 export const isDbConnected = () => {

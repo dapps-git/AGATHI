@@ -51,9 +51,13 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('userSessionExpiry', (Date.now() + SESSION_DURATION_MS).toString());
       return { success: true };
     } catch (error) {
+      const errMsg = error.response?.data?.message
+        || (error.response?.status === 520 || error.response?.status === 500
+          ? 'Server connection error. Please try again in a moment.'
+          : 'Login failed. Please check your credentials.');
       return {
         success: false,
-        message: error.response?.data?.message || 'Login failed. Please check your credentials.',
+        message: errMsg,
       };
     }
   };

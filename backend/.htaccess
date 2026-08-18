@@ -1,7 +1,12 @@
 # Apache CORS headers — required for cPanel reverse proxy to Node.js
-# This ensures Apache doesn't strip CORS headers before they reach the browser
+# Unset backend headers first to prevent duplicate CORS headers (which cause Cloudflare 520 errors)
 
 <IfModule mod_headers.c>
+    Header unset Access-Control-Allow-Origin
+    Header unset Access-Control-Allow-Methods
+    Header unset Access-Control-Allow-Headers
+    Header unset Access-Control-Allow-Credentials
+
     # Allow the specific production origins
     SetEnvIf Origin "^https://(www\.)?agadichoornam\.com$" CORS_ALLOW=1
     SetEnvIf Origin "^https://(www\.)?tweaki\.pw$"        CORS_ALLOW=1
@@ -9,14 +14,15 @@
     SetEnvIf Origin "^http://localhost(:\d+)?$"            CORS_ALLOW=1
     SetEnvIf Origin "^http://127\.0\.0\.1(:\d+)?$"        CORS_ALLOW=1
 
-    Header always set Access-Control-Allow-Origin "%{HTTP_ORIGIN}e" env=CORS_ALLOW
-    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-    Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
-    Header always set Access-Control-Allow-Credentials "true"
-    Header always set Access-Control-Max-Age "86400"
+    Header set Access-Control-Allow-Origin "%{HTTP_ORIGIN}e" env=CORS_ALLOW
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+    Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization, token, x-access-token"
+    Header set Access-Control-Allow-Credentials "true"
+    Header set Access-Control-Max-Age "86400"
 </IfModule>
 
 # Handle OPTIONS preflight requests immediately at Apache level
 RewriteEngine On
 RewriteCond %{REQUEST_METHOD} OPTIONS
 RewriteRule ^(.*)$ $1 [R=200,L]
+

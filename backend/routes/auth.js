@@ -128,12 +128,14 @@ router.post('/register', async (req, res) => {
 // @route   POST /api/auth/login
 // @access  Public
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  let { email, password } = req.body;
 
   try {
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
+
+    email = String(email).trim().toLowerCase();
 
     // Auto-seed admin user in Atlas if connected but empty
     if (mongoose.connection.readyState === 1) {
@@ -153,7 +155,7 @@ router.post('/login', async (req, res) => {
     if (mongoose.connection.readyState !== 1) {
       const { getFallbackDb } = await import('../utils/dbFallback.js');
       const db = getFallbackDb();
-      const user = db.users.find(u => u.email === email);
+      const user = db.users.find(u => String(u.email).toLowerCase() === email);
       if (user && user.password === password) {
         return res.json({
           _id: user._id,
@@ -185,7 +187,7 @@ router.post('/login', async (req, res) => {
       res.status(401).json({ message: 'Invalid email or password' });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message || 'Authentication error' });
   }
 });
 

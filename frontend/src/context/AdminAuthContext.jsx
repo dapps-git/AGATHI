@@ -42,9 +42,13 @@ export const AdminAuthProvider = ({ children }) => {
       localStorage.setItem('adminSessionExpiry', (Date.now() + ADMIN_SESSION_DURATION_MS).toString());
       return { success: true };
     } catch (error) {
+      const errMsg = error.response?.data?.message
+        || (error.response?.status === 520 || error.response?.status === 500
+          ? 'Server or network error (520/500). Please check server status and try again.'
+          : 'Login failed. Please check your email and password credentials.');
       return {
         success: false,
-        message: error.response?.data?.message || 'Login failed. Please check your credentials.',
+        message: errMsg,
       };
     }
   };
