@@ -88,7 +88,12 @@ const Enquiry = () => {
       try {
         const { data } = await API.get('/audio-reviews');
         if (data && Array.isArray(data) && data.length > 0) {
-          setCustomerVoices(data);
+          const customVoices = data.filter(d => !d._id.startsWith('static-voice-') && !d._id.startsWith('audiorev-static-'));
+          if (customVoices.length > 0) {
+            setCustomerVoices([...customVoices, ...CUSTOMER_VOICE_REVIEWS]);
+          } else if (data.length >= 4) {
+            setCustomerVoices(data);
+          }
         }
       } catch (error) {
         // Keeps static CUSTOMER_VOICE_REVIEWS fallback

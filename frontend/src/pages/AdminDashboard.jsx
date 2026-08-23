@@ -594,16 +594,16 @@ const AdminDashboard = () => {
     try {
       if (editingAudioReview) {
         const { data } = await adminAPI.put(`/audio-reviews/${editingAudioReview._id}`, payload);
-        setAudioReviews(audioReviews.map(r => r._id === editingAudioReview._id ? data : r));
+        setAudioReviews(prev => prev.map(r => r._id === editingAudioReview._id ? data : r));
         setSuccess('Audio review updated!');
       } else {
         const { data } = await adminAPI.post('/audio-reviews', payload);
-        setAudioReviews([data, ...audioReviews]);
+        setAudioReviews(prev => [data, ...prev]);
         setSuccess('Audio review created!');
       }
       setAudioModalOpen(false);
       setTimeout(() => setSuccess(''), 3000);
-      fetchData();
+      await fetchData();
     } catch (err) {
       setError(err.response?.data?.message || 'Audio review action failed.');
     }
