@@ -1,6 +1,60 @@
 {
   "products": [],
   "orders": [],
+  "audioReviews": [
+    {
+      "_id": "audiorev-static-1",
+      "name": "Customer 1",
+      "photo": "/contact.webp",
+      "audioUrl": "/images/customer1.mp3",
+      "duration": "0:45",
+      "quote": "Gained 5 kgs in 35 days!",
+      "location": "Kerala",
+      "rating": 5,
+      "order": 1,
+      "createdAt": "2026-08-23T00:00:00.000Z",
+      "updatedAt": "2026-08-23T00:00:00.000Z"
+    },
+    {
+      "_id": "audiorev-static-2",
+      "name": "Customer 2",
+      "photo": "/contact.webp",
+      "audioUrl": "/images/customer2.mp3",
+      "duration": "0:38",
+      "quote": "Improved appetite & energy.",
+      "location": "Kerala",
+      "rating": 5,
+      "order": 2,
+      "createdAt": "2026-08-23T00:00:00.000Z",
+      "updatedAt": "2026-08-23T00:00:00.000Z"
+    },
+    {
+      "_id": "audiorev-static-3",
+      "name": "Customer 3",
+      "photo": "/contact.webp",
+      "audioUrl": "/images/customer3.mp3",
+      "duration": "0:51",
+      "quote": "Natural & effective.",
+      "location": "Kerala",
+      "rating": 5,
+      "order": 3,
+      "createdAt": "2026-08-23T00:00:00.000Z",
+      "updatedAt": "2026-08-23T00:00:00.000Z"
+    },
+    {
+      "_id": "audiorev-static-4",
+      "name": "Customer 4",
+      "photo": "/contact.webp",
+      "audioUrl": "/images/customer4.mp3",
+      "duration": "0:42",
+      "quote": "Gained 4 kgs cleanly.",
+      "location": "Kerala",
+      "rating": 5,
+      "order": 4,
+      "createdAt": "2026-08-23T00:00:00.000Z",
+      "updatedAt": "2026-08-23T00:00:00.000Z"
+    }
+  ],
   "users": [
     {
       "_id": "66723e7f4a56a6452ba3be81",
