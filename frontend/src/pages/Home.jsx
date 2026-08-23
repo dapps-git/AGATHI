@@ -107,10 +107,10 @@ const Home = () => {
   }, [location]);
 
   const DEFAULT_CUSTOMER_VOICES = [
-    { _id: '1', name: 'Customer 1', photo: '/contact.webp', audioUrl: '/images/customer1.mp3', duration: '0:45', quote: 'Gained 5 kgs in 35 days!' },
-    { _id: '2', name: 'Customer 2', photo: '/contact.webp', audioUrl: '/images/customer2.mp3', duration: '0:38', quote: 'Improved appetite & energy.' },
-    { _id: '3', name: 'Customer 3', photo: '/contact.webp', audioUrl: '/images/customer3.mp3', duration: '0:51', quote: 'Natural & effective.' },
-    { _id: '4', name: 'Customer 4', photo: '/contact.webp', audioUrl: '/images/customer4.mp3', duration: '0:42', quote: 'Gained 4 kgs cleanly.' }
+    { _id: '1', name: 'Verified Review', photo: '/contact.webp', audioUrl: '/images/customer1.mp3', duration: '0:45', quote: 'Gained 5 kgs in 35 days!' },
+    { _id: '2', name: 'Verified Review', photo: '/contact.webp', audioUrl: '/images/customer2.mp3', duration: '0:38', quote: 'Improved appetite & energy.' },
+    { _id: '3', name: 'Verified Review', photo: '/contact.webp', audioUrl: '/images/customer3.mp3', duration: '0:51', quote: 'Natural & effective.' },
+    { _id: '4', name: 'Verified Review', photo: '/contact.webp', audioUrl: '/images/customer4.mp3', duration: '0:42', quote: 'Gained 4 kgs cleanly.' }
   ];
   const [customerVoices, setCustomerVoices] = useState(DEFAULT_CUSTOMER_VOICES);
 

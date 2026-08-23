@@ -514,7 +514,7 @@ const AdminDashboard = () => {
   // ── Audio Review Actions ──
   const openAddAudioModal = () => {
     setEditingAudioReview(null);
-    setAudioForm({ name: '', duration: '0:45', quote: '', location: 'Kerala' });
+    setAudioForm({ name: 'Verified Review', duration: '0:45', quote: '', location: 'Kerala' });
     setAudioPhotoPreview('/contact.webp');
     setAudioPhotoBase64('');
     setAudioUrlPreview('');
@@ -1764,29 +1764,38 @@ const AdminDashboard = () => {
                     )}
                   </div>
 
-                  {/* Audio File Upload */}
+                  {/* Audio File / URL Input */}
                   <div className="form-group">
-                    <label style={{ fontSize: '0.82rem', fontWeight: '600' }}>Audio File (MP3 / WAV) *</label>
-                    <label
-                      htmlFor="audio-file-upload"
-                      style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        gap: '6px', padding: '8px 12px', border: '1.5px dashed var(--primary-green)',
-                        borderRadius: '8px', cursor: 'pointer', fontSize: '0.82rem',
-                        color: 'var(--primary-green)', fontWeight: '600',
-                        background: 'rgba(47,79,30,0.05)', minHeight: '42px',
-                      }}
-                    >
-                      🎙️ Select Audio
-                    </label>
-                    <input
-                      type="file"
-                      id="audio-file-upload"
-                      accept="audio/*"
-                      onChange={handleAudioFileChange}
-                      style={{ display: 'none' }}
-                      disabled={compressingAudio}
-                    />
+                    <label style={{ fontSize: '0.82rem', fontWeight: '600' }}>Audio File / Link *</label>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input
+                        type="text"
+                        value={audioUrlPreview}
+                        onChange={e => setAudioUrlPreview(e.target.value)}
+                        placeholder="Paste audio URL or click Select Audio..."
+                        style={{ flex: 1 }}
+                      />
+                      <label
+                        htmlFor="audio-file-upload"
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          gap: '4px', padding: '8px 12px', border: '1.5px dashed var(--primary-green)',
+                          borderRadius: '8px', cursor: 'pointer', fontSize: '0.82rem',
+                          color: 'var(--primary-green)', fontWeight: '600',
+                          background: 'rgba(47,79,30,0.05)', whiteSpace: 'nowrap'
+                        }}
+                      >
+                        🎙️ Select Audio
+                      </label>
+                      <input
+                        type="file"
+                        id="audio-file-upload"
+                        accept="audio/*"
+                        onChange={handleAudioFileChange}
+                        style={{ display: 'none' }}
+                        disabled={compressingAudio}
+                      />
+                    </div>
                     {compressingAudio && (
                       <div style={{ fontSize: '0.75rem', color: 'var(--primary-green)', marginTop: '4px', fontWeight: '600' }}>
                         ⚡ Optimizing audio recording...
