@@ -1,6 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import AudioReview from '../models/AudioReview.js';
+import defaultAudioReviews from '../utils/defaultAudioReviews.js';
 import { protect, admin } from '../middleware/auth.js';
 import { getFallbackDb, saveFallbackDb } from '../utils/dbFallback.js';
 
@@ -14,13 +15,8 @@ router.get('/', async (req, res) => {
     if (mongoose.connection.readyState === 1) {
       let reviews = await AudioReview.find({}).sort({ createdAt: -1 });
       if (!reviews || reviews.length === 0) {
-        const defaultReviews = [
-          { name: 'Customer 1', photo: '/contact.webp', audioUrl: '/images/customer1.mp3', duration: '0:45', quote: 'Gained 5 kgs in 35 days!', location: 'Kerala', rating: 5, order: 1 },
-          { name: 'Customer 2', photo: '/contact.webp', audioUrl: '/images/customer2.mp3', duration: '0:38', quote: 'Improved appetite & energy.', location: 'Kerala', rating: 5, order: 2 },
-          { name: 'Customer 3', photo: '/contact.webp', audioUrl: '/images/customer3.mp3', duration: '0:51', quote: 'Natural & effective.', location: 'Kerala', rating: 5, order: 3 },
-          { name: 'Customer 4', photo: '/contact.webp', audioUrl: '/images/customer4.mp3', duration: '0:42', quote: 'Gained 4 kgs cleanly.', location: 'Kerala', rating: 5, order: 4 }
-        ];
-        reviews = await AudioReview.insertMany(defaultReviews);
+        const reviewsToInsert = defaultAudioReviews.map(({ _id, ...rest }) => rest);
+        reviews = await AudioReview.insertMany(reviewsToInsert);
       }
       res.json(reviews);
     } else {

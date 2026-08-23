@@ -19,10 +19,12 @@ export const protect = async (req, res, next) => {
       // Get user from database (exclude password)
       if (mongoose.connection.readyState === 1) {
         req.user = await User.findById(decoded.id).select('-password');
-      } else {
+      }
+
+      if (!req.user) {
         const { getFallbackDb } = await import('../utils/dbFallback.js');
         const db = getFallbackDb();
-        const found = db.users.find(u => u._id === decoded.id);
+        const found = (db.users || []).find(u => u._id === decoded.id);
         if (found) {
           const { password, ...userWithoutPassword } = found;
           req.user = userWithoutPassword;
@@ -30,21 +32,18 @@ export const protect = async (req, res, next) => {
       }
 
       if (!req.user) {
-        res.status(401);
-        throw new Error('Not authorized, user not found');
+        return res.status(401).json({ message: 'Not authorized, user not found' });
       }
 
-      next();
+      return next();
     } catch (error) {
-      console.error(error);
-      res.status(401);
-      res.json({ message: 'Not authorized, token failed' });
+      console.error('Auth verification error:', error.message);
+      return res.status(401).json({ message: 'Not authorized, token failed' });
     }
   }
 
   if (!token) {
-    res.status(401);
-    res.json({ message: 'Not authorized, no token' });
+    return res.status(401).json({ message: 'Not authorized, no token' });
   }
 };
 
