@@ -4,6 +4,17 @@ import { AuthContext } from '../context/AuthContext';
 import API from '../utils/api';
 import { Country, State, City } from 'country-state-city';
 
+import leafIcon from '../assets/leaf.webp';
+import fullNameIcon from '../assets/fullname.webp';
+import houseNameIcon from '../assets/housename.webp';
+import postOfficeIcon from '../assets/postoffice.webp';
+import districtIcon from '../assets/district.webp';
+import pincodeIcon from '../assets/pincode.webp';
+import phoneNumberIcon from '../assets/phonenumber.webp';
+import productIcon from '../assets/product.webp';
+import quantityIcon from '../assets/quantity.webp';
+import totalAmountIcon from '../assets/totalamount.webp';
+
 // Predefined mapping of Kerala districts to major cities/towns
 const KERALA_DISTRICTS = {
   'Alappuzha': ['Alappuzha', 'Kayamkulam', 'Cherthala', 'Haripad', 'Mavelikkara', 'Chengannur', 'Kuttanad', 'Ambalappuzha'],
@@ -333,25 +344,27 @@ const OrderModal = ({ product, onClose }) => {
     const calcTotalPrice = (product.price || 1550) * quantity;
     const ownerWhatsApp = '918139800282';
 
-    const waMessage = `🌿 *_AGADI CHOORNAM_*
-*_ORDER FORM_*
+    const waMessage = [
+      `🌿 *_AGADI CHOORNAM_*`,
+      `*_ORDER FORM_*`,
+      ``,
+      `_Please fill in the details below:_`,
+      ``,
+      `👤 Full Name: ${formData.name}`,
+      `🏠 House Name: ${formData.address}${formData.landmark ? ` (${formData.landmark})` : ''}`,
+      `📮 Post Office: ${formData.city || ''}`,
+      `📍 District: ${formData.district || ''}`,
+      `📌 Pincode: ${formData.pinCode || ''}`,
+      `📞 Phone Number: ${formData.phone}${formData.alternatePhone ? ` / ${formData.alternatePhone}` : ''}`,
+      ``,
+      `🛒 *Product:* ${product.name || 'Agadi Choorna'}`,
+      `📦 *Quantity:* ${quantity}`,
+      `💰 *Total Amount:* ₹${calcTotalPrice}`,
+      ``,
+      `🌿 _Thank you for choosing Agadi Choornam!_`,
+    ].join('\n');
 
-_Please fill in the details below:_
-
-👤 Full Name: ${formData.name}
-🏠 House Name: ${formData.address}${formData.landmark ? ` (${formData.landmark})` : ''}
-📮 Post Office: ${formData.city || ''}
-🏙 District: ${formData.district || ''}
-📌 Pincode: ${formData.pinCode || ''}
-📞 Phone Number: ${formData.phone}${formData.alternatePhone ? ` / ${formData.alternatePhone}` : ''}
-${formData.email ? `📧 Email: ${formData.email}` : ''}
-🛒 *Product:* ${product.name || 'Agadi Choorna'}
-📦 *Quantity:* ${quantity}
-💰 *Total Amount:* ₹${calcTotalPrice}
-
-🌿 _Thank you for choosing Agadi Choornam!_`;
-
-    const url = `https://wa.me/${ownerWhatsApp}?text=${encodeURIComponent(waMessage)}`;
+    const url = `https://api.whatsapp.com/send?phone=${ownerWhatsApp}&text=${encodeURIComponent(waMessage)}`;
     setWaUrl(url);
 
     // Save locally
@@ -420,7 +433,10 @@ ${formData.email ? `📧 Email: ${formData.email}` : ''}
         <div className="modal-body" style={{ padding: '20px 24px' }}>
           {/* Header */}
           <div className="modal-header" style={{ marginBottom: '14px' }}>
-            <h3 style={{ fontSize: '1.15rem' }}>Place Your Order</h3>
+            <h3 style={{ fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <img src={leafIcon} alt="" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
+              <span>Place Your Order</span>
+            </h3>
             <p style={{ fontSize: '0.78rem', margin: 0 }}>
               {step === 1 && 'Enter your contact and shipping details.'}
               {step === 2 && 'Review your order and confirm quantity.'}
@@ -448,7 +464,10 @@ ${formData.email ? `📧 Email: ${formData.email}` : ''}
             <div className="order-form compact-form">
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '10px' }}>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label htmlFor="name" style={{ fontSize: '0.72rem', marginBottom: '3px' }}>Full Name *</label>
+                  <label htmlFor="name" style={{ fontSize: '0.72rem', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <img src={fullNameIcon} alt="" style={{ width: '15px', height: '15px', objectFit: 'contain' }} />
+                    Full Name *
+                  </label>
                   <input
                     type="text"
                     id="name"
@@ -478,7 +497,10 @@ ${formData.email ? `📧 Email: ${formData.email}` : ''}
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '10px' }}>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label htmlFor="phone" style={{ fontSize: '0.72rem', marginBottom: '3px' }}>Mobile Number *</label>
+                  <label htmlFor="phone" style={{ fontSize: '0.72rem', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <img src={phoneNumberIcon} alt="" style={{ width: '15px', height: '15px', objectFit: 'contain' }} />
+                    Mobile Number *
+                  </label>
                   <input
                     type="tel"
                     id="phone"
@@ -493,7 +515,10 @@ ${formData.email ? `📧 Email: ${formData.email}` : ''}
                   {fieldErrors.phone && <span className="field-error-msg">{fieldErrors.phone}</span>}
                 </div>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label htmlFor="alternatePhone" style={{ fontSize: '0.72rem', marginBottom: '3px' }}>Alternate Mobile</label>
+                  <label htmlFor="alternatePhone" style={{ fontSize: '0.72rem', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <img src={phoneNumberIcon} alt="" style={{ width: '15px', height: '15px', objectFit: 'contain', opacity: 0.7 }} />
+                    Alternate Mobile
+                  </label>
                   <input
                     type="tel"
                     id="alternatePhone"
@@ -509,13 +534,16 @@ ${formData.email ? `📧 Email: ${formData.email}` : ''}
               </div>
 
               <div className="form-group" style={{ marginBottom: '10px' }}>
-                <label htmlFor="address" style={{ fontSize: '0.72rem', marginBottom: '3px' }}>Shipping Address *</label>
+                <label htmlFor="address" style={{ fontSize: '0.72rem', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <img src={houseNameIcon} alt="" style={{ width: '15px', height: '15px', objectFit: 'contain' }} />
+                  House Name / Shipping Address *
+                </label>
                 <textarea
                   id="address"
                   name="address"
                   value={formData.address}
                   onChange={handleChange}
-                  placeholder="Street name, house number, details..."
+                  placeholder="House name, building name, street..."
                   rows={1.5}
                   style={{ resize: 'none', padding: '8px 12px', fontSize: '0.85rem' }}
                   required
@@ -538,7 +566,10 @@ ${formData.email ? `📧 Email: ${formData.email}` : ''}
                   {fieldErrors.landmark && <span className="field-error-msg">{fieldErrors.landmark}</span>}
                 </div>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label htmlFor="pinCode" style={{ fontSize: '0.72rem', marginBottom: '3px' }}>PIN / ZIP Code *</label>
+                  <label htmlFor="pinCode" style={{ fontSize: '0.72rem', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <img src={pincodeIcon} alt="" style={{ width: '15px', height: '15px', objectFit: 'contain' }} />
+                    PIN / ZIP Code *
+                  </label>
                   <div style={{ position: 'relative' }}>
                     <input
                       type="text"
@@ -619,7 +650,10 @@ ${formData.email ? `📧 Email: ${formData.email}` : ''}
               {/* District and City Selection Row */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }} className="form-row">
                 <div className="form-group" style={{ marginBottom: 0, position: 'relative' }}>
-                  <label htmlFor="district" style={{ fontSize: '0.72rem', marginBottom: '3px' }}>District *</label>
+                  <label htmlFor="district" style={{ fontSize: '0.72rem', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <img src={districtIcon} alt="" style={{ width: '15px', height: '15px', objectFit: 'contain' }} />
+                    District *
+                  </label>
                   <div style={{ position: 'relative' }}>
                     <input
                       type="text"
@@ -685,7 +719,10 @@ ${formData.email ? `📧 Email: ${formData.email}` : ''}
                 </div>
 
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label htmlFor="city" style={{ fontSize: '0.72rem', marginBottom: '3px' }}>City / Town {formData.state === 'Kerala' && '*'}</label>
+                  <label htmlFor="city" style={{ fontSize: '0.72rem', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <img src={postOfficeIcon} alt="" style={{ width: '15px', height: '15px', objectFit: 'contain' }} />
+                    Post Office / Town {formData.state === 'Kerala' && '*'}
+                  </label>
                   {formData.state === 'Kerala' ? (
                     <select
                       id="city"
@@ -696,7 +733,7 @@ ${formData.email ? `📧 Email: ${formData.email}` : ''}
                       required
                       disabled={!formData.district}
                     >
-                      <option value="">Select City / Town</option>
+                      <option value="">Select Post Office / Town</option>
                       {cityOptions.map((cName) => (
                         <option key={cName} value={cName}>
                           {cName}
@@ -710,7 +747,7 @@ ${formData.email ? `📧 Email: ${formData.email}` : ''}
                       name="city"
                       value={formData.city}
                       onChange={handleChange}
-                      placeholder="Enter city / area"
+                      placeholder="Enter city / post office"
                       style={{ padding: '8px 12px', fontSize: '0.85rem' }}
                       disabled={!selectedStateCode}
                     />
@@ -840,7 +877,10 @@ ${formData.email ? `📧 Email: ${formData.email}` : ''}
                   }}
                 />
                 <div>
-                  <h4 style={{ color: 'var(--primary-green)', marginBottom: '2px', fontSize: '0.95rem', fontWeight: '700' }}>{product.name}</h4>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                    <img src={productIcon} alt="" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                    <h4 style={{ color: 'var(--primary-green)', margin: 0, fontSize: '0.95rem', fontWeight: '700' }}>{product.name}</h4>
+                  </div>
                   <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0 }}>Ayurvedic Weight Gain Formulation</p>
                   <div style={{ fontWeight: '700', color: 'var(--primary-green)', marginTop: '4px', fontSize: '0.9rem' }}>₹{product.price} each</div>
                 </div>
@@ -848,7 +888,10 @@ ${formData.email ? `📧 Email: ${formData.email}` : ''}
 
               {/* Quantity Select */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <span style={{ fontWeight: '600', fontSize: '0.85rem' }}>Select Quantity:</span>
+                <span style={{ fontWeight: '600', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <img src={quantityIcon} alt="" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                  Select Quantity:
+                </span>
                 <div className="qty-control">
                   <button type="button" onClick={() => handleQuantityChange(-1)} className="qty-btn" disabled={quantity <= 1}>-</button>
                   <span className="qty-val">{quantity}</span>
@@ -866,21 +909,51 @@ ${formData.email ? `📧 Email: ${formData.email}` : ''}
                   <span>Shipping Charges</span>
                   <span style={{ color: 'green', fontWeight: '600' }}>FREE</span>
                 </div>
-                <div className="order-summary-row order-summary-total" style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--primary-green)', marginTop: '4px', paddingTop: '4px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Total Amount</span>
+                <div className="order-summary-row order-summary-total" style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--primary-green)', marginTop: '4px', paddingTop: '4px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <img src={totalAmountIcon} alt="" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
+                    Total Amount
+                  </span>
                   <span>₹{totalPrice}</span>
                 </div>
               </div>
 
-              {/* Shipping Address Details */}
-              <div style={{ marginBottom: '20px' }}>
-                <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px', letterSpacing: '0.5px', fontWeight: '700' }}>Delivery Address</h4>
-                <p style={{ fontSize: '0.82rem', color: 'var(--text-color)', lineHeight: '1.45', margin: 0 }}>
-                  <strong>{formData.name}</strong><br />
-                  {formData.address}{formData.city ? `, ${formData.city}` : ''}{formData.landmark && `, ${formData.landmark}`}<br />
-                  {formData.district}, {formData.state} - {formData.pinCode}<br />
-                  Phone: {formData.phone} {formData.alternatePhone && `| Alt: ${formData.alternatePhone}`}
-                </p>
+              {/* Shipping Address Details Card with Icons */}
+              <div style={{ marginBottom: '20px', background: '#f8faf7', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  <img src={leafIcon} alt="" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                  <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--primary-green)', letterSpacing: '0.5px', fontWeight: '700', margin: 0 }}>
+                    Order Shipping Details
+                  </h4>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.82rem', color: 'var(--text-color)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <img src={fullNameIcon} alt="" style={{ width: '15px', height: '15px', objectFit: 'contain', flexShrink: 0 }} />
+                    <span><strong>Full Name:</strong> {formData.name}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <img src={houseNameIcon} alt="" style={{ width: '15px', height: '15px', objectFit: 'contain', flexShrink: 0 }} />
+                    <span><strong>House Name:</strong> {formData.address}{formData.landmark ? ` (${formData.landmark})` : ''}</span>
+                  </div>
+                  {formData.city && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <img src={postOfficeIcon} alt="" style={{ width: '15px', height: '15px', objectFit: 'contain', flexShrink: 0 }} />
+                      <span><strong>Post Office:</strong> {formData.city}</span>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <img src={districtIcon} alt="" style={{ width: '15px', height: '15px', objectFit: 'contain', flexShrink: 0 }} />
+                    <span><strong>District:</strong> {formData.district}, {formData.state}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <img src={pincodeIcon} alt="" style={{ width: '15px', height: '15px', objectFit: 'contain', flexShrink: 0 }} />
+                    <span><strong>Pincode:</strong> {formData.pinCode}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <img src={phoneNumberIcon} alt="" style={{ width: '15px', height: '15px', objectFit: 'contain', flexShrink: 0 }} />
+                    <span><strong>Phone Number:</strong> {formData.phone} {formData.alternatePhone && `| Alt: ${formData.alternatePhone}`}</span>
+                  </div>
+                </div>
               </div>
 
               <div style={{ display: 'flex', gap: '12px' }}>
