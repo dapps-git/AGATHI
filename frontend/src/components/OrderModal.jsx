@@ -333,23 +333,23 @@ const OrderModal = ({ product, onClose }) => {
     const calcTotalPrice = (product.price || 1550) * quantity;
     const ownerWhatsApp = '918139800282';
 
-    const waMessage = `*NEW ORDER PLACED (AGADI CHOORNA)* 🌿
-------------------------
-*Product:* ${product.name || 'Agadi Choorna'}
-*Quantity:* ${quantity}
-*Total Amount:* ₹${calcTotalPrice}
+    const waMessage = `🌿 *_AGADI CHOORNAM_*
+*_ORDER FORM_*
 
-*Customer Details:*
-- Name: ${formData.name}
-- Phone: ${formData.phone}
-- Email: ${formData.email || 'N/A'}
-${formData.alternatePhone ? `- Alt Phone: ${formData.alternatePhone}\n` : ''}
-*Shipping Address:*
-- Address: ${compositedAddress}
-${formData.landmark ? `- Landmark: ${formData.landmark}\n` : ''}- District: ${formData.district || ''}
-- State: ${formData.state || ''}
-- Country: ${formData.country || 'India'}
-- PIN Code: ${formData.pinCode || ''}`;
+_Please fill in the details below:_
+
+👤 Full Name: ${formData.name}
+🏠 House Name: ${formData.address}${formData.landmark ? ` (${formData.landmark})` : ''}
+📮 Post Office: ${formData.city || ''}
+🏙 District: ${formData.district || ''}
+📌 Pincode: ${formData.pinCode || ''}
+📞 Phone Number: ${formData.phone}${formData.alternatePhone ? ` / ${formData.alternatePhone}` : ''}
+${formData.email ? `📧 Email: ${formData.email}` : ''}
+🛒 *Product:* ${product.name || 'Agadi Choorna'}
+📦 *Quantity:* ${quantity}
+💰 *Total Amount:* ₹${calcTotalPrice}
+
+🌿 _Thank you for choosing Agadi Choornam!_`;
 
     const url = `https://wa.me/${ownerWhatsApp}?text=${encodeURIComponent(waMessage)}`;
     setWaUrl(url);
