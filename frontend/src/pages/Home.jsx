@@ -554,7 +554,7 @@ const Home = () => {
                 })}
               </div>
               <button onClick={() => navigate('/enquiry')} className="view-more-voices-btn" style={{ width: '100%', marginTop: '10px' }}>
-                View All 33 Voice Reviews &rarr;
+                View All {customerVoices.length > 4 ? customerVoices.length : 70} Voice Reviews &rarr;
               </button>
             </div>
           </div>

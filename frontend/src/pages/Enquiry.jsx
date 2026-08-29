@@ -44,7 +44,9 @@ const waAudioFiles = [
   'WhatsApp Audio 2026-08-22 at 5.35.18 PM (1).ogg',
   'WhatsApp Audio 2026-08-22 at 5.35.18 PM.ogg',
   'WhatsApp Audio 2026-08-22 at 5.35.19 PM.ogg',
-  'WhatsApp Audio 2026-08-22 at 5.35.20 PM.ogg'
+  'WhatsApp Audio 2026-08-22 at 5.35.20 PM.ogg',
+  'WhatsApp Audio 2026-08-29 at 6.51.22 AM.ogg',
+  'WhatsApp Audio 2026-08-29 at 6.51.22 AM (1).ogg'
 ];
 
 const quotesList = [
