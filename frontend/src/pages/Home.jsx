@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useContext, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Phone, MessageSquare, MapPin, Mail, ArrowRight, ShieldCheck, Dumbbell, Apple, UtensilsCrossed, Star, X, Leaf, Users2, Users, Video, Stethoscope, Headphones, Mic, Volume2, Play, Pause } from 'lucide-react';
+import { Phone, MessageSquare, MessageCircle, MapPin, Mail, ArrowRight, ShieldCheck, Dumbbell, Apple, UtensilsCrossed, Star, X, Leaf, Users2, Users, Video, Stethoscope, Headphones, Mic, Volume2, Play, Pause } from 'lucide-react';
 import API from '../utils/api';
 import ProductCard from '../components/ProductCard';
 import OrderModal from '../components/OrderModal';
@@ -216,9 +216,14 @@ const Home = () => {
               <span>Order Now</span>
               <ArrowRight size={16} />
             </button>
-            <a href="tel:+918139800282" className="hero-mobile-btn hero-mobile-btn--outline">
-              <Phone size={16} />
-              <span>Call Expert</span>
+            <a
+              href="https://wa.me/918139800282?text=Hello,%20I'd%20like%20to%20get%20expert%20guidance%20on%20Agadi%20Choornam."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hero-mobile-btn hero-mobile-btn--outline"
+            >
+              <MessageCircle size={16} />
+              <span>WhatsApp Support</span>
             </a>
           </div>
         </div>
@@ -235,9 +240,14 @@ const Home = () => {
             <span>Order Now</span>
             <ArrowRight size={18} />
           </button>
-          <a href="tel:+918139800282" className="btn btn-outline hero-banner-btn">
-            <Phone size={18} />
-            <span>Call Expert</span>
+          <a
+            href="https://wa.me/918139800282?text=Hello,%20I'd%20like%20to%20get%20expert%20guidance%20on%20Agadi%20Choornam."
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-outline hero-banner-btn"
+          >
+            <MessageCircle size={18} />
+            <span>WhatsApp Support</span>
           </a>
         </div>
       </section>

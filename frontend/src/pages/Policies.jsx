@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Shield, FileText, RefreshCcw, Truck, ChevronRight } from 'lucide-react';
 
+
 const tabs = [
   { id: 'privacy',  label: 'Privacy Policy',          icon: Shield },
   { id: 'terms',    label: 'Terms & Conditions',       icon: FileText },
