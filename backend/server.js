@@ -16,7 +16,7 @@ import statsRoutes from './routes/stats.js';
 import audioReviewRoutes from './routes/audioReviews.js';
 
 // Load env vars
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 // Connect to database
 connectDB();
