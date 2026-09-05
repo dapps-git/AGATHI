@@ -57,7 +57,7 @@ const AdminLogin = () => {
               id="admin-email"
               value={email}
               onChange={(e) => { setEmail(e.target.value); setError(''); }}
-              placeholder="admin@agadi.com"
+              placeholder="agadichoornam@gmail.com"
               required
             />
           </div>

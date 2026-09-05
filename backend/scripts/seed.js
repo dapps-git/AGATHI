@@ -25,12 +25,12 @@ const seedData = async () => {
     // Create Admin User
     const admin = await User.create({
       name: 'Agadi Administrator',
-      email: 'admin@agadi.com',
+      email: 'agadichoornam@gmail.com',
       phone: '8139800282',
-      password: 'Admin@123',
+      password: 'agadiadmin@2026',
       isAdmin: true,
     });
-    console.log('Admin user seeded: admin@agadi.com / Admin@123');
+    console.log('Admin user seeded: agadichoornam@gmail.com / agadiadmin@2026');
 
     // Create Agadi Choorna Product
     const product = await Product.create({
