@@ -137,19 +137,6 @@ router.post('/login', async (req, res) => {
 
     email = String(email).trim().toLowerCase();
 
-    // Auto-seed admin user in Atlas if connected but empty
-    if (mongoose.connection.readyState === 1) {
-      const count = await User.countDocuments();
-      if (count === 0) {
-        await User.create({
-          name: 'Agadi Administrator',
-          email: 'agadichoornam@gmail.com',
-          phone: '8139800282',
-          password: 'agadiadmin@2026',
-          isAdmin: true
-        });
-      }
-    }
 
     // Fallback login if mongoose is not connected
     if (mongoose.connection.readyState !== 1) {

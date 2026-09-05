@@ -30,8 +30,9 @@ const AdminLogin = () => {
     setLoading(false);
     if (!result.success) {
       setError(result.message);
+    } else {
+      navigate('/admin');
     }
-    // On success the useEffect above will redirect to /admin
   };
 
   return (
