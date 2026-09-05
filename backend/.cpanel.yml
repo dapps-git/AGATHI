@@ -1,0 +1,10 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/tweaxzow/public_html/agadi/
+    - /bin/cp -R routes $DEPLOYPATH
+    - /bin/cp -R utils $DEPLOYPATH
+    - /bin/cp -R config $DEPLOYPATH
+    - /bin/cp -R models $DEPLOYPATH
+    - /bin/cp -R middleware $DEPLOYPATH
+    - /bin/cp server.js $DEPLOYPATH
