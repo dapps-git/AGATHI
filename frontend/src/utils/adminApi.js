@@ -4,13 +4,10 @@ const getBaseUrl = () => {
   if (import.meta.env.DEV) {
     return import.meta.env.VITE_API_URL || 'http://127.0.0.1:8080/api';
   }
-  if (import.meta.env.VITE_API_URL) {
+  if (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL !== '/api') {
     return import.meta.env.VITE_API_URL;
   }
-  if (typeof window !== 'undefined' && window.location.hostname.includes('agadichoornam.com')) {
-    return 'https://tweaki.pw/agadi/api';
-  }
-  return '/api';
+  return 'https://tweaki.pw/agadi/api';
 };
 
 const BASE_URL = getBaseUrl();
