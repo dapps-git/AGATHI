@@ -39,7 +39,7 @@ adminAPI.interceptors.request.use(
 adminAPI.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
+    if (error.response && error.response.status === 401 && !error.config?.url?.includes('/auth/login')) {
       localStorage.removeItem('adminInfo');
       window.dispatchEvent(new Event('admin-logout'));
       window.location.href = '/admin-login';
