@@ -408,7 +408,7 @@ const Home = () => {
                   src="/images/WhatsApp Video 2026-07-29 at 3.56.51 PM.mp4"
                   controls
                   playsInline
-                  preload="metadata"
+                  preload="none"
                   onPlay={() => {
                     if (homeAudioRef.current && isHomeAudioPlaying) {
                       homeAudioRef.current.pause();
@@ -439,6 +439,7 @@ const Home = () => {
               <div className="model-audio-player">
                 <audio
                   ref={homeAudioRef}
+                  preload="none"
                   onPlay={() => setIsHomeAudioPlaying(true)}
                   onPause={() => setIsHomeAudioPlaying(false)}
                   onTimeUpdate={() => {
@@ -449,8 +450,8 @@ const Home = () => {
                   }}
                   onEnded={() => setIsHomeAudioPlaying(false)}
                 >
-                  <source src="/images/WhatsApp Audio 2026-07-29 at 3.56.51 PM.mp4" />
                   <source src="/images/enquiry-audio.mp3" type="audio/mp3" />
+                  <source src="/images/WhatsApp Audio 2026-07-29 at 3.56.51 PM.mp4" />
                 </audio>
                 <div className="player-main">
                   <button
@@ -505,6 +506,7 @@ const Home = () => {
               </p>
               <audio
                 ref={homeVoiceAudioRef}
+                preload="none"
                 onEnded={() => setPlayingHomeVoiceId(null)}
               />
               <div className="customer-voices-list" style={{ maxHeight: '250px' }}>

@@ -1232,7 +1232,7 @@ const AdminDashboard = () => {
                         </td>
                         <td data-label="Customer Name" style={{ fontWeight: '700', color: 'var(--primary-green)' }}>{rev.name}</td>
                         <td data-label="Audio Preview" style={{ minWidth: '220px' }}>
-                          <audio controls src={rev.audioUrl} style={{ width: '100%', height: '36px' }} />
+                          <audio controls preload="none" src={rev.audioUrl} style={{ width: '100%', height: '36px' }} />
                         </td>
                         <td data-label="Duration">
                           <span className="badge badge-confirmed" style={{ padding: '4px 10px' }}>{rev.duration || '0:45'}</span>

@@ -364,22 +364,22 @@ const Enquiry = () => {
       {/* Hidden Main Audio Element */}
       <audio
         ref={audioRef}
-        autoPlay
         playsInline
-        preload="auto"
+        preload="none"
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleTimeUpdate}
         onEnded={() => setIsPlaying(false)}
       >
-        <source src="/images/WhatsApp Audio 2026-07-29 at 3.56.51 PM.mp4" />
         <source src="/images/enquiry-audio.mp3" type="audio/mp3" />
+        <source src="/images/WhatsApp Audio 2026-07-29 at 3.56.51 PM.mp4" />
       </audio>
 
       {/* Hidden Customer Voice Audio Element */}
       <audio
         ref={customerAudioRef}
+        preload="none"
         onEnded={() => setPlayingVoiceId(null)}
         onError={() => setPlayingVoiceId(null)}
       />
