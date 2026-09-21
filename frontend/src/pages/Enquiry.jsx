@@ -10,6 +10,30 @@ import reviewImages from '../utils/reviewImages';
 import API from '../utils/api';
 
 const waAudioFiles = [
+  'AUDIO-2026-09-21-11-36-33.ogg',
+  'AUDIO-2026-09-21-11-36-33_1.ogg',
+  'AUDIO-2026-09-21-11-36-33_2.ogg',
+  'AUDIO-2026-09-21-11-36-34.ogg',
+  'AUDIO-2026-09-21-11-36-34_1.ogg',
+  'AUDIO-2026-09-21-11-36-34_2.ogg',
+  'AUDIO-2026-09-21-11-36-41.ogg',
+  'AUDIO-2026-09-21-11-36-42.ogg',
+  'AUDIO-2026-09-21-11-36-42_1.ogg',
+  'AUDIO-2026-09-21-11-36-42_2.ogg',
+  'AUDIO-2026-09-21-11-36-43.ogg',
+  'AUDIO-2026-09-21-11-36-43_1.ogg',
+  'AUDIO-2026-09-21-11-37-52.ogg',
+  'AUDIO-2026-09-21-11-37-52_1.ogg',
+  'AUDIO-2026-09-21-11-37-53.ogg',
+  'AUDIO-2026-09-21-11-37-53_1.ogg',
+  'AUDIO-2026-09-21-11-37-53_2.ogg',
+  'AUDIO-2026-09-21-11-37-54.ogg',
+  'AUDIO-2026-09-21-11-37-54_1.ogg',
+  'AUDIO-2026-09-21-11-37-54_2.ogg',
+  'AUDIO-2026-09-21-11-37-55.ogg',
+  'AUDIO-2026-09-21-11-37-55_1.ogg',
+  'AUDIO-2026-09-21-11-37-55_2.ogg',
+  'AUDIO-2026-09-21-11-37-56.ogg',
   'WhatsApp Audio 2026-08-22 at 5.34.47 PM.ogg',
   'WhatsApp Audio 2026-08-22 at 5.34.48 PM.ogg',
   'WhatsApp Audio 2026-08-22 at 5.34.49 PM (1).ogg',
@@ -45,8 +69,8 @@ const waAudioFiles = [
   'WhatsApp Audio 2026-08-22 at 5.35.18 PM.ogg',
   'WhatsApp Audio 2026-08-22 at 5.35.19 PM.ogg',
   'WhatsApp Audio 2026-08-22 at 5.35.20 PM.ogg',
-  'WhatsApp Audio 2026-08-29 at 6.51.22 AM.ogg',
-  'WhatsApp Audio 2026-08-29 at 6.51.22 AM (1).ogg'
+  'WhatsApp Audio 2026-08-29 at 6.51.22 AM (1).ogg',
+  'WhatsApp Audio 2026-08-29 at 6.51.22 AM.ogg'
 ];
 
 const quotesList = [
