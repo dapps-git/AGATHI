@@ -634,7 +634,7 @@ const Enquiry = () => {
                   onClick={() => setShowAllVoices(!showAllVoices)}
                   className="view-more-voices-btn"
                 >
-                  <span>{showAllVoices ? 'Show Less Voices' : `View More Voices (${customerVoices.length} total)`}</span>
+                  <span>{showAllVoices ? 'Show Less Voices' : 'View All 100+ Voice Reviews'}</span>
                   {showAllVoices ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
               </div>
