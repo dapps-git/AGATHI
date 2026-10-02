@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useContext, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Phone, MessageSquare, MessageCircle, MapPin, Mail, ArrowRight, ShieldCheck, Dumbbell, Apple, UtensilsCrossed, Star, X, Leaf, Users2, Users, Video, Stethoscope, Headphones, Mic, Volume2, Play, Pause } from 'lucide-react';
+import { Phone, MessageSquare, MessageCircle, MapPin, Mail, ArrowRight, ShieldCheck, Dumbbell, Apple, UtensilsCrossed, Star, X, Leaf, Users2, Users, Video, Stethoscope, Mic, Play, Pause, TrendingUp, Sun, Moon, Volume2 } from 'lucide-react';
 import API from '../utils/api';
 import ProductCard from '../components/ProductCard';
 import OrderModal from '../components/OrderModal';
@@ -43,15 +43,12 @@ const Home = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Home Audio Guidance state
-  const homeAudioRef = useRef(null);
-  const [isHomeAudioPlaying, setIsHomeAudioPlaying] = useState(false);
-  const [homeAudioTime, setHomeAudioTime] = useState(0);
-  const [homeAudioDuration, setHomeAudioDuration] = useState(0);
-
   // Home Customer Voice state
   const homeVoiceAudioRef = useRef(null);
   const [playingHomeVoiceId, setPlayingHomeVoiceId] = useState(null);
+
+  // Video Modal state
+  const [showVideoModal, setShowVideoModal] = useState(false);
 
   // Hero image slider state
   const [slideIndex, setSlideIndex] = useState(0);
@@ -107,10 +104,9 @@ const Home = () => {
   }, [location]);
 
   const DEFAULT_CUSTOMER_VOICES = [
-    { _id: '1', name: 'Verified Review', photo: '/contact.webp', audioUrl: '/images/customer1.mp3', duration: '0:45', quote: 'Gained 5 kgs in 35 days!' },
-    { _id: '2', name: 'Verified Review', photo: '/contact.webp', audioUrl: '/images/customer2.mp3', duration: '0:38', quote: 'Improved appetite & energy.' },
-    { _id: '3', name: 'Verified Review', photo: '/contact.webp', audioUrl: '/images/customer3.mp3', duration: '0:51', quote: 'Natural & effective.' },
-    { _id: '4', name: 'Verified Review', photo: '/contact.webp', audioUrl: '/images/customer4.mp3', duration: '0:42', quote: 'Gained 4 kgs cleanly.' }
+    { _id: '1', name: 'Verified Review', photo: '/contact.webp', audioUrl: '/images/customer1.mp3', duration: '0:28', quote: 'Gained 4 kg in 15 days' },
+    { _id: '2', name: 'Verified Review', photo: '/contact.webp', audioUrl: '/images/customer2.mp3', duration: '0:32', quote: 'Appetite increased a lot' },
+    { _id: '3', name: 'Verified Review', photo: '/contact.webp', audioUrl: '/images/customer3.mp3', duration: '0:26', quote: 'Very good result, happy' }
   ];
   const [customerVoices, setCustomerVoices] = useState(DEFAULT_CUSTOMER_VOICES);
 
@@ -252,111 +248,140 @@ const Home = () => {
         </div>
       </section>
 
-      {/* About Section */}
-      <section id="about" className="about section-padding">
-        <div className="container about-grid">
-          <div className="about-img-container">
-            <img
-              src="/images/herbs-ingredients.jpg"
-              alt="Ayurvedic Natural Ingredients"
-              className="about-img"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = '/images/product-pouch.jpg';
-              }}
-            />
-          </div>
-          <div className="about-content">
-            <h2 className="section-title" style={{ display: 'block', margin: '0 0 16px 0' }}>About Agadi Choorna</h2>
-            <h3 style={{ marginBottom: '16px' }}>Empowering Your Weight Gain Journey Authentically</h3>
-            <p>
-              Weight gain is not about loaded fats or artificial sugars; it is about building clean muscle bulk, normalizing metabolism, and nourishing bodily tissues (Dhatus).
-            </p>
-            <p style={{ marginBottom: '24px' }}>
-              Agadi Choorna is an age-old herbal recipe that targets the root cause of underweight conditions—poor digestive fire (Agni) and low metabolism. By restoring metabolic balance, it increases your nutritional capacity, helping you gain weight steadily and hold it permanently.
-            </p>
-
-            {/* Ingredients */}
-            <div className="about-info-block">
-              <div className="about-info-label">
-                <span className="about-dot"></span>
-                Active Ingredients
+      {/* Consolidated 1-Page Customer Catchy Showcase Section */}
+      <section id="about" className="compact-showcase-section">
+        <div id="benefits" className="container compact-showcase-container">
+          
+          {/* 1. Why Choose Agadi Choornam? */}
+          <div className="showcase-block">
+            <h2 className="showcase-title">Why Choose Agadi Choornam?</h2>
+            <div className="why-choose-grid">
+              <div className="why-card">
+                <div className="why-icon-wrap">
+                  <UtensilsCrossed size={34} className="why-icon" />
+                </div>
+                <h3 className="why-card-title">Improves Appetite</h3>
+                <p className="why-card-desc">Helps you eat better and get essential nutrients.</p>
               </div>
-              <p className="about-info-text">
-                Karinkali, Koduveli root, Thriphala, Iratti madhuram, Cherukura, Venga, Amukuram, Satavari, Neikumbalam.
-              </p>
-            </div>
 
-            {/* Directions */}
-            <div className="about-info-block">
-              <div className="about-info-label">
-                <span className="about-dot"></span>
-                Directions for Use
+              <div className="why-card">
+                <div className="why-icon-wrap">
+                  <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="why-icon">
+                    <path d="M12 3a4.5 4.5 0 0 0-4.5 4.5c0 1.8.8 3.2.8 5 0 2.5-2 3.5-2 5.5A4 4 0 0 0 10.3 22h3.4A4 4 0 0 0 17.7 18c0-2-2-3-2-5.5 0-1.8.8-3.2.8-5A4.5 4.5 0 0 0 12 3Z" />
+                    <path d="M9 13.5c1 1.2 2 1.2 3 0" />
+                  </svg>
+                </div>
+                <h3 className="why-card-title">Supports Digestion</h3>
+                <p className="why-card-desc">Helps in better nutrient absorption.</p>
               </div>
-              <p className="about-info-text">
-                Consume 1 spoon with milk twice daily after food (Morning &amp; Night). Can also be taken with lukewarm water.
-              </p>
-            </div>
 
-            {/* Quick facts row */}
-            <div className="about-facts-row">
-              <span className="about-fact-pill">
-                <ShieldCheck size={13} /> 100% Chemical Free
-              </span>
-              <span className="about-fact-pill">
-                <ShieldCheck size={13} /> No Side-effects
-              </span>
-              <span className="about-fact-pill">
-                <ShieldCheck size={13} /> Store Cool &amp; Dry
-              </span>
+              <div className="why-card">
+                <div className="why-icon-wrap">
+                  <TrendingUp size={34} className="why-icon" />
+                </div>
+                <h3 className="why-card-title">Supports Healthy Weight Gain</h3>
+                <p className="why-card-desc">Nourishes the body naturally.</p>
+              </div>
+
+              <div className="why-card">
+                <div className="why-icon-wrap">
+                  <Leaf size={34} className="why-icon" />
+                </div>
+                <h3 className="why-card-title">Ayurvedic Ingredients</h3>
+                <p className="why-card-desc">Made with traditional herbs.</p>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Benefits Section */}
-      <section id="benefits" className="benefits section-padding">
-        <div className="container">
-          <div className="text-center">
-            <h2 className="section-title">Key Health Benefits</h2>
-            <p className="section-subtitle">
-              Engineered with ancient Ayurvedic principles to support complete health transformation.
-            </p>
+          <div className="showcase-divider"></div>
+
+          {/* 2. How to Use */}
+          <div className="showcase-block">
+            <h2 className="showcase-title">How to Use</h2>
+            <div className="how-to-use-layout">
+              <div className="how-steps-grid">
+                <div className="how-step-card">
+                  <div className="how-icon-box">
+                    <span className="how-step-emoji">🥄</span>
+                  </div>
+                  <span className="how-step-label">1 Spoon</span>
+                </div>
+
+                <div className="how-step-card">
+                  <div className="how-icon-box">
+                    <span className="how-step-emoji">🥛</span>
+                  </div>
+                  <span className="how-step-label">With Lukewarm<br />Milk / Water</span>
+                </div>
+
+                <div className="how-step-card">
+                  <div className="how-icon-box">
+                    <Sun size={34} className="how-sun-icon" />
+                  </div>
+                  <span className="how-step-label">Morning<br />After Food</span>
+                </div>
+
+                <div className="how-step-card">
+                  <div className="how-icon-box">
+                    <Moon size={34} className="how-moon-icon" />
+                  </div>
+                  <span className="how-step-label">Night<br />After Food</span>
+                </div>
+              </div>
+
+              <div className="how-additional-card">
+                <h4 className="how-additional-title">Additional Instructions</h4>
+                <ul className="how-additional-list">
+                  <li>Milk can be normal or milk powder.</li>
+                  <li>Can also be taken with lukewarm water.</li>
+                  <li>Prefer after food.</li>
+                </ul>
+                <button
+                  onClick={() => {
+                    const element = document.getElementById('products');
+                    if (element) window.scrollTo({ top: element.offsetTop - 80, behavior: 'smooth' });
+                  }}
+                  className="how-read-more-btn"
+                >
+                  <span>Read Full Instructions</span>
+                  <ArrowRight size={14} />
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="benefits-grid">
-            <div className="benefit-card">
-              <div className="benefit-icon-container">
-                <UtensilsCrossed size={28} />
-              </div>
-              <h3>Stimulates Appetite</h3>
-              <p>Naturally triggers hunger receptors and ignites digestive enzymes to make sure you consume healthy meals consistently.</p>
-            </div>
+          <div className="showcase-divider"></div>
 
-            <div className="benefit-card">
-              <div className="benefit-icon-container">
-                <Apple size={28} />
+          {/* 3. Traditional Ayurvedic Ingredients (Aligned like Image 1) */}
+          <div className="showcase-block">
+            <div className="ingredients-layout">
+              <div className="ingredients-text-side">
+                <h3 className="ingredients-heading">
+                  Traditional Ayurvedic Ingredients
+                </h3>
+                <div className="ingredients-list-wrap">
+                  <p className="ingredients-line">
+                    Karinkali &bull; Koduveli Root &bull; Triphala &bull; Iratti Madhuram
+                  </p>
+                  <p className="ingredients-line">
+                    Cherukura &bull; Venga &bull; Amukuram &bull; Shatavari &bull; Neikumbalam
+                  </p>
+                </div>
               </div>
-              <h3>Optimizes Digestion</h3>
-              <p>Improves intestinal absorption capacity so every bit of nutrient and micro-element goes straight to building tissues.</p>
-            </div>
-
-            <div className="benefit-card">
-              <div className="benefit-icon-container">
-                <Dumbbell size={28} />
+              <div className="ingredients-image-side">
+                <img
+                  src="/images/herbs-ingredients.jpg"
+                  alt="Traditional Ayurvedic Ingredients"
+                  className="ingredients-banner-img"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = '/images/product-pouch.webp';
+                  }}
+                />
               </div>
-              <h3>Promotes Muscle Mass</h3>
-              <p>Stimulates synthesis of muscle fibers instead of fat accumulation, ensuring an aesthetically healthy build.</p>
-            </div>
-
-            <div className="benefit-card">
-              <div className="benefit-icon-container">
-                <ShieldCheck size={28} />
-              </div>
-              <h3>Regulates Metabolism</h3>
-              <p>Balances the hyperactive thyroid glands and stress markers to block unnecessary calorie combustion.</p>
             </div>
           </div>
+
         </div>
 
         {/* Benefits Trust Highlight Banner */}
@@ -377,199 +402,105 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Doctor Video, Audio Guide & Customer Voices Section */}
-        <div className="container" style={{ marginTop: '40px' }}>
-          <div className="text-center" style={{ marginBottom: '20px' }}>
-            <span className="doctor-emblem-badge" style={{ fontSize: '0.74rem', padding: '4px 14px', fontWeight: '600' }}>
-              <Stethoscope size={15} className="doctor-emblem-icon" /> Doctor Advice &amp; Audio Guidance
-            </span>
-            <h3 style={{ fontSize: '1.35rem', fontWeight: '700', color: 'var(--primary-green)', marginTop: '8px' }}>
-              Doctor Explanation &amp; Audio Guidance
-            </h3>
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', maxWidth: '560px', margin: '4px auto 0', lineHeight: '1.5' }}>
-              Watch certified doctor advice, listen to complete product details, and hear real customer voice reviews.
-            </p>
+        {/* Customer Voice Reviews & Doctor's Explanation Section (Aligned like Image 2) */}
+        <div className="container voice-and-doctor-container">
+          
+          {/* Header Row */}
+          <div className="voice-section-header">
+            <div className="voice-section-title-wrap">
+              <Volume2 size={18} className="voice-speaker-icon" />
+              <h3 className="voice-section-title">Customer Voice Reviews</h3>
+            </div>
+            <button onClick={() => navigate('/enquiry')} className="listen-more-btn">
+              <span>More Audios</span>
+              <ArrowRight size={12} />
+            </button>
           </div>
 
-          <div className="home-media-grid">
-            {/* Card 1: Doctor's Video */}
-            <div className="model-card home-media-card">
-              <div className="model-card-header-row">
-                <div className="model-icon-circle doctor-bg">
-                  <img src="/doctor.webp" alt="Doctor Advice Logo" className="doctor-emblem-img" />
-                </div>
-                <h4 className="model-card-title">Doctor's Explanation</h4>
-              </div>
-              <p className="model-card-desc">
-                Watch certified Ayurvedic doctor explain weight gain formula &amp; benefits.
-              </p>
-              <div className="home-video-wrapper" style={{ borderRadius: '4px', overflow: 'hidden', background: '#000', border: '1px solid var(--border-color)' }}>
-                <video
-                  src="/images/WhatsApp Video 2026-07-29 at 3.56.51 PM.mp4"
-                  controls
-                  playsInline
-                  preload="none"
-                  onPlay={() => {
-                    if (homeAudioRef.current && isHomeAudioPlaying) {
-                      homeAudioRef.current.pause();
-                      setIsHomeAudioPlaying(false);
-                    }
-                    if (homeVoiceAudioRef.current) {
-                      homeVoiceAudioRef.current.pause();
-                      setPlayingHomeVoiceId(null);
-                    }
-                  }}
-                  style={{ width: '100%', maxHeight: '340px', display: 'block', objectFit: 'contain' }}
-                />
-              </div>
-            </div>
-
-            {/* Card 2: Listen to Product Details */}
-            <div className="model-card home-media-card">
-              <div className="model-card-header-row">
-                <div className="model-icon-circle audio-bg">
-                  <Headphones size={20} />
-                </div>
-                <h4 className="model-card-title">Listen to Product Details</h4>
-              </div>
-              <p className="model-card-desc">
-                Listen to complete product details, ingredients &amp; dosage guide.
-              </p>
-
-              <div className="model-audio-player">
-                <audio
-                  ref={homeAudioRef}
-                  preload="none"
-                  onPlay={() => setIsHomeAudioPlaying(true)}
-                  onPause={() => setIsHomeAudioPlaying(false)}
-                  onTimeUpdate={() => {
-                    if (homeAudioRef.current) {
-                      setHomeAudioTime(homeAudioRef.current.currentTime);
-                      setHomeAudioDuration(homeAudioRef.current.duration || 168);
-                    }
-                  }}
-                  onEnded={() => setIsHomeAudioPlaying(false)}
-                >
-                  <source src="/images/enquiry-audio.mp3" type="audio/mp3" />
-                  <source src="/images/WhatsApp Audio 2026-07-29 at 3.56.51 PM.mp4" />
-                </audio>
-                <div className="player-main">
+          {/* 3 Voice Cards in 1 Row */}
+          <div className="voice-compact-grid">
+            {customerVoices.slice(0, 3).map((voice) => {
+              const voiceId = voice._id || voice.id;
+              const audioSrc = voice.audioUrl || voice.src;
+              const isPlayingThis = playingHomeVoiceId === voiceId;
+              return (
+                <div key={voiceId} className={`voice-compact-card ${isPlayingThis ? 'playing-card' : ''}`}>
                   <button
                     onClick={() => {
-                      if (!homeAudioRef.current) return;
-                      if (isHomeAudioPlaying) {
-                        homeAudioRef.current.pause();
-                      } else {
+                      if (isPlayingThis) {
                         if (homeVoiceAudioRef.current) homeVoiceAudioRef.current.pause();
                         setPlayingHomeVoiceId(null);
-                        homeAudioRef.current.play();
+                        return;
                       }
+
+                      if (homeVoiceAudioRef.current) {
+                        homeVoiceAudioRef.current.pause();
+                      }
+
+                      const newAudio = new Audio(audioSrc);
+                      homeVoiceAudioRef.current = newAudio;
+
+                      newAudio.onended = () => setPlayingHomeVoiceId(null);
+                      newAudio.onerror = () => setPlayingHomeVoiceId(null);
+
+                      newAudio.play()
+                        .then(() => setPlayingHomeVoiceId(voiceId))
+                        .catch(() => setPlayingHomeVoiceId(null));
                     }}
-                    className="player-play-btn"
+                    className={`voice-compact-play-btn ${isPlayingThis ? 'playing' : ''}`}
+                    title={isPlayingThis ? 'Pause Voice' : 'Play Voice'}
+                    aria-label={isPlayingThis ? 'Pause Voice' : 'Play Voice'}
                   >
-                    {isHomeAudioPlaying ? <Pause size={20} /> : <Play size={20} style={{ marginLeft: '2px' }} />}
+                    {isPlayingThis ? <Pause size={14} /> : <Play size={14} style={{ marginLeft: '2px' }} />}
                   </button>
-                  <div className="player-progress-area">
-                    <div className="player-title">Agadi Choorna Voice Guide</div>
-                    <input
-                      type="range"
-                      min="0"
-                      max={homeAudioDuration || 168}
-                      value={homeAudioTime}
-                      onChange={(e) => {
-                        if (homeAudioRef.current) {
-                          const val = parseFloat(e.target.value);
-                          homeAudioRef.current.currentTime = val;
-                          setHomeAudioTime(val);
-                        }
-                      }}
-                      className="player-slider"
-                    />
+
+                  <div className="voice-compact-details">
+                    <div className="voice-waveform-row">
+                      <div className={`voice-waveform-bars ${isPlayingThis ? 'animating' : ''}`}>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                      <span className="voice-time-text">{voice.duration || '0:28'}</span>
+                    </div>
+                    <p className="voice-compact-quote">"{voice.quote}"</p>
                   </div>
                 </div>
-                <div className="audio-duration-meta">
-                  <Volume2 size={14} /> Duration: 2:48 min
-                </div>
+              );
+            })}
+          </div>
+
+          {/* Doctor's Explanation Horizontal Card */}
+          <div className="doctor-compact-card">
+            <div className="doctor-thumb-wrap" onClick={() => setShowVideoModal(true)}>
+              <img src="/doctor.webp" alt="Doctor Advice Logo" className="doctor-thumb-img" />
+              <div className="doctor-play-circle">
+                <Play size={16} style={{ fill: '#ffffff', marginLeft: '2px' }} />
               </div>
             </div>
-
-            {/* Card 3: Customer Voices */}
-            <div className="model-card home-media-card">
-              <div className="model-card-header-row">
-                <div className="model-icon-circle mic-bg">
-                  <Mic size={20} />
-                </div>
-                <h4 className="model-card-title">Customer Voices</h4>
-              </div>
-              <p className="model-card-desc">
-                Hear real audio reviews from happy Kerala customers.
+            <div className="doctor-compact-content">
+              <h3 className="doctor-compact-title">Doctor's Explanation</h3>
+              <p className="doctor-compact-desc">
+                Watch certified Ayurvedic doctor explain about Agadi Choornam, ingredients and benefits.
               </p>
-              <audio
-                ref={homeVoiceAudioRef}
-                preload="none"
-                onEnded={() => setPlayingHomeVoiceId(null)}
-              />
-              <div className="customer-voices-list" style={{ maxHeight: '250px' }}>
-                {customerVoices.slice(0, 4).map((voice) => {
-                  const voiceId = voice._id || voice.id;
-                  const audioSrc = voice.audioUrl || voice.src;
-                  const isPlayingThis = playingHomeVoiceId === voiceId;
-                  return (
-                    <div key={voiceId} className={`voice-review-item ${isPlayingThis ? 'active-playing' : ''}`}>
-                      <img src={voice.photo || '/contact.webp'} alt={voice.name} className="voice-contact-img" onError={e => { e.target.onerror = null; e.target.src = '/contact.webp'; }} />
-                      <div className="voice-review-body">
-                        <div className="voice-user-header">
-                          <strong>{voice.name}</strong>
-                          <span className="voice-duration-badge">{voice.duration || '0:45'}</span>
-                        </div>
-                        <p className="voice-quote">"{voice.quote}"</p>
-                      </div>
-                      <button
-                        onClick={() => {
-                          if (isPlayingThis) {
-                            if (homeVoiceAudioRef.current) homeVoiceAudioRef.current.pause();
-                            setPlayingHomeVoiceId(null);
-                            return;
-                          }
-
-                          if (homeAudioRef.current && isHomeAudioPlaying) {
-                            homeAudioRef.current.pause();
-                            setIsHomeAudioPlaying(false);
-                          }
-
-                          if (homeVoiceAudioRef.current) {
-                            homeVoiceAudioRef.current.pause();
-                          }
-
-                          const newAudio = new Audio(audioSrc);
-                          homeVoiceAudioRef.current = newAudio;
-
-                          newAudio.onended = () => setPlayingHomeVoiceId(null);
-                          newAudio.onerror = () => {
-                            console.log('Customer voice audio error:', audioSrc);
-                            setPlayingHomeVoiceId(null);
-                          };
-
-                          newAudio.play()
-                            .then(() => setPlayingHomeVoiceId(voiceId))
-                            .catch((err) => {
-                              console.log('Customer voice play error:', err);
-                              setPlayingHomeVoiceId(null);
-                            });
-                        }}
-                        className={`voice-play-btn ${isPlayingThis ? 'playing' : ''}`}
-                      >
-                        {isPlayingThis ? <Pause size={14} /> : <Play size={14} style={{ marginLeft: '1px' }} />}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-              <button onClick={() => navigate('/enquiry')} className="view-more-voices-btn" style={{ width: '100%', marginTop: '10px' }}>
-                View All 100+ Voice Reviews &rarr;
+              <button onClick={() => setShowVideoModal(true)} className="doctor-watch-btn">
+                <span>Watch Video</span>
+                <ArrowRight size={14} />
               </button>
             </div>
           </div>
+
         </div>
       </section>
 
@@ -758,6 +689,24 @@ const Home = () => {
               <X size={28} />
             </button>
             <img src={`/review/${selectedImage}`} alt="Customer Result Zoomed" className="lightbox-img" />
+          </div>
+        </div>
+      )}
+
+      {/* Doctor Video Modal Popup */}
+      {showVideoModal && (
+        <div className="lightbox-overlay" onClick={() => setShowVideoModal(false)}>
+          <div className="video-modal-container" onClick={(e) => e.stopPropagation()}>
+            <button className="lightbox-close" onClick={() => setShowVideoModal(false)} aria-label="Close video player">
+              <X size={32} />
+            </button>
+            <video
+              src="/images/WhatsApp Video 2026-07-29 at 3.56.51 PM.mp4"
+              autoPlay
+              controls
+              playsInline
+              className="modal-video-element"
+            />
           </div>
         </div>
       )}

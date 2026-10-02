@@ -152,7 +152,7 @@ const Signup = () => {
             {fieldErrors.name && <span className="field-error">{fieldErrors.name}</span>}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+          <div className="auth-grid-row">
             <div className="form-group">
               <label htmlFor="reg-email">Email Address *</label>
               <input
@@ -167,7 +167,7 @@ const Signup = () => {
               {fieldErrors.email && <span className="field-error">{fieldErrors.email}</span>}
             </div>
             <div className="form-group">
-              <label htmlFor="reg-phone">Mobile Number (10 digits) *</label>
+              <label htmlFor="reg-phone">Mobile Number *</label>
               <input
                 type="tel"
                 id="reg-phone"
@@ -182,7 +182,7 @@ const Signup = () => {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+          <div className="auth-grid-row" style={{ marginBottom: '24px' }}>
             <div className="form-group">
               <label htmlFor="reg-password">Password *</label>
               <input

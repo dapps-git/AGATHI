@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  Volume2, VolumeX, Play, Pause, Video, MessageSquare, Phone, Send,
+  Play, Pause, Video, MessageSquare, Phone, Send,
   CheckCircle2, ShieldCheck, HelpCircle, Sparkles, ArrowLeft, Stethoscope,
-  Headphones, FileText, Download, Mic, Users, Star, ChevronDown, ChevronUp,
+  FileText, Download, Mic, Users, Star, ChevronDown, ChevronUp,
   Lock, MessageCircle, X
 } from 'lucide-react';
 import reviewImages from '../utils/reviewImages';
@@ -159,19 +159,8 @@ const Enquiry = () => {
   const navigate = useNavigate();
   const selectedProduct = location.state?.product;
 
-  // Main Audio player state
-  const audioRef = useRef(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
-
   // Video Modal state
   const [showVideoModal, setShowVideoModal] = useState(false);
-
-  // Floating Audio Bar Dismiss state
-  const [isFloatingBarDismissed, setIsFloatingBarDismissed] = useState(false);
 
   // Customer voices audio state
   const customerAudioRef = useRef(null);
@@ -210,126 +199,14 @@ const Enquiry = () => {
 
   // Media source paths in public/images/
   const videoSource = '/images/WhatsApp Video 2026-07-29 at 3.56.51 PM.mp4';
-  const audioSource = '/images/WhatsApp Audio 2026-07-29 at 3.56.51 PM.mp4';
-
-  // Handle Main Audio Autoplay on page load
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const tryAutoplay = () => {
-      audio.muted = false;
-      setIsMuted(false);
-
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            setIsPlaying(true);
-            setAutoplayBlocked(false);
-          })
-          .catch((error) => {
-            console.log('Unmuted autoplay prevented by browser policy:', error);
-            audio.muted = true;
-            setIsMuted(true);
-            audio.play()
-              .then(() => {
-                setIsPlaying(true);
-                setTimeout(() => {
-                  audio.muted = false;
-                  setIsMuted(false);
-                }, 300);
-              })
-              .catch((err) => {
-                console.log('Autoplay blocked:', err);
-                setIsPlaying(false);
-                setAutoplayBlocked(true);
-              });
-          });
-      }
-    };
-
-    tryAutoplay();
-
-    const handleUserInteraction = () => {
-      if (audioRef.current && (audioRef.current.paused || audioRef.current.muted)) {
-        audioRef.current.muted = false;
-        setIsMuted(false);
-        audioRef.current.play()
-          .then(() => {
-            setIsPlaying(true);
-            setAutoplayBlocked(false);
-          })
-          .catch(() => {});
-      }
-      window.removeEventListener('click', handleUserInteraction);
-      window.removeEventListener('touchstart', handleUserInteraction);
-      window.removeEventListener('scroll', handleUserInteraction);
-    };
-
-    window.addEventListener('click', handleUserInteraction);
-    window.addEventListener('touchstart', handleUserInteraction);
-    window.addEventListener('scroll', handleUserInteraction);
-
-    return () => {
-      window.removeEventListener('click', handleUserInteraction);
-      window.removeEventListener('touchstart', handleUserInteraction);
-      window.removeEventListener('scroll', handleUserInteraction);
-    };
-  }, []);
-
-  const formatTime = (secs) => {
-    if (isNaN(secs)) return '0:00';
-    const minutes = Math.floor(secs / 60);
-    const seconds = Math.floor(secs % 60);
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-  };
-
-  const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
-      setDuration(audioRef.current.duration || 0);
-    }
-  };
-
-  const togglePlay = () => {
-    if (!audioRef.current) return;
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      if (customerAudioRef.current) customerAudioRef.current.pause();
-      setPlayingVoiceId(null);
-      audioRef.current.play()
-        .then(() => {
-          setIsPlaying(true);
-          setAutoplayBlocked(false);
-        })
-        .catch((err) => console.log('Audio play error:', err));
-    }
-  };
-
-  const toggleMute = () => {
-    if (!audioRef.current) return;
-    const newMutedState = !isMuted;
-    audioRef.current.muted = newMutedState;
-    setIsMuted(newMutedState);
-  };
-
-  const handleSeek = (e) => {
-    if (!audioRef.current) return;
-    const seekTime = parseFloat(e.target.value);
-    audioRef.current.currentTime = seekTime;
-    setCurrentTime(seekTime);
-  };
 
   const handleWatchDoctorVideo = () => {
-    if (audioRef.current && isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    }
     if (customerAudioRef.current) {
       customerAudioRef.current.pause();
+      setPlayingVoiceId(null);
+    }
+    if (voiceAudioRef.current) {
+      voiceAudioRef.current.pause();
       setPlayingVoiceId(null);
     }
     setShowVideoModal(true);
@@ -347,11 +224,6 @@ const Enquiry = () => {
       }
       setPlayingVoiceId(null);
       return;
-    }
-
-    if (audioRef.current && isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
     }
 
     if (voiceAudioRef.current) {
@@ -397,21 +269,6 @@ const Enquiry = () => {
 
   return (
     <div className="enquiry-page model-page">
-      {/* Hidden Main Audio Element */}
-      <audio
-        ref={audioRef}
-        playsInline
-        preload="none"
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        onTimeUpdate={handleTimeUpdate}
-        onLoadedMetadata={handleTimeUpdate}
-        onEnded={() => setIsPlaying(false)}
-      >
-        <source src="/images/enquiry-audio.mp3" type="audio/mp3" />
-        <source src="/images/WhatsApp Audio 2026-07-29 at 3.56.51 PM.mp4" />
-      </audio>
-
       {/* Hidden Customer Voice Audio Element */}
       <audio
         ref={customerAudioRef}
@@ -419,60 +276,6 @@ const Enquiry = () => {
         onEnded={() => setPlayingVoiceId(null)}
         onError={() => setPlayingVoiceId(null)}
       />
-
-      {/* Floating Audio Bar */}
-      {!isFloatingBarDismissed && (
-        <div className={`audio-floating-bar ${isPlaying ? 'active' : ''}`}>
-          <div className="audio-bar-content">
-            <button
-              onClick={togglePlay}
-              className="audio-control-btn audio-control-btn--play"
-              title={isPlaying ? 'Pause Audio' : 'Play Audio'}
-              aria-label={isPlaying ? 'Pause Audio' : 'Play Audio'}
-            >
-              {isPlaying ? <Pause size={18} style={{ fill: 'currentColor' }} /> : <Play size={18} style={{ fill: 'currentColor', marginLeft: '2px' }} />}
-            </button>
-
-            <div className="audio-info">
-              <div className={`audio-equalizer ${isPlaying ? 'playing' : ''}`}>
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-              <div className="audio-text-wrap">
-                <span className="audio-label">Listen to Product Details</span>
-                <span className="audio-time">{formatTime(currentTime)} / {formatTime(duration || 168)}</span>
-              </div>
-            </div>
-
-            <div className="audio-seek-container">
-              <input
-                type="range"
-                min="0"
-                max={duration || 168}
-                value={currentTime}
-                onChange={handleSeek}
-                className="audio-seek-bar"
-              />
-            </div>
-
-            <div className="audio-controls">
-              <button onClick={toggleMute} className="audio-control-btn" title={isMuted ? 'Unmute Audio' : 'Mute Audio'}>
-                {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-              </button>
-              <button
-                onClick={() => setIsFloatingBarDismissed(true)}
-                className="audio-control-btn audio-control-btn--close"
-                title="Dismiss Audio Bar"
-                aria-label="Dismiss Audio Bar"
-              >
-                <X size={16} />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
 
       {/* Main Model Sections Container */}
       <div className="container model-sections-container">
@@ -496,64 +299,7 @@ const Enquiry = () => {
           </div>
         </div>
 
-        {/* ROW 2: Listen to Product Details */}
-        <div className="model-card">
-          <div className="model-card-grid">
-            <div className="model-card-info">
-              <div className="model-card-header-row">
-                <div className="model-icon-circle audio-bg">
-                  <Headphones size={24} />
-                </div>
-                <h2 className="model-card-title">Listen to Product Details</h2>
-              </div>
-              <p className="model-card-desc">
-                Listen to the complete product details, ingredients, benefits, dosage and usage instructions.
-              </p>
-
-              <div className="model-audio-player">
-                <div className="player-main">
-                  <button onClick={togglePlay} className="player-play-btn">
-                    {isPlaying ? <Pause size={20} /> : <Play size={20} style={{ marginLeft: '2px' }} />}
-                  </button>
-                  <div className="player-progress-area">
-                    <div className="player-title">Agadi Choorna Voice Guide</div>
-                    <input
-                      type="range"
-                      min="0"
-                      max={duration || 168}
-                      value={currentTime}
-                      onChange={handleSeek}
-                      className="player-slider"
-                    />
-                    <div className="player-timestamps">
-                      <span>{formatTime(currentTime)}</span>
-                      <span>{formatTime(duration || 168)}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="audio-duration-meta">
-                  <Volume2 size={14} /> Duration: 2:48 min
-                </div>
-              </div>
-            </div>
-
-            <div className="model-card-media">
-              <div className="model-product-img-wrap">
-                <img
-                  src="/images/product-pouch.webp"
-                  alt="Agadi Choorna Product Pack"
-                  className="model-product-img"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = '/images/herbs-ingredients.jpg';
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ROW 3: 10,000+ Customer Results */}
+        {/* ROW 2: 10,000+ Customer Results */}
         <div className="model-card">
           <div className="model-card-grid">
             <div className="model-card-info">
