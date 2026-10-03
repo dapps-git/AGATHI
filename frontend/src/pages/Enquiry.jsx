@@ -10,6 +10,9 @@ import reviewImages from '../utils/reviewImages';
 import API from '../utils/api';
 
 const waAudioFiles = [
+  'WhatsApp Audio 2026-10-03 at 7.44.14 PM.ogg',
+  'WhatsApp Audio 2026-10-03 at 7.44.14 PM (1).ogg',
+  'WhatsApp Audio 2026-10-03 at 7.44.15 PM.ogg',
   'AUDIO-2026-09-30-11-42-13.m4a',
   'AUDIO-2026-09-30-11-42-14.m4a',
   'AUDIO-2026-09-30-11-42-14_1.m4a',
