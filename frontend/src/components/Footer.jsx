@@ -1,5 +1,5 @@
 import React from 'react';
-import { Leaf, Phone, Mail } from 'lucide-react';
+import { Leaf, Phone, Mail, MapPin } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const Footer = () => {
@@ -61,6 +61,17 @@ const Footer = () => {
               <Mail size={16} className="footer-contact-icon" />
               <a href="mailto:agadichoornam@gmail.com">agadichoornam@gmail.com</a>
             </li>
+            <li style={{ alignItems: 'flex-start' }}>
+              <MapPin size={16} className="footer-contact-icon" style={{ marginTop: '3px', flexShrink: 0 }} />
+              <address style={{ fontStyle: 'normal', lineHeight: '1.45', color: '#a8b0a6' }}>
+                <strong style={{ color: '#ffffff', display: 'block', marginBottom: '2px' }}>AGADI STORE</strong>
+                Flat No: 15/363<br />
+                Chembra, Pallipuram<br />
+                Muthuthala, Palakkad<br />
+                Kerala – 679304<br />
+                India
+              </address>
+            </li>
           </ul>
         </div>
 
@@ -79,7 +90,7 @@ const Footer = () => {
 
       {/* Footer Bottom */}
       <div className="footer-bottom">
-        <p>&copy; {new Date().getFullYear()} Agadi Choorna. All Rights Reserved.</p>
+        <p>&copy; {new Date().getFullYear()} Agadi Store. All Rights Reserved.</p>
         <div className="social-icons">
           <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="social-icon-btn" aria-label="Facebook">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg>

@@ -3522,8 +3522,9 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center 20%;
   display: block;
-  opacity: 0.9;
+  opacity: 0.96;
   transition: transform 0.25s ease;
 }
 .doctor-thumb-wrap:hover .doctor-thumb-img {
