@@ -42,6 +42,9 @@ const durations = [
 ];
 
 const waAudioFiles = [
+  'WhatsApp Audio 2026-10-04 at 9.31.29 AM.ogg',
+  'WhatsApp Audio 2026-10-04 at 9.31.29 AM (1).ogg',
+  'WhatsApp Audio 2026-10-04 at 9.31.29 AM (2).ogg',
   'WhatsApp Audio 2026-10-03 at 7.44.14 PM.ogg',
   'WhatsApp Audio 2026-10-03 at 7.44.14 PM (1).ogg',
   'WhatsApp Audio 2026-10-03 at 7.44.15 PM.ogg',
