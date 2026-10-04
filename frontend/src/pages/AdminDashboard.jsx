@@ -11,6 +11,7 @@ import autoTable from 'jspdf-autotable';
 import adminAPI from '../utils/adminApi';
 import { AdminAuthContext } from '../context/AdminAuthContext';
 import { compressAudioFile } from '../utils/audioCompressor.js';
+import CUSTOMER_VOICE_REVIEWS from '../utils/defaultVoiceReviews';
 
 const compressImageToWebP = (file, maxWidth = 1000, maxHeight = 1000, quality = 0.7) => {
   return new Promise((resolve, reject) => {
@@ -81,7 +82,7 @@ const AdminDashboard = () => {
   const [imageBase64, setImageBase64] = useState('');      // base64 to submit
 
   // Audio Reviews State
-  const [audioReviews, setAudioReviews] = useState([]);
+  const [audioReviews, setAudioReviews] = useState(CUSTOMER_VOICE_REVIEWS);
   const [audioModalOpen, setAudioModalOpen] = useState(false);
   const [editingAudioReview, setEditingAudioReview] = useState(null);
   const [audioForm, setAudioForm] = useState({
@@ -151,10 +152,8 @@ const AdminDashboard = () => {
       }
 
       const audioRes = await adminAPI.get('/audio-reviews').catch(() => null);
-      if (audioRes && Array.isArray(audioRes.data)) {
+      if (audioRes && Array.isArray(audioRes.data) && audioRes.data.length > 0) {
         setAudioReviews(audioRes.data);
-      } else {
-        setAudioReviews([]);
       }
 
       if (hasError) {
@@ -603,7 +602,6 @@ const AdminDashboard = () => {
       }
       setAudioModalOpen(false);
       setTimeout(() => setSuccess(''), 3000);
-      await fetchData();
     } catch (err) {
       setError(err.response?.data?.message || 'Audio review action failed.');
     }
