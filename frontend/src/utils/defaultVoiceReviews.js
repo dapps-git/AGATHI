@@ -1,4 +1,12 @@
 export const waAudioFiles = [
+  'WhatsApp Audio 2026-10-11 at 9.54.12 PM (1).ogg',
+  'WhatsApp Audio 2026-10-11 at 9.54.12 PM.ogg',
+  'WhatsApp Audio 2026-10-11 at 9.54.11 PM (1).ogg',
+  'WhatsApp Audio 2026-10-11 at 9.54.11 PM.ogg',
+  'WhatsApp Audio 2026-10-11 at 6.13.21 PM.ogg',
+  'WhatsApp Audio 2026-10-10 at 5.04.45 PM (1).ogg',
+  'WhatsApp Audio 2026-10-10 at 5.04.45 PM.ogg',
+  'WhatsApp Audio 2026-10-09 at 6.01.50 AM.ogg',
   'WhatsApp Audio 2026-10-04 at 9.31.29 AM.ogg',
   'WhatsApp Audio 2026-10-04 at 9.31.29 AM (1).ogg',
   'WhatsApp Audio 2026-10-04 at 9.31.29 AM (2).ogg',
@@ -138,6 +146,23 @@ export const staticVoiceItems = Array.from({ length: 33 }, (_, i) => {
   };
 });
 
+export const fileDurations = {
+  'WhatsApp Audio 2026-10-11 at 9.54.12 PM (1).ogg': '0:17',
+  'WhatsApp Audio 2026-10-11 at 9.54.12 PM.ogg': '0:19',
+  'WhatsApp Audio 2026-10-11 at 9.54.11 PM (1).ogg': '0:54',
+  'WhatsApp Audio 2026-10-11 at 9.54.11 PM.ogg': '0:15',
+  'WhatsApp Audio 2026-10-11 at 6.13.21 PM.ogg': '0:07',
+  'WhatsApp Audio 2026-10-10 at 5.04.45 PM (1).ogg': '0:44',
+  'WhatsApp Audio 2026-10-10 at 5.04.45 PM.ogg': '0:44',
+  'WhatsApp Audio 2026-10-09 at 6.01.50 AM.ogg': '0:42',
+  'WhatsApp Audio 2026-10-04 at 9.31.29 AM.ogg': '1:11',
+  'WhatsApp Audio 2026-10-04 at 9.31.29 AM (1).ogg': '0:22',
+  'WhatsApp Audio 2026-10-04 at 9.31.29 AM (2).ogg': '0:25',
+  'WhatsApp Audio 2026-10-03 at 7.44.14 PM.ogg': '0:15',
+  'WhatsApp Audio 2026-10-03 at 7.44.14 PM (1).ogg': '0:35',
+  'WhatsApp Audio 2026-10-03 at 7.44.15 PM.ogg': '0:25',
+};
+
 export const waVoiceItems = waAudioFiles.map((file, i) => {
   const index = 33 + i + 1;
   return {
@@ -148,10 +173,10 @@ export const waVoiceItems = waAudioFiles.map((file, i) => {
     location: 'Kerala',
     src: `/audioreview/${file}`,
     audioUrl: `/audioreview/${file}`,
-    duration: durationsList[(i + 5) % durationsList.length],
+    duration: fileDurations[file] || durationsList[(i + 5) % durationsList.length],
     quote: quotesList[(i + 3) % quotesList.length]
   };
 });
 
-export const CUSTOMER_VOICE_REVIEWS = [...staticVoiceItems, ...waVoiceItems];
+export const CUSTOMER_VOICE_REVIEWS = [...waVoiceItems, ...staticVoiceItems];
 export default CUSTOMER_VOICE_REVIEWS;

@@ -63,7 +63,7 @@ const Navbar = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }} className="logo-link">
           <img
             src="/images/logo.webp"
-            alt="Agadi Choorna Logo"
+            alt="Agadi Naturals Logo"
             className="logo-img"
             onClick={handleLogoClick}
             style={{ cursor: 'pointer' }}

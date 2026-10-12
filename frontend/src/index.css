@@ -1025,7 +1025,7 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
   .admin-content { padding: 24px 16px; margin-left: 0 !important; }
   .section-padding { padding: 48px 0; }
   .navbar { height: 60px !important; }
-  .logo-img { max-height: 70px !important; background: none !important; border-radius: 0 !important; }
+  .logo-img { max-height: 48px !important; background: none !important; border-radius: 0 !important; }
   .mobile-only { display: block !important; }
   .hero {
     position: relative !important;

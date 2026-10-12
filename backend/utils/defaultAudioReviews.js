@@ -42,6 +42,14 @@ const durations = [
 ];
 
 const waAudioFiles = [
+  'WhatsApp Audio 2026-10-11 at 9.54.12 PM (1).ogg',
+  'WhatsApp Audio 2026-10-11 at 9.54.12 PM.ogg',
+  'WhatsApp Audio 2026-10-11 at 9.54.11 PM (1).ogg',
+  'WhatsApp Audio 2026-10-11 at 9.54.11 PM.ogg',
+  'WhatsApp Audio 2026-10-11 at 6.13.21 PM.ogg',
+  'WhatsApp Audio 2026-10-10 at 5.04.45 PM (1).ogg',
+  'WhatsApp Audio 2026-10-10 at 5.04.45 PM.ogg',
+  'WhatsApp Audio 2026-10-09 at 6.01.50 AM.ogg',
   'WhatsApp Audio 2026-10-04 at 9.31.29 AM.ogg',
   'WhatsApp Audio 2026-10-04 at 9.31.29 AM (1).ogg',
   'WhatsApp Audio 2026-10-04 at 9.31.29 AM (2).ogg',
@@ -141,7 +149,24 @@ const staticAudioReviews = Array.from({ length: 33 }, (_, i) => {
   };
 });
 
-// 35 WhatsApp audio reviews
+const fileDurations = {
+  'WhatsApp Audio 2026-10-11 at 9.54.12 PM (1).ogg': '0:17',
+  'WhatsApp Audio 2026-10-11 at 9.54.12 PM.ogg': '0:19',
+  'WhatsApp Audio 2026-10-11 at 9.54.11 PM (1).ogg': '0:54',
+  'WhatsApp Audio 2026-10-11 at 9.54.11 PM.ogg': '0:15',
+  'WhatsApp Audio 2026-10-11 at 6.13.21 PM.ogg': '0:07',
+  'WhatsApp Audio 2026-10-10 at 5.04.45 PM (1).ogg': '0:44',
+  'WhatsApp Audio 2026-10-10 at 5.04.45 PM.ogg': '0:44',
+  'WhatsApp Audio 2026-10-09 at 6.01.50 AM.ogg': '0:42',
+  'WhatsApp Audio 2026-10-04 at 9.31.29 AM.ogg': '1:11',
+  'WhatsApp Audio 2026-10-04 at 9.31.29 AM (1).ogg': '0:22',
+  'WhatsApp Audio 2026-10-04 at 9.31.29 AM (2).ogg': '0:25',
+  'WhatsApp Audio 2026-10-03 at 7.44.14 PM.ogg': '0:15',
+  'WhatsApp Audio 2026-10-03 at 7.44.14 PM (1).ogg': '0:35',
+  'WhatsApp Audio 2026-10-03 at 7.44.15 PM.ogg': '0:25',
+};
+
+// WhatsApp audio reviews
 const waAudioReviews = waAudioFiles.map((file, i) => {
   const index = i + 1;
   return {
@@ -149,7 +174,7 @@ const waAudioReviews = waAudioFiles.map((file, i) => {
     name: 'Verified Review',
     photo: '/contact.webp',
     audioUrl: `/audioreview/${file}`,
-    duration: durations[(i + 5) % durations.length],
+    duration: fileDurations[file] || durations[(i + 5) % durations.length],
     quote: quotes[(i + 3) % quotes.length],
     location: 'Kerala',
     rating: 5,
@@ -159,5 +184,5 @@ const waAudioReviews = waAudioFiles.map((file, i) => {
   };
 });
 
-export const defaultAudioReviews = [...staticAudioReviews, ...waAudioReviews];
+export const defaultAudioReviews = [...waAudioReviews, ...staticAudioReviews];
 export default defaultAudioReviews;

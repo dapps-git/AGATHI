@@ -32,7 +32,16 @@ const Enquiry = () => {
         if (data && Array.isArray(data) && data.length > 0) {
           const customVoices = data.filter(d => !d._id.startsWith('static-voice-') && !d._id.startsWith('audiorev-static-'));
           if (customVoices.length > 0) {
-            setCustomerVoices([...customVoices, ...CUSTOMER_VOICE_REVIEWS]);
+            const seen = new Set();
+            const unique = [];
+            for (const v of [...customVoices, ...CUSTOMER_VOICE_REVIEWS]) {
+              const key = v.audioUrl || v.src || v._id;
+              if (key && !seen.has(key)) {
+                seen.add(key);
+                unique.push(v);
+              }
+            }
+            setCustomerVoices(unique);
           } else if (data.length >= 4) {
             setCustomerVoices(data);
           }

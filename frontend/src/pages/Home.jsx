@@ -6,6 +6,7 @@ import ProductCard from '../components/ProductCard';
 import OrderModal from '../components/OrderModal';
 import { AuthContext } from '../context/AuthContext';
 import reviewImages from '../utils/reviewImages';
+import CUSTOMER_VOICE_REVIEWS from '../utils/defaultVoiceReviews';
 
 const REVIEWS = [
   {
@@ -103,12 +104,7 @@ const Home = () => {
     }
   }, [location]);
 
-  const DEFAULT_CUSTOMER_VOICES = [
-    { _id: '1', name: 'Verified Review', photo: '/contact.webp', audioUrl: '/images/customer1.mp3', duration: '0:28', quote: 'Gained 4 kg in 15 days' },
-    { _id: '2', name: 'Verified Review', photo: '/contact.webp', audioUrl: '/images/customer2.mp3', duration: '0:32', quote: 'Appetite increased a lot' },
-    { _id: '3', name: 'Verified Review', photo: '/contact.webp', audioUrl: '/images/customer3.mp3', duration: '0:26', quote: 'Very good result, happy' }
-  ];
-  const [customerVoices, setCustomerVoices] = useState(DEFAULT_CUSTOMER_VOICES);
+  const [customerVoices, setCustomerVoices] = useState(CUSTOMER_VOICE_REVIEWS);
 
   // Fetch products (updates dynamically if API available, else keeps static DEFAULT_AGADI_PRODUCT)
   useEffect(() => {
@@ -125,16 +121,25 @@ const Home = () => {
     fetchProducts();
   }, []);
 
-  // Fetch audio reviews (updates dynamically if API available, else keeps static DEFAULT_CUSTOMER_VOICES)
+  // Fetch audio reviews (updates dynamically from API, showing admin-added reviews at the top)
   useEffect(() => {
     const fetchAudioReviews = async () => {
       try {
         const { data } = await API.get('/audio-reviews');
         if (data && Array.isArray(data) && data.length > 0) {
-          setCustomerVoices(data);
+          const seen = new Set();
+          const unique = [];
+          for (const v of [...data, ...CUSTOMER_VOICE_REVIEWS]) {
+            const key = v.audioUrl || v.src || v._id;
+            if (key && !seen.has(key)) {
+              seen.add(key);
+              unique.push(v);
+            }
+          }
+          setCustomerVoices(unique);
         }
       } catch (error) {
-        // Keeps static DEFAULT_CUSTOMER_VOICES seamlessly
+        // Keeps static CUSTOMER_VOICE_REVIEWS seamlessly
       }
     };
     fetchAudioReviews();
