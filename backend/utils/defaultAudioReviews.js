@@ -42,6 +42,11 @@ const durations = [
 ];
 
 const waAudioFiles = [
+  'WhatsApp Audio 2026-10-31 at 9.43.44 PM.ogg',
+  'WhatsApp Audio 2026-10-31 at 9.24.59 PM.ogg',
+  'WhatsApp Audio 2026-10-31 at 5.12.51 PM.ogg',
+  'WhatsApp Audio 2026-10-31 at 5.02.27 PM.ogg',
+  'WhatsApp Audio 2026-10-29 at 12.33.50 PM.ogg',
   'WhatsApp Audio 2026-10-27 at 7.36.32 PM.ogg',
   'WhatsApp Audio 2026-10-27 at 7.35.21 PM.ogg',
   'WhatsApp Audio 2026-10-25 at 6.49.28 PM.ogg',
@@ -154,6 +159,11 @@ const staticAudioReviews = Array.from({ length: 33 }, (_, i) => {
 });
 
 const fileDurations = {
+  'WhatsApp Audio 2026-10-31 at 9.43.44 PM.ogg': '0:03',
+  'WhatsApp Audio 2026-10-31 at 9.24.59 PM.ogg': '0:29',
+  'WhatsApp Audio 2026-10-31 at 5.12.51 PM.ogg': '0:11',
+  'WhatsApp Audio 2026-10-31 at 5.02.27 PM.ogg': '0:09',
+  'WhatsApp Audio 2026-10-29 at 12.33.50 PM.ogg': '0:22',
   'WhatsApp Audio 2026-10-27 at 7.36.32 PM.ogg': '0:30',
   'WhatsApp Audio 2026-10-27 at 7.35.21 PM.ogg': '0:13',
   'WhatsApp Audio 2026-10-25 at 6.49.28 PM.ogg': '0:09',

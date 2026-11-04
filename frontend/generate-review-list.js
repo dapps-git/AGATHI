@@ -11,12 +11,22 @@ try {
       return ['.webp', '.jpg', '.jpeg', '.png'].includes(ext);
     });
 
-  // Put latest 2026-09-30 webp reviews at the front so latest results are seen first
+  // Sort latest webp reviews at the front (newest dates first, e.g. 2026-11-01, then 2026-09-30)
   files.sort((a, b) => {
-    const aIsNew = a.startsWith('PHOTO-2026-09-30');
-    const bIsNew = b.startsWith('PHOTO-2026-09-30');
-    if (aIsNew && !bIsNew) return -1;
-    if (!aIsNew && bIsNew) return 1;
+    const aIsWebp = a.endsWith('.webp');
+    const bIsWebp = b.endsWith('.webp');
+    if (aIsWebp && !bIsWebp) return -1;
+    if (!aIsWebp && bIsWebp) return 1;
+
+    if (aIsWebp && bIsWebp) {
+      const aDate = a.substring(0, 16);
+      const bDate = b.substring(0, 16);
+      if (aDate !== bDate) {
+        return bDate.localeCompare(aDate);
+      }
+      return a.localeCompare(b);
+    }
+
     return a.localeCompare(b);
   });
 
