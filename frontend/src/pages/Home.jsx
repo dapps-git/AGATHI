@@ -8,6 +8,13 @@ import { AuthContext } from '../context/AuthContext';
 import reviewImages from '../utils/reviewImages';
 import CUSTOMER_VOICE_REVIEWS from '../utils/defaultVoiceReviews';
 
+const getReviewImgSrc = (img) => {
+  if (!img) return '/images/product-pouch.webp';
+  const url = typeof img === 'object' && img.url ? img.url : img;
+  if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('/')) return url;
+  return `/review/${url}`;
+};
+
 const REVIEWS = [
   {
     name: 'Suresh Kumar',
@@ -72,6 +79,7 @@ const Home = () => {
   });
   const [visibleCount, setVisibleCount] = useState(12);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [customerReviewImages, setCustomerReviewImages] = useState(reviewImages);
 
   const handleLoadMore = () => {
     setVisibleCount(prev => prev + 12);
@@ -143,6 +151,33 @@ const Home = () => {
       }
     };
     fetchAudioReviews();
+  }, []);
+
+  // Fetch dynamic review images (merges with static reviewImages)
+  useEffect(() => {
+    const fetchReviewImages = async () => {
+      try {
+        const { data } = await API.get('/review-images');
+        if (data && Array.isArray(data) && data.length > 0) {
+          const dynamicUrls = data.map(item => (typeof item === 'string' ? item : item.url)).filter(Boolean);
+          const seen = new Set();
+          const combined = [];
+          for (const url of [...dynamicUrls, ...reviewImages]) {
+            const cleanKey = url.replace(/^\/review\//, '');
+            if (!seen.has(cleanKey)) {
+              seen.add(cleanKey);
+              combined.push(url);
+            }
+          }
+          if (combined.length > 0) {
+            setCustomerReviewImages(combined);
+          }
+        }
+      } catch (err) {
+        // Silently keep static reviewImages
+      }
+    };
+    fetchReviewImages();
   }, []);
 
   // Auto-open order modal if user clicked Buy Now as a guest and has logged in
@@ -564,20 +599,20 @@ const Home = () => {
           {/* Animated sliding train (Marquee) */}
           <div className="reviews-marquee-container">
             <div className="reviews-marquee-track">
-              {reviewImages.slice(0, 18).map((img, i) => (
+              {customerReviewImages.slice(0, 18).map((img, i) => (
                 <img
                   key={i}
-                  src={`/review/${img}`}
+                  src={getReviewImgSrc(img)}
                   alt="Customer Review screenshot"
                   className="marquee-img"
                   onClick={() => setSelectedImage(img)}
                 />
               ))}
               {/* Duplicate list for seamless infinite loop */}
-              {reviewImages.slice(0, 18).map((img, i) => (
+              {customerReviewImages.slice(0, 18).map((img, i) => (
                 <img
                   key={`dup-${i}`}
-                  src={`/review/${img}`}
+                  src={getReviewImgSrc(img)}
                   alt="Customer Review screenshot"
                   className="marquee-img"
                   onClick={() => setSelectedImage(img)}
@@ -716,7 +751,7 @@ const Home = () => {
             <button className="lightbox-close" onClick={() => setSelectedImage(null)} aria-label="Close image zoom">
               <X size={28} />
             </button>
-            <img src={`/review/${selectedImage}`} alt="Customer Result Zoomed" className="lightbox-img" />
+            <img src={getReviewImgSrc(selectedImage)} alt="Customer Result Zoomed" className="lightbox-img" />
           </div>
         </div>
       )}

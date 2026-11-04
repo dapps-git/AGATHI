@@ -10,6 +10,12 @@ import reviewImages from '../utils/reviewImages';
 import API from '../utils/api';
 import CUSTOMER_VOICE_REVIEWS from '../utils/defaultVoiceReviews';
 
+const getReviewImgSrc = (img) => {
+  if (!img) return '/images/product-pouch.webp';
+  const url = typeof img === 'object' && img.url ? img.url : img;
+  if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('/')) return url;
+  return `/review/${url}`;
+};
 
 const Enquiry = () => {
   const location = useLocation();
@@ -24,6 +30,34 @@ const Enquiry = () => {
   const [playingVoiceId, setPlayingVoiceId] = useState(null);
   const [showAllVoices, setShowAllVoices] = useState(false);
   const [customerVoices, setCustomerVoices] = useState(CUSTOMER_VOICE_REVIEWS);
+  const [customerReviewImages, setCustomerReviewImages] = useState(reviewImages);
+
+  // Fetch dynamic review images
+  useEffect(() => {
+    const fetchReviewImages = async () => {
+      try {
+        const { data } = await API.get('/review-images');
+        if (data && Array.isArray(data) && data.length > 0) {
+          const dynamicUrls = data.map(item => (typeof item === 'string' ? item : item.url)).filter(Boolean);
+          const seen = new Set();
+          const combined = [];
+          for (const url of [...dynamicUrls, ...reviewImages]) {
+            const cleanKey = url.replace(/^\/review\//, '');
+            if (!seen.has(cleanKey)) {
+              seen.add(cleanKey);
+              combined.push(url);
+            }
+          }
+          if (combined.length > 0) {
+            setCustomerReviewImages(combined);
+          }
+        }
+      } catch (err) {
+        // Silently use static reviewImages
+      }
+    };
+    fetchReviewImages();
+  }, []);
 
   useEffect(() => {
     const fetchAudioReviews = async () => {
@@ -186,7 +220,7 @@ const Enquiry = () => {
             <div className="model-card-media">
               <div className="model-results-preview-wrap" onClick={() => navigate('/results')} style={{ cursor: 'pointer' }}>
                 <img
-                  src={`/review/${reviewImages[0] || '1.webp'}`}
+                  src={getReviewImgSrc(customerReviewImages[0] || 'PHOTO-2026-11-01-01.webp')}
                   alt="Customer Weight Gain Transformations"
                   className="model-results-img"
                   onError={(e) => {

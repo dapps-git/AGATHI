@@ -2,15 +2,49 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Star, X, ZoomIn } from 'lucide-react';
 import reviewImages from '../utils/reviewImages';
+import API from '../utils/api';
+
+const getReviewImgSrc = (img) => {
+  if (!img) return '/images/product-pouch.webp';
+  const url = typeof img === 'object' && img.url ? img.url : img;
+  if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('/')) return url;
+  return `/review/${url}`;
+};
 
 const Results = () => {
+  const [imagesList, setImagesList] = useState(reviewImages);
   const [visibleCount, setVisibleCount] = useState(16);
   const [selectedImage, setSelectedImage] = useState(null);
   const navigate = useNavigate();
 
-  // Scroll to top on page load
+  // Scroll to top on page load and fetch dynamic review images
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    const fetchReviewImages = async () => {
+      try {
+        const { data } = await API.get('/review-images');
+        if (data && Array.isArray(data) && data.length > 0) {
+          const dynamicUrls = data.map(item => (typeof item === 'string' ? item : item.url)).filter(Boolean);
+          const seen = new Set();
+          const combined = [];
+          for (const url of [...dynamicUrls, ...reviewImages]) {
+            const cleanKey = url.replace(/^\/review\//, '');
+            if (!seen.has(cleanKey)) {
+              seen.add(cleanKey);
+              combined.push(url);
+            }
+          }
+          if (combined.length > 0) {
+            setImagesList(combined);
+          }
+        }
+      } catch (err) {
+        // Silently use static reviewImages
+      }
+    };
+
+    fetchReviewImages();
   }, []);
 
   const handleLoadMore = () => {
@@ -56,9 +90,9 @@ const Results = () => {
 
         {/* Results Grid */}
         <div className="results-grid">
-          {reviewImages.slice(0, visibleCount).map((img, index) => (
+          {imagesList.slice(0, visibleCount).map((img, index) => (
             <div key={index} className="result-card" onClick={() => setSelectedImage(img)}>
-              <img src={`/review/${img}`} alt={`Customer Result ${index + 1}`} loading="lazy" />
+              <img src={getReviewImgSrc(img)} alt={`Customer Result ${index + 1}`} loading="lazy" />
               <div className="result-card-overlay" style={{
                 position: 'absolute',
                 top: 0, left: 0, right: 0, bottom: 0,
@@ -66,7 +100,7 @@ const Results = () => {
                 opacity: 0,
                 display: 'flex',
                 alignItems: 'center',
-                justifycontent: 'center',
+                justifyContent: 'center',
                 transition: 'opacity 0.25s',
                 borderRadius: 'var(--radius-md)'
               }}>
@@ -79,7 +113,7 @@ const Results = () => {
         </div>
 
         {/* Load More Button */}
-        {visibleCount < reviewImages.length && (
+        {visibleCount < imagesList.length && (
           <div style={{ textAlign: 'center', marginTop: '48px' }}>
             <button onClick={handleLoadMore} className="btn btn-primary" style={{ minWidth: '220px', padding: '14px 32px' }}>
               Load More Transformations
@@ -95,7 +129,7 @@ const Results = () => {
             <button className="lightbox-close" onClick={() => setSelectedImage(null)} aria-label="Close image zoom">
               <X size={28} />
             </button>
-            <img src={`/review/${selectedImage}`} alt="Customer Result Zoomed" className="lightbox-img" />
+            <img src={getReviewImgSrc(selectedImage)} alt="Customer Result Zoomed" className="lightbox-img" />
           </div>
         </div>
       )}

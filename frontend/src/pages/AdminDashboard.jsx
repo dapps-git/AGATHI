@@ -4,7 +4,8 @@ import {
   LayoutDashboard, ShoppingBag, Users, ShoppingCart,
   Plus, Edit2, Trash2, Search, X, LogOut, RefreshCw,
   TrendingUp, Package, UserCheck, Menu, Download,
-  MessageSquare, Send, MessageCircle, Mic, Volume2, Play, Pause, Headphones
+  MessageSquare, Send, MessageCircle, Mic, Volume2, Play, Pause, Headphones,
+  Image as ImageIcon, ZoomIn, UploadCloud, CheckCircle2, Eye, Filter
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -12,6 +13,7 @@ import adminAPI from '../utils/adminApi';
 import { AdminAuthContext } from '../context/AdminAuthContext';
 import { compressAudioFile } from '../utils/audioCompressor.js';
 import CUSTOMER_VOICE_REVIEWS from '../utils/defaultVoiceReviews';
+import reviewImages from '../utils/reviewImages';
 
 const compressImageToWebP = (file, maxWidth = 1000, maxHeight = 1000, quality = 0.7) => {
   return new Promise((resolve, reject) => {
@@ -97,6 +99,26 @@ const AdminDashboard = () => {
   const [playingAdminAudioId, setPlayingAdminAudioId] = useState(null);
   const [compressingAudio, setCompressingAudio] = useState(false);
 
+  // Review Images state (preserves all 176 default images immediately)
+  const [reviewImagesList, setReviewImagesList] = useState(() =>
+    reviewImages.map((img, i) => ({
+      _id: `revimg-static-${i + 1}`,
+      url: img.startsWith('/') ? img : `/review/${img}`,
+      title: img,
+      isDefault: true,
+      createdAt: '2026-11-01'
+    }))
+  );
+  const [reviewSearchTerm, setReviewSearchTerm] = useState('');
+  const [reviewFilterType, setReviewFilterType] = useState('all'); // 'all', 'dynamic', 'default'
+  const [visibleReviewCount, setVisibleReviewCount] = useState(24);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [selectedReviewFiles, setSelectedReviewFiles] = useState([]);
+  const [compressingReviewImgs, setCompressingReviewImgs] = useState(false);
+  const [uploadingReviewImgs, setUploadingReviewImgs] = useState(false);
+  const [zoomReviewImage, setZoomReviewImage] = useState(null);
+  const [deletingReviewId, setDeletingReviewId] = useState(null);
+
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -154,6 +176,11 @@ const AdminDashboard = () => {
       const audioRes = await adminAPI.get('/audio-reviews').catch(() => null);
       if (audioRes && Array.isArray(audioRes.data) && audioRes.data.length > 0) {
         setAudioReviews(audioRes.data);
+      }
+
+      const reviewImagesRes = await adminAPI.get('/review-images').catch(() => null);
+      if (reviewImagesRes && Array.isArray(reviewImagesRes.data) && reviewImagesRes.data.length > 0) {
+        setReviewImagesList(reviewImagesRes.data);
       }
 
       if (hasError) {
@@ -623,6 +650,114 @@ const AdminDashboard = () => {
 
   const [customerSearch, setCustomerSearch] = useState('');
 
+  const getReviewImgSrc = (img) => {
+    if (!img) return '/images/product-pouch.webp';
+    const url = typeof img === 'object' && img.url ? img.url : img;
+    if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('/')) return url;
+    return `/review/${url}`;
+  };
+
+  const openAddReviewImageModal = () => {
+    setSelectedReviewFiles([]);
+    setError('');
+    setReviewModalOpen(true);
+  };
+
+  const handleReviewFilesSelected = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files || files.length === 0) return;
+
+    setError('');
+    setCompressingReviewImgs(true);
+
+    try {
+      const processed = [];
+      for (const file of files) {
+        const webpDataUrl = await compressImageToWebP(file, 1200, 1200, 0.82);
+        processed.push({
+          name: file.name,
+          size: file.size,
+          previewUrl: webpDataUrl
+        });
+      }
+      setSelectedReviewFiles(prev => [...prev, ...processed]);
+    } catch (err) {
+      console.error('Review image compression error:', err);
+      setError('Failed to optimize some review images.');
+    } finally {
+      setCompressingReviewImgs(false);
+      e.target.value = '';
+    }
+  };
+
+  const removeSelectedReviewFile = (index) => {
+    setSelectedReviewFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleReviewImagesUploadSubmit = async (e) => {
+    e.preventDefault();
+    if (selectedReviewFiles.length === 0) {
+      setError('Please select at least one review image to upload.');
+      return;
+    }
+
+    setUploadingReviewImgs(true);
+    setError('');
+
+    try {
+      const payload = {
+        images: selectedReviewFiles.map((f, idx) => ({
+          url: f.previewUrl,
+          title: f.name.replace(/\.[^/.]+$/, ''),
+          order: idx
+        }))
+      };
+
+      const { data } = await adminAPI.post('/review-images', payload);
+      const newItems = Array.isArray(data.data) ? data.data : [data.data];
+
+      setReviewImagesList(prev => [...newItems, ...prev]);
+      setSuccess(`Successfully uploaded ${newItems.length} review image(s)!`);
+      setReviewModalOpen(false);
+      setSelectedReviewFiles([]);
+      setTimeout(() => setSuccess(''), 3500);
+    } catch (err) {
+      console.error('Upload review images error:', err);
+      setError(err.response?.data?.message || 'Failed to upload review images.');
+    } finally {
+      setUploadingReviewImgs(false);
+    }
+  };
+
+  const handleDeleteReviewImage = async (reviewItem) => {
+    const id = reviewItem._id || reviewItem.url;
+    if (!window.confirm('Are you sure you want to remove this review image?')) {
+      return;
+    }
+
+    setDeletingReviewId(id);
+    try {
+      await adminAPI.delete(`/review-images/${encodeURIComponent(id)}`);
+      setReviewImagesList(prev => prev.filter(r => r._id !== id && r.url !== reviewItem.url));
+      setSuccess('Review image removed successfully.');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      console.error('Delete review image error:', err);
+      setError(err.response?.data?.message || 'Failed to delete review image.');
+    } finally {
+      setDeletingReviewId(null);
+    }
+  };
+
+  const filteredReviewImages = reviewImagesList.filter(item => {
+    const titleMatch = (item.title || item.url || '').toLowerCase().includes(reviewSearchTerm.toLowerCase());
+    if (!titleMatch) return false;
+    const isDynamic = !item.isDefault || item.url.startsWith('data:') || item._id?.startsWith('revimg-dyn');
+    if (reviewFilterType === 'dynamic') return isDynamic;
+    if (reviewFilterType === 'default') return !isDynamic;
+    return true;
+  });
+
   const filteredUsers = users.filter(u =>
     u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
     u.email.toLowerCase().includes(userSearch.toLowerCase()) ||
@@ -663,6 +798,7 @@ const AdminDashboard = () => {
     orders: 'Manage Orders',
     products: 'Product Inventory',
     audioReviews: 'Customer Audio Reviews',
+    reviewImages: 'Customer Review Images',
     customers: 'Customer Accounts (1+ Orders)',
     users: 'Registered Users',
   };
@@ -717,6 +853,7 @@ const AdminDashboard = () => {
             {activeTab === 'orders' && 'Track and manage all orders placed by customers.'}
             {activeTab === 'products' && 'Add, edit, or remove products from your catalog.'}
             {activeTab === 'audioReviews' && 'Upload and manage customer audio reviews with photo & name.'}
+            {activeTab === 'reviewImages' && 'Upload, manage, and view customer transformation screenshots.'}
             {activeTab === 'customers' && 'Users who have successfully placed at least one order.'}
             {activeTab === 'users' && 'View all registered user accounts.'}
           </p>
@@ -735,6 +872,13 @@ const AdminDashboard = () => {
             <button onClick={openAddAudioModal} className="btn btn-primary" style={{ gap: '6px', borderRadius: '8px', padding: '8px 16px', fontSize: '0.82rem' }}>
               <Plus size={16} />
               <span>Add Audio Review</span>
+            </button>
+          )}
+
+          {activeTab === 'reviewImages' && (
+            <button onClick={openAddReviewImageModal} className="btn btn-primary" style={{ gap: '6px', borderRadius: '8px', padding: '8px 16px', fontSize: '0.82rem' }}>
+              <Plus size={16} />
+              <span>Upload Review Images</span>
             </button>
           )}
 
@@ -805,6 +949,7 @@ const AdminDashboard = () => {
             { id: 'orders', icon: <ShoppingCart size={18} />, label: 'Orders' },
             { id: 'products', icon: <ShoppingBag size={18} />, label: 'Products' },
             { id: 'audioReviews', icon: <Mic size={18} />, label: 'Audio Reviews' },
+            { id: 'reviewImages', icon: <ImageIcon size={18} />, label: 'Review Images' },
             { id: 'customers', icon: <UserCheck size={18} />, label: 'Customers' },
             { id: 'users', icon: <Users size={18} />, label: 'Users' },
           ].map(tab => (
@@ -1261,6 +1406,209 @@ const AdminDashboard = () => {
                   </tbody>
                 </table>
               </div>
+            </div>
+          )}
+
+          {/* ── Review Images Tab ── */}
+          {activeTab === 'reviewImages' && (
+            <div>
+              {/* Top controls: Search, Filters, and Stats */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '14px', marginBottom: '22px' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ position: 'relative', width: '280px' }}>
+                    <input
+                      type="text"
+                      value={reviewSearchTerm}
+                      onChange={e => setReviewSearchTerm(e.target.value)}
+                      placeholder="Search review images..."
+                      style={{ paddingLeft: '38px', height: '38px', fontSize: '0.84rem' }}
+                    />
+                    <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#888' }} />
+                  </div>
+
+                  {/* Filter Pills */}
+                  <div style={{ display: 'inline-flex', background: '#f1f5f0', borderRadius: '8px', padding: '3px' }}>
+                    {[
+                      { key: 'all', label: `All (${reviewImagesList.length})` },
+                      { key: 'dynamic', label: `Dynamic (${reviewImagesList.filter(r => !r.isDefault || r.url.startsWith('data:') || r._id?.startsWith('revimg-dyn')).length})` },
+                      { key: 'default', label: `Default (${reviewImagesList.filter(r => r.isDefault && !r.url.startsWith('data:') && !r._id?.startsWith('revimg-dyn')).length})` },
+                    ].map(f => (
+                      <button
+                        key={f.key}
+                        onClick={() => setReviewFilterType(f.key)}
+                        style={{
+                          padding: '6px 12px',
+                          border: 'none',
+                          borderRadius: '6px',
+                          fontSize: '0.75rem',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          background: reviewFilterType === f.key ? '#fff' : 'transparent',
+                          color: reviewFilterType === f.key ? 'var(--primary-green)' : 'var(--text-muted)',
+                          boxShadow: reviewFilterType === f.key ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                          transition: 'all 0.15s'
+                        }}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-muted)' }}>
+                    Showing {Math.min(visibleReviewCount, filteredReviewImages.length)} of {filteredReviewImages.length}
+                  </span>
+                  <button onClick={openAddReviewImageModal} className="btn btn-primary" style={{ gap: '6px', borderRadius: '8px', padding: '8px 16px', fontSize: '0.82rem' }}>
+                    <Plus size={16} /> Upload New Images
+                  </button>
+                </div>
+              </div>
+
+              {/* Grid of Review Images */}
+              {filteredReviewImages.length > 0 ? (
+                <>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                    gap: '16px',
+                    marginBottom: '28px'
+                  }}>
+                    {filteredReviewImages.slice(0, visibleReviewCount).map((rev, idx) => {
+                      const isDyn = !rev.isDefault || rev.url.startsWith('data:') || rev._id?.startsWith('revimg-dyn');
+                      return (
+                        <div
+                          key={rev._id || rev.url || idx}
+                          style={{
+                            background: '#fff',
+                            borderRadius: '12px',
+                            border: '1px solid var(--border-color)',
+                            overflow: 'hidden',
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            position: 'relative',
+                            transition: 'transform 0.2s, box-shadow 0.2s',
+                          }}
+                        >
+                          {/* Image Container with Badges */}
+                          <div
+                            style={{ position: 'relative', width: '100%', height: '220px', background: '#f5f5f5', cursor: 'pointer', overflow: 'hidden' }}
+                            onClick={() => setZoomReviewImage(rev.url)}
+                          >
+                            <img
+                              src={getReviewImgSrc(rev.url)}
+                              alt={rev.title || 'Review screenshot'}
+                              loading="lazy"
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              onError={e => { e.target.onerror = null; e.target.src = '/images/product-pouch.webp'; }}
+                            />
+
+                            {/* Badge */}
+                            <div style={{ position: 'absolute', top: '8px', left: '8px' }}>
+                              {isDyn ? (
+                                <span style={{
+                                  background: '#15803d',
+                                  color: '#fff',
+                                  fontSize: '0.65rem',
+                                  fontWeight: '800',
+                                  padding: '3px 8px',
+                                  borderRadius: '6px',
+                                  letterSpacing: '0.3px',
+                                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                }}>
+                                  DYNAMIC
+                                </span>
+                              ) : (
+                                <span style={{
+                                  background: 'rgba(255,255,255,0.92)',
+                                  color: 'var(--primary-green)',
+                                  fontSize: '0.65rem',
+                                  fontWeight: '700',
+                                  padding: '3px 8px',
+                                  borderRadius: '6px',
+                                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                                }}>
+                                  STATIC
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Hover Zoom hint */}
+                            <div style={{
+                              position: 'absolute', bottom: '8px', right: '8px',
+                              background: 'rgba(0,0,0,0.6)', color: '#fff',
+                              borderRadius: '50%', padding: '6px', display: 'flex'
+                            }}>
+                              <ZoomIn size={13} />
+                            </div>
+                          </div>
+
+                          {/* Footer details & actions */}
+                          <div style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', background: '#fafbfa' }}>
+                            <div style={{ overflow: 'hidden' }}>
+                              <p style={{ margin: 0, fontSize: '0.78rem', fontWeight: '700', color: 'var(--text-color)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={rev.title || rev.url}>
+                                {rev.title || (rev.url?.split('/').pop() || 'Transformation')}
+                              </p>
+                              <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+                                #{idx + 1}
+                              </span>
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <button
+                                onClick={() => setZoomReviewImage(rev.url)}
+                                title="Zoom Full Size"
+                                className="action-btn"
+                                style={{ padding: '5px' }}
+                              >
+                                <Eye size={14} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteReviewImage(rev)}
+                                disabled={deletingReviewId === (rev._id || rev.url)}
+                                title="Remove Review Image"
+                                className="action-btn action-btn-danger"
+                                style={{ padding: '5px' }}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {visibleReviewCount < filteredReviewImages.length && (
+                    <div style={{ textAlign: 'center', marginTop: '24px', marginBottom: '40px' }}>
+                      <button
+                        onClick={() => setVisibleReviewCount(prev => prev + 24)}
+                        className="btn btn-secondary"
+                        style={{ padding: '10px 28px', fontSize: '0.86rem', fontWeight: '700' }}
+                      >
+                        Load More Images ({filteredReviewImages.length - visibleReviewCount} remaining)
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div style={{
+                  background: '#fff',
+                  border: '1.5px dashed var(--border-color)',
+                  borderRadius: '16px',
+                  padding: '60px 20px',
+                  textAlign: 'center',
+                  color: 'var(--text-muted)'
+                }}>
+                  <ImageIcon size={44} style={{ opacity: 0.35, marginBottom: '12px' }} />
+                  <h4 style={{ margin: '0 0 6px', color: 'var(--primary-green)' }}>No review images match your search</h4>
+                  <p style={{ margin: '0 0 16px', fontSize: '0.85rem' }}>Try clearing filters or click below to upload new transformations.</p>
+                  <button onClick={openAddReviewImageModal} className="btn btn-primary" style={{ gap: '6px' }}>
+                    <Plus size={16} /> Upload Review Images
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -1843,6 +2191,191 @@ const AdminDashboard = () => {
                 </div>
               </form>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Upload Review Images Modal (Supports Single & Bulk Uploads with WebP Compression) ── */}
+      {reviewModalOpen && (
+        <div className="modal-overlay" onClick={() => !uploadingReviewImgs && setReviewModalOpen(false)}>
+          <div className="modal-container" onClick={e => e.stopPropagation()} style={{ maxWidth: '640px', width: '92%' }}>
+            <div className="modal-header">
+              <div>
+                <h3 className="modal-title" style={{ fontSize: '1.1rem', fontWeight: '800' }}>
+                  Upload Customer Review Images
+                </h3>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '4px 0 0' }}>
+                  Select one or multiple screenshots/photos. All images are automatically compressed to WebP for instant loading.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => !uploadingReviewImgs && setReviewModalOpen(false)}
+                className="modal-close"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="modal-body" style={{ maxHeight: '72vh', overflowY: 'auto' }}>
+              {error && <div className="alert alert-error" style={{ marginBottom: '16px' }}>{error}</div>}
+
+              {/* Upload Dropzone */}
+              <div
+                style={{
+                  border: '2px dashed #bbf7d0',
+                  borderRadius: '12px',
+                  background: '#f8fdf9',
+                  padding: '28px 16px',
+                  textAlign: 'center',
+                  cursor: compressingReviewImgs ? 'wait' : 'pointer',
+                  marginBottom: '20px',
+                  transition: 'background 0.2s',
+                }}
+                onClick={() => document.getElementById('review-images-file-input')?.click()}
+              >
+                <input
+                  type="file"
+                  id="review-images-file-input"
+                  multiple
+                  accept="image/*"
+                  onChange={handleReviewFilesSelected}
+                  style={{ display: 'none' }}
+                  disabled={compressingReviewImgs || uploadingReviewImgs}
+                />
+                <UploadCloud size={38} style={{ color: 'var(--primary-green)', marginBottom: '8px' }} />
+                <h4 style={{ margin: '0 0 6px', fontSize: '0.96rem', fontWeight: '700', color: 'var(--primary-green)' }}>
+                  {compressingReviewImgs ? 'Optimizing & Compressing Images...' : 'Click to Browse or Drag & Drop Photos'}
+                </h4>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                  Supports JPEG, PNG, WebP (Single or Multi-select bulk upload)
+                </p>
+                {compressingReviewImgs && (
+                  <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--primary-green)' }}>
+                    <RefreshCw size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                    <span>Compressing with Canvas to WebP...</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Images Preview Grid */}
+              {selectedReviewFiles.length > 0 && (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '0.82rem', fontWeight: '700', color: 'var(--primary-green)' }}>
+                      Ready to Upload ({selectedReviewFiles.length} photos)
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedReviewFiles([])}
+                      style={{ background: 'none', border: 'none', color: '#b91c1c', fontSize: '0.75rem', fontWeight: '600', cursor: 'pointer' }}
+                    >
+                      Clear All
+                    </button>
+                  </div>
+
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))',
+                    gap: '12px',
+                    maxHeight: '260px',
+                    overflowY: 'auto',
+                    padding: '8px',
+                    background: '#f9f9f9',
+                    borderRadius: '10px',
+                    border: '1px solid var(--border-color)',
+                    marginBottom: '20px'
+                  }}>
+                    {selectedReviewFiles.map((fileObj, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          position: 'relative',
+                          height: '140px',
+                          borderRadius: '8px',
+                          overflow: 'hidden',
+                          border: '1px solid #d1fae5',
+                          background: '#fff'
+                        }}
+                      >
+                        <img
+                          src={fileObj.previewUrl}
+                          alt={fileObj.name}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeSelectedReviewFile(idx)}
+                          style={{
+                            position: 'absolute', top: '4px', right: '4px',
+                            background: 'rgba(0,0,0,0.65)', color: '#fff',
+                            border: 'none', borderRadius: '50%',
+                            width: '20px', height: '20px',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer'
+                          }}
+                          title="Remove this photo"
+                        >
+                          <X size={12} />
+                        </button>
+                        <div style={{
+                          position: 'absolute', bottom: 0, left: 0, right: 0,
+                          background: 'rgba(0,0,0,0.5)', color: '#fff',
+                          fontSize: '0.62rem', padding: '2px 4px',
+                          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                        }}>
+                          {fileObj.name}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '16px' }}>
+                <button
+                  type="button"
+                  onClick={() => setReviewModalOpen(false)}
+                  disabled={uploadingReviewImgs}
+                  className="btn btn-outline"
+                  style={{ padding: '9px 18px', fontSize: '0.84rem' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReviewImagesUploadSubmit}
+                  disabled={uploadingReviewImgs || selectedReviewFiles.length === 0}
+                  className="btn btn-primary"
+                  style={{ gap: '8px', padding: '9px 24px', fontSize: '0.84rem' }}
+                >
+                  {uploadingReviewImgs ? (
+                    <>
+                      <RefreshCw size={15} style={{ animation: 'spin 1s linear infinite' }} />
+                      <span>Saving Review Images...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 size={16} />
+                      <span>Upload &amp; Save ({selectedReviewFiles.length})</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Zoom Full Size Lightbox Modal ── */}
+      {zoomReviewImage && (
+        <div className="lightbox-overlay" onClick={() => setZoomReviewImage(null)}>
+          <div className="lightbox-container" onClick={e => e.stopPropagation()}>
+            <button className="lightbox-close" onClick={() => setZoomReviewImage(null)} aria-label="Close zoom">
+              <X size={28} />
+            </button>
+            <img src={getReviewImgSrc(zoomReviewImage)} alt="Review Zoom" className="lightbox-img" />
           </div>
         </div>
       )}
