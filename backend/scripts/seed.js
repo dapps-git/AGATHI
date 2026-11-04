@@ -5,7 +5,9 @@ import User from '../models/User.js';
 import Product from '../models/Product.js';
 import Order from '../models/Order.js';
 import AudioReview from '../models/AudioReview.js';
+import ReviewImage from '../models/ReviewImage.js';
 import defaultAudioReviews from '../utils/defaultAudioReviews.js';
+import defaultReviewImages from '../utils/defaultReviewImages.js';
 
 dotenv.config();
 
@@ -20,6 +22,7 @@ const seedData = async () => {
     await Product.deleteMany();
     await Order.deleteMany();
     await AudioReview.deleteMany();
+    await ReviewImage.deleteMany();
     console.log('Cleared existing database data...');
 
     // Create Admin User
@@ -51,6 +54,11 @@ const seedData = async () => {
     const reviewsToInsert = defaultAudioReviews.map(({ _id, ...rest }) => rest);
     await AudioReview.insertMany(reviewsToInsert);
     console.log('Audio reviews seeded successfully!');
+
+    // Create Review Images
+    const reviewImagesToInsert = defaultReviewImages.map(({ _id, ...rest }) => rest);
+    await ReviewImage.insertMany(reviewImagesToInsert);
+    console.log('Review images seeded successfully!');
 
     console.log('Data Seeding Completed successfully!');
     process.exit(0);

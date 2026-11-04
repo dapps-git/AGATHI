@@ -8,3 +8,4 @@ deployment:
     - /bin/cp -R backend/models $DEPLOYPATH
     - /bin/cp -R backend/middleware $DEPLOYPATH
     - /bin/cp backend/server.js $DEPLOYPATH
+    - /bin/mkdir -p $DEPLOYPATH/tmp && /bin/touch $DEPLOYPATH/tmp/restart.txt

@@ -22,10 +22,21 @@ const Results = () => {
     window.scrollTo(0, 0);
 
     const fetchReviewImages = async () => {
+      let localDynUrls = [];
+      try {
+        const s = localStorage.getItem('dynamicReviewImages');
+        if (s) {
+          const parsed = JSON.parse(s);
+          localDynUrls = parsed.map(item => (typeof item === 'string' ? item : item.url)).filter(Boolean);
+        }
+      } catch (e) {}
+
       try {
         const { data } = await API.get('/review-images');
-        if (data && Array.isArray(data) && data.length > 0) {
-          const dynamicUrls = data.map(item => (typeof item === 'string' ? item : item.url)).filter(Boolean);
+        const apiUrls = (data && Array.isArray(data)) ? data.map(item => (typeof item === 'string' ? item : item.url)).filter(Boolean) : [];
+        const dynamicUrls = [...localDynUrls, ...apiUrls];
+
+        if (dynamicUrls.length > 0) {
           const seen = new Set();
           const combined = [];
           for (const url of [...dynamicUrls, ...reviewImages]) {
@@ -40,7 +51,20 @@ const Results = () => {
           }
         }
       } catch (err) {
-        // Silently use static reviewImages
+        if (localDynUrls.length > 0) {
+          const seen = new Set();
+          const combined = [];
+          for (const url of [...localDynUrls, ...reviewImages]) {
+            const cleanKey = url.replace(/^\/review\//, '');
+            if (!seen.has(cleanKey)) {
+              seen.add(cleanKey);
+              combined.push(url);
+            }
+          }
+          if (combined.length > 0) {
+            setImagesList(combined);
+          }
+        }
       }
     };
 

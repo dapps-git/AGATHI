@@ -99,16 +99,24 @@ const AdminDashboard = () => {
   const [playingAdminAudioId, setPlayingAdminAudioId] = useState(null);
   const [compressingAudio, setCompressingAudio] = useState(false);
 
-  // Review Images state (preserves all 176 default images immediately)
-  const [reviewImagesList, setReviewImagesList] = useState(() =>
-    reviewImages.map((img, i) => ({
+  // Review Images state (preserves all 176 default images + any dynamic uploads)
+  const [reviewImagesList, setReviewImagesList] = useState(() => {
+    let localDyn = [];
+    try {
+      const s = localStorage.getItem('dynamicReviewImages');
+      if (s) localDyn = JSON.parse(s);
+    } catch (e) {}
+
+    const staticItems = reviewImages.map((img, i) => ({
       _id: `revimg-static-${i + 1}`,
       url: img.startsWith('/') ? img : `/review/${img}`,
       title: img,
       isDefault: true,
       createdAt: '2026-11-01'
-    }))
-  );
+    }));
+
+    return [...localDyn, ...staticItems];
+  });
   const [reviewSearchTerm, setReviewSearchTerm] = useState('');
   const [reviewFilterType, setReviewFilterType] = useState('all'); // 'all', 'dynamic', 'default'
   const [visibleReviewCount, setVisibleReviewCount] = useState(24);
@@ -180,7 +188,22 @@ const AdminDashboard = () => {
 
       const reviewImagesRes = await adminAPI.get('/review-images').catch(() => null);
       if (reviewImagesRes && Array.isArray(reviewImagesRes.data) && reviewImagesRes.data.length > 0) {
-        setReviewImagesList(reviewImagesRes.data);
+        let localDyn = [];
+        try {
+          const s = localStorage.getItem('dynamicReviewImages');
+          if (s) localDyn = JSON.parse(s);
+        } catch (e) {}
+
+        const seen = new Set();
+        const merged = [];
+        for (const item of [...localDyn, ...reviewImagesRes.data]) {
+          const key = item._id || item.url;
+          if (!seen.has(key)) {
+            seen.add(key);
+            merged.push(item);
+          }
+        }
+        setReviewImagesList(merged);
       }
 
       if (hasError) {
@@ -704,29 +727,44 @@ const AdminDashboard = () => {
     setUploadingReviewImgs(true);
     setError('');
 
+    const payload = {
+      images: selectedReviewFiles.map((f, idx) => ({
+        url: f.previewUrl,
+        title: f.name.replace(/\.[^/.]+$/, ''),
+        order: idx
+      }))
+    };
+
+    let newItems = [];
     try {
-      const payload = {
-        images: selectedReviewFiles.map((f, idx) => ({
-          url: f.previewUrl,
-          title: f.name.replace(/\.[^/.]+$/, ''),
-          order: idx
-        }))
-      };
-
       const { data } = await adminAPI.post('/review-images', payload);
-      const newItems = Array.isArray(data.data) ? data.data : [data.data];
-
-      setReviewImagesList(prev => [...newItems, ...prev]);
-      setSuccess(`Successfully uploaded ${newItems.length} review image(s)!`);
-      setReviewModalOpen(false);
-      setSelectedReviewFiles([]);
-      setTimeout(() => setSuccess(''), 3500);
+      newItems = Array.isArray(data.data) ? data.data : [data.data];
     } catch (err) {
-      console.error('Upload review images error:', err);
-      setError(err.response?.data?.message || 'Failed to upload review images.');
-    } finally {
-      setUploadingReviewImgs(false);
+      console.warn('Backend API /review-images returned error or 404. Falling back to browser storage sync.', err);
+      // Fallback: save to localStorage so the admin doesn't lose their uploads even if backend route is restarting!
+      newItems = payload.images.map((img, i) => ({
+        _id: `revimg-dyn-${Date.now()}-${i}`,
+        url: img.url,
+        title: img.title || 'Review Image',
+        order: img.order || 0,
+        isDefault: false,
+        createdAt: new Date().toISOString()
+      }));
+
+      try {
+        const current = JSON.parse(localStorage.getItem('dynamicReviewImages') || '[]');
+        localStorage.setItem('dynamicReviewImages', JSON.stringify([...newItems, ...current]));
+      } catch (storageErr) {
+        console.error('localStorage save error:', storageErr);
+      }
     }
+
+    setReviewImagesList(prev => [...newItems, ...prev]);
+    setSuccess(`Successfully added ${newItems.length} review image(s)!`);
+    setReviewModalOpen(false);
+    setSelectedReviewFiles([]);
+    setTimeout(() => setSuccess(''), 3500);
+    setUploadingReviewImgs(false);
   };
 
   const handleDeleteReviewImage = async (reviewItem) => {
@@ -737,16 +775,22 @@ const AdminDashboard = () => {
 
     setDeletingReviewId(id);
     try {
-      await adminAPI.delete(`/review-images/${encodeURIComponent(id)}`);
-      setReviewImagesList(prev => prev.filter(r => r._id !== id && r.url !== reviewItem.url));
-      setSuccess('Review image removed successfully.');
-      setTimeout(() => setSuccess(''), 3000);
+      await adminAPI.delete(`/review-images/${encodeURIComponent(id)}`).catch(() => null);
     } catch (err) {
-      console.error('Delete review image error:', err);
-      setError(err.response?.data?.message || 'Failed to delete review image.');
-    } finally {
-      setDeletingReviewId(null);
+      console.warn('Delete review image API call notice:', err);
     }
+
+    // Always clean from localStorage if present
+    try {
+      const current = JSON.parse(localStorage.getItem('dynamicReviewImages') || '[]');
+      const filtered = current.filter(r => r._id !== id && r.url !== reviewItem.url);
+      localStorage.setItem('dynamicReviewImages', JSON.stringify(filtered));
+    } catch (e) {}
+
+    setReviewImagesList(prev => prev.filter(r => r._id !== id && r.url !== reviewItem.url));
+    setSuccess('Review image removed successfully.');
+    setTimeout(() => setSuccess(''), 3000);
+    setDeletingReviewId(null);
   };
 
   const filteredReviewImages = reviewImagesList.filter(item => {

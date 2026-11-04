@@ -3,6 +3,7 @@ import path from 'path';
 import mongoose from 'mongoose';
 import { fileURLToPath } from 'url';
 import defaultAudioReviews from './defaultAudioReviews.js';
+import defaultReviewImages from './defaultReviewImages.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,6 +13,7 @@ const defaultDb = {
   products: [],
   orders: [],
   audioReviews: defaultAudioReviews,
+  reviewImages: defaultReviewImages,
   users: [
     {
       _id: "66723e7f4a56a6452ba3be81",
@@ -40,6 +42,10 @@ export const getFallbackDb = () => {
       data.audioReviews = defaultAudioReviews;
       updated = true;
     }
+    if (!data.reviewImages || !Array.isArray(data.reviewImages) || data.reviewImages.length === 0) {
+      data.reviewImages = defaultReviewImages;
+      updated = true;
+    }
     if (!data.users || !Array.isArray(data.users) || data.users.length === 0) {
       data.users = defaultDb.users;
       updated = true;
@@ -56,6 +62,7 @@ export const getFallbackDb = () => {
 export const saveFallbackDb = (data) => {
   try {
     if (!data.audioReviews) data.audioReviews = defaultAudioReviews;
+    if (!data.reviewImages) data.reviewImages = defaultReviewImages;
     fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
   } catch (err) {
     console.error('Failed to save fallback DB:', err.message);
