@@ -5,7 +5,8 @@ import {
   Plus, Edit2, Trash2, Search, X, LogOut, RefreshCw,
   TrendingUp, Package, UserCheck, Menu, Download,
   MessageSquare, Send, MessageCircle, Mic, Volume2, Play, Pause, Headphones,
-  Image as ImageIcon, ZoomIn, UploadCloud, CheckCircle2, Eye, Filter
+  Image as ImageIcon, ZoomIn, UploadCloud, CheckCircle2, Eye, Filter,
+  Phone, MapPin, Calendar, Clock
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -68,6 +69,7 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [viewingOrder, setViewingOrder] = useState(null);
   const [pdfFilterType, setPdfFilterType] = useState('all');
   const [pdfFromDate, setPdfFromDate] = useState('');
   const [pdfToDate, setPdfToDate] = useState('');
@@ -1132,27 +1134,40 @@ const AdminDashboard = () => {
                 <table className="admin-table">
                   <thead>
                     <tr>
-                      <th>Customer</th>
-                      <th>Phone</th>
-                      <th>Product</th>
-                      <th>Qty</th>
-                      <th>Total</th>
-                      <th>Order Time</th>
-                      <th>Status</th>
+                      <th style={{ minWidth: '140px' }}>Customer</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Phone</th>
+                      <th style={{ minWidth: '120px' }}>Product</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Qty</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Total</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Order Time</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {orders.slice(0, 5).map(order => (
-                      <tr key={order._id}>
-                        <td data-label="Customer" style={{ fontWeight: '600' }}>{order.name}</td>
-                        <td data-label="Phone">{order.phone}</td>
+                      <tr
+                        key={order._id}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => setViewingOrder(order)}
+                        title="Click to view full order details"
+                      >
+                        <td data-label="Customer" style={{ fontWeight: '700', color: '#1e293b' }}>{order.name}</td>
+                        <td data-label="Phone" style={{ whiteSpace: 'nowrap' }}>
+                          <a
+                            href={`tel:${order.phone}`}
+                            onClick={e => e.stopPropagation()}
+                            style={{ color: 'var(--primary-green)', fontWeight: '600', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+                          >
+                            <Phone size={11} /> {order.phone}
+                          </a>
+                        </td>
                         <td data-label="Product">{order.product?.name || 'Deleted Product'}</td>
                         <td data-label="Qty">{order.quantity}</td>
-                        <td data-label="Total" style={{ fontWeight: '700', color: 'var(--primary-green)' }}>₹{order.totalPrice}</td>
-                        <td data-label="Order Time">
-                          <div style={{ fontWeight: '500' }}>{new Date(order.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</div>
-                          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                            {new Date(order.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                        <td data-label="Total" style={{ fontWeight: '700', color: 'var(--primary-green)', whiteSpace: 'nowrap' }}>₹{order.totalPrice}</td>
+                        <td data-label="Order Time" style={{ whiteSpace: 'nowrap' }}>
+                          <div style={{ fontWeight: '600', fontSize: '0.82rem', color: '#1e293b' }}>{new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
+                          <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                            {new Date(order.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
                           </div>
                         </td>
                         <td data-label="Status">
@@ -1224,15 +1239,13 @@ const AdminDashboard = () => {
                 <table className="admin-table">
                   <thead>
                     <tr>
-                      <th>Customer</th>
-                      <th>Contact</th>
-                      <th>Product</th>
-                      <th>Qty</th>
-                      <th>Total</th>
-                      <th>Address</th>
-                      <th>Order Time</th>
-                      <th>Status</th>
-                      <th>Actions</th>
+                      <th style={{ minWidth: '150px' }}>Customer</th>
+                      <th style={{ minWidth: '130px' }}>Product</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Total</th>
+                      <th style={{ minWidth: '160px' }}>Delivery Address</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Order Time</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Status</th>
+                      <th style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1253,29 +1266,116 @@ const AdminDashboard = () => {
                         );
                       })
                       .map((order) => (
-                        <tr key={order._id}>
-                          <td data-label="Customer" style={{ fontWeight: '600' }}>{order.name}</td>
-                          <td data-label="Contact">
-                            <div style={{ fontSize: '0.875rem' }}>{order.email}</div>
-                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{order.phone}</div>
-                            {order.alternatePhone && <div style={{ fontSize: '0.75rem', color: '#aaa' }}>Alt: {order.alternatePhone}</div>}
+                        <tr
+                          key={order._id}
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => setViewingOrder(order)}
+                          title="Click to view full order details"
+                        >
+                          <td data-label="Customer" style={{ minWidth: '150px' }}>
+                            <div style={{ fontWeight: '700', color: '#1e293b', fontSize: '0.86rem' }}>{order.name}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                              <a
+                                href={`tel:${order.phone}`}
+                                onClick={e => e.stopPropagation()}
+                                style={{
+                                  fontSize: '0.78rem',
+                                  color: 'var(--primary-green)',
+                                  fontWeight: '600',
+                                  textDecoration: 'none',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '3px'
+                                }}
+                                title="Click to call customer"
+                              >
+                                <Phone size={11} /> {order.phone}
+                              </a>
+                            </div>
+                            {order.alternatePhone && (
+                              <div style={{ fontSize: '0.72rem', color: '#888' }}>Alt: {order.alternatePhone}</div>
+                            )}
+                            {order.email && (
+                              <div
+                                style={{
+                                  fontSize: '0.72rem',
+                                  color: 'var(--text-muted)',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  maxWidth: '160px'
+                                }}
+                                title={order.email}
+                              >
+                                {order.email}
+                              </div>
+                            )}
                           </td>
-                          <td data-label="Product">{order.product?.name || 'Deleted Product'}</td>
-                          <td data-label="Qty">{order.quantity}</td>
-                          <td data-label="Total" style={{ fontWeight: '700', color: 'var(--primary-green)' }}>₹{order.totalPrice}</td>
-                          <td data-label="Address" style={{ fontSize: '0.82rem', maxWidth: '200px' }}>
-                            <div>{order.address}</div>
-                            {order.landmark && <div style={{ color: '#aaa' }}>{order.landmark}</div>}
-                            <div style={{ color: 'var(--secondary-green)', fontWeight: '600' }}>{order.district}, {order.state} – {order.pinCode}</div>
+                          <td data-label="Product" style={{ minWidth: '130px' }}>
+                            <div style={{ fontWeight: '600', color: '#334155', fontSize: '0.84rem' }}>
+                              {order.product?.name || 'Deleted Product'}
+                            </div>
+                            <span style={{
+                              display: 'inline-block',
+                              marginTop: '3px',
+                              fontSize: '0.72rem',
+                              fontWeight: '700',
+                              padding: '2px 8px',
+                              borderRadius: '100px',
+                              background: '#f1f5f9',
+                              color: '#475569'
+                            }}>
+                              Qty: {order.quantity}
+                            </span>
                           </td>
-                          <td data-label="Order Time">
-                            <div style={{ fontWeight: '500' }}>{new Date(order.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</div>
-                            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                              {new Date(order.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                          <td data-label="Total" style={{ whiteSpace: 'nowrap' }}>
+                            <div style={{ fontWeight: '800', color: 'var(--primary-green)', fontSize: '0.9rem' }}>
+                              ₹{order.totalPrice}
                             </div>
                           </td>
-                          <td data-label="Status">
-                            <select value={order.status} onChange={(e) => handleStatusChange(order._id, e.target.value)} className="status-select">
+                          <td data-label="Address" style={{ minWidth: '160px', maxWidth: '220px' }}>
+                            <div style={{ fontWeight: '700', color: 'var(--secondary-green)', fontSize: '0.8rem' }}>
+                              {order.district}{order.state ? `, ${order.state}` : ''}{order.pinCode ? ` – ${order.pinCode}` : ''}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: '0.76rem',
+                                color: 'var(--text-muted)',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                lineHeight: '1.25',
+                                marginTop: '2px'
+                              }}
+                              title={`${order.address || ''}${order.landmark ? ', Landmark: ' + order.landmark : ''}, ${order.district || ''}, ${order.state || ''} - ${order.pinCode || ''}`}
+                            >
+                              {order.address} {order.landmark && `(${order.landmark})`}
+                            </div>
+                          </td>
+                          <td data-label="Order Time" style={{ whiteSpace: 'nowrap' }}>
+                            <div style={{ fontWeight: '600', fontSize: '0.82rem', color: '#1e293b' }}>
+                              {new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </div>
+                            <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                              {new Date(order.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                            </div>
+                          </td>
+                          <td data-label="Status" onClick={e => e.stopPropagation()}>
+                            <select
+                              value={order.status}
+                              onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                              className="status-select"
+                              style={{
+                                padding: '5px 8px',
+                                fontSize: '0.78rem',
+                                fontWeight: '700',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
                               <option value="Pending">Pending</option>
                               <option value="Confirmed">Confirmed</option>
                               <option value="Processing">Processing</option>
@@ -1287,18 +1387,34 @@ const AdminDashboard = () => {
                               )}
                             </select>
                           </td>
-                          <td data-label="Actions" style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'flex-end' }}>
-                            <button
-                              onClick={() => openMsgModalForOrder(order, 'Custom')}
-                              className="action-btn"
-                              style={{ background: '#e0e7ff', color: '#3730a3', border: '1px solid #c7d2fe' }}
-                              title="Send WhatsApp / SMS message to customer"
-                            >
-                              <MessageSquare size={15} />
-                            </button>
-                            <button onClick={() => handleOrderDelete(order._id)} className="action-btn action-btn-danger" aria-label="Delete order" title="Delete order">
-                              <Trash2 size={15} />
-                            </button>
+                          <td data-label="Actions" onClick={e => e.stopPropagation()} style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                            <div style={{ display: 'inline-flex', gap: '5px', alignItems: 'center', justifyContent: 'flex-end' }}>
+                              <button
+                                onClick={() => setViewingOrder(order)}
+                                className="action-btn"
+                                style={{ background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', padding: '6px' }}
+                                title="View full order details"
+                              >
+                                <Eye size={14} />
+                              </button>
+                              <button
+                                onClick={() => openMsgModalForOrder(order, 'Custom')}
+                                className="action-btn"
+                                style={{ background: '#e0e7ff', color: '#3730a3', border: '1px solid #c7d2fe', padding: '6px' }}
+                                title="Send WhatsApp / SMS message to customer"
+                              >
+                                <MessageSquare size={14} />
+                              </button>
+                              <button
+                                onClick={() => handleOrderDelete(order._id)}
+                                className="action-btn action-btn-danger"
+                                style={{ padding: '6px' }}
+                                aria-label="Delete order"
+                                title="Delete order"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -1317,7 +1433,7 @@ const AdminDashboard = () => {
                         (o.product?.name && o.product.name.toLowerCase().includes(q))
                       );
                     }).length === 0 && (
-                        <tr><td colSpan="9" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No matching orders found.</td></tr>
+                        <tr><td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No matching orders found.</td></tr>
                       )}
                   </tbody>
                 </table>
@@ -1934,6 +2050,187 @@ const AdminDashboard = () => {
                     Generate PDF
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Order Details Modal ── */}
+      {viewingOrder && (
+        <div className="modal-overlay" onClick={() => setViewingOrder(null)}>
+          <div className="modal-container" onClick={e => e.stopPropagation()} style={{ maxWidth: '640px', width: '92%' }}>
+            <div className="modal-header" style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h3 className="modal-title" style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--primary-green)', margin: 0 }}>
+                    Order Details
+                  </h3>
+                  <span className={`badge badge-${(viewingOrder.status || 'pending').toLowerCase()}`}>
+                    {viewingOrder.status}
+                  </span>
+                </div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                  ID: <span style={{ fontFamily: 'monospace', fontWeight: '600' }}>{viewingOrder._id}</span>
+                </div>
+              </div>
+              <button onClick={() => setViewingOrder(null)} className="modal-close" aria-label="Close modal" style={{ position: 'static' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="modal-body" style={{ padding: '24px', maxHeight: '78vh', overflowY: 'auto' }}>
+              {/* Order Date & Status Row */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', marginBottom: '18px' }}>
+                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.74rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <Calendar size={13} /> Order Placed
+                  </div>
+                  <div style={{ fontWeight: '700', fontSize: '0.92rem', color: '#1e293b', marginTop: '6px' }}>
+                    {new Date(viewingOrder.createdAt).toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Clock size={12} /> {new Date(viewingOrder.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                  </div>
+                </div>
+
+                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: '0.74rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Update Status
+                  </div>
+                  <select
+                    value={viewingOrder.status}
+                    onChange={(e) => {
+                      handleStatusChange(viewingOrder._id, e.target.value);
+                      setViewingOrder({ ...viewingOrder, status: e.target.value });
+                    }}
+                    className="status-select"
+                    style={{
+                      width: '100%',
+                      marginTop: '6px',
+                      padding: '8px 10px',
+                      fontSize: '0.85rem',
+                      fontWeight: '700',
+                      borderRadius: '8px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Shipped">Shipped</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Cancelled">Cancelled</option>
+                    {['Contacted', 'Checked', 'Completed'].includes(viewingOrder.status) && (
+                      <option value={viewingOrder.status}>{viewingOrder.status}</option>
+                    )}
+                  </select>
+                </div>
+              </div>
+
+              {/* Customer Information Card */}
+              <div style={{ background: '#fff', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '16px', marginBottom: '16px', boxShadow: 'var(--shadow-sm)' }}>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: '0.86rem', fontWeight: '800', color: 'var(--primary-green)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Customer Information
+                </h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                  <div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase' }}>Full Name</div>
+                    <div style={{ fontSize: '0.98rem', fontWeight: '700', color: '#1e293b', marginTop: '2px' }}>{viewingOrder.name}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase' }}>Phone Number</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px', flexWrap: 'wrap' }}>
+                      <a href={`tel:${viewingOrder.phone}`} style={{ fontSize: '0.92rem', fontWeight: '700', color: 'var(--primary-green)', textDecoration: 'none' }}>
+                        {viewingOrder.phone}
+                      </a>
+                      <a
+                        href={`https://wa.me/${formatPhoneForUrl(viewingOrder.phone)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', fontWeight: '700', color: '#15803d', background: '#dcfce7', padding: '2px 8px', borderRadius: '6px', textDecoration: 'none' }}
+                      >
+                        <MessageCircle size={12} /> WhatsApp
+                      </a>
+                    </div>
+                  </div>
+                  {viewingOrder.alternatePhone && (
+                    <div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase' }}>Alternate Phone</div>
+                      <div style={{ fontSize: '0.88rem', fontWeight: '600', color: '#475569', marginTop: '2px' }}>{viewingOrder.alternatePhone}</div>
+                    </div>
+                  )}
+                  {viewingOrder.email && (
+                    <div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase' }}>Email</div>
+                      <div style={{ fontSize: '0.86rem', color: '#475569', marginTop: '2px', wordBreak: 'break-all' }}>{viewingOrder.email}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Delivery Address Card */}
+              <div style={{ background: '#fff', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '16px', marginBottom: '16px', boxShadow: 'var(--shadow-sm)' }}>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '0.86rem', fontWeight: '800', color: 'var(--primary-green)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <MapPin size={15} /> Delivery Address
+                </h4>
+                <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '8px', border: '1px solid #e2e8f0', lineHeight: '1.6', fontSize: '0.88rem', color: '#334155' }}>
+                  <div style={{ fontWeight: '600' }}>{viewingOrder.address}</div>
+                  {viewingOrder.landmark && (
+                    <div style={{ color: '#64748b', fontSize: '0.82rem' }}>Landmark: {viewingOrder.landmark}</div>
+                  )}
+                  <div style={{ fontWeight: '700', color: 'var(--secondary-green)', marginTop: '4px' }}>
+                    {viewingOrder.district}, {viewingOrder.state} – {viewingOrder.pinCode}
+                  </div>
+                </div>
+              </div>
+
+              {/* Product & Payment Summary Card */}
+              <div style={{ background: '#fff', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '16px', marginBottom: '16px', boxShadow: 'var(--shadow-sm)' }}>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: '0.86rem', fontWeight: '800', color: 'var(--primary-green)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Order Summary
+                </h4>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', flexWrap: 'wrap', gap: '8px' }}>
+                  <div>
+                    <div style={{ fontWeight: '700', fontSize: '0.92rem', color: '#1e293b' }}>
+                      {viewingOrder.product?.name || 'Agadhi Choornam'}
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                      Quantity: <span style={{ fontWeight: '700', color: '#1e293b' }}>{viewingOrder.quantity}</span>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--primary-green)' }}>
+                      ₹{viewingOrder.totalPrice}
+                    </div>
+                    <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Cash on Delivery</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', flexWrap: 'wrap', marginTop: '16px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const ord = viewingOrder;
+                    setViewingOrder(null);
+                    openMsgModalForOrder(ord, 'Custom');
+                  }}
+                  className="btn btn-primary"
+                  style={{ gap: '6px', padding: '9px 16px', fontSize: '0.84rem' }}
+                >
+                  <MessageSquare size={15} />
+                  <span>Send Notification</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewingOrder(null)}
+                  className="btn btn-outline"
+                  style={{ padding: '9px 18px', fontSize: '0.84rem' }}
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>
