@@ -35,7 +35,7 @@ const KERALA_DISTRICTS = {
 
 const OrderModal = ({ product, onClose }) => {
   const { user } = useContext(AuthContext);
-  const [step, setStep] = useState(1); 
+  const [step, setStep] = useState(1);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [pinValidating, setPinValidating] = useState(false);
@@ -337,12 +337,12 @@ const OrderModal = ({ product, onClose }) => {
     setLoading(true);
     setError('');
 
-    const compositedAddress = formData.city 
+    const compositedAddress = formData.city
       ? `${formData.address}, ${formData.city}`
       : formData.address;
 
     const calcTotalPrice = (product.price || 1550) * quantity;
-    const ownerWhatsApp = '918139800282';
+    const ownerWhatsApp = '919539416003';
 
     const waMessage = [
       `🌿 *_AGADI CHOORNAM_*`,
@@ -384,7 +384,7 @@ const OrderModal = ({ product, onClose }) => {
       address: compositedAddress,
       productId: product._id,
       quantity,
-    }).catch(() => {});
+    }).catch(() => { });
 
     setStep(3);
     setLoading(false);
@@ -674,7 +674,7 @@ const OrderModal = ({ product, onClose }) => {
                     />
                     <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   </div>
-                  
+
                   {isDistrictDropdownOpen && filteredDistrictOptions.length > 0 && (
                     <ul className="modal-combobox-dropdown" style={{
                       position: 'absolute',
