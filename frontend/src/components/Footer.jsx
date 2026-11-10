@@ -55,8 +55,13 @@ const Footer = () => {
           <ul className="footer-contact-list">
             <li>
               <Phone size={16} className="footer-contact-icon" />
-              <a href="tel:+919539416003"></a>
+              <a href="tel:+919539416003">9539416003</a>
             </li>
+            <li>
+              <Phone size={16} className="footer-contact-icon" />
+              <a href="tel:+918139800282">8139800282</a>
+            </li>
+
             <li>
               <Mail size={16} className="footer-contact-icon" />
               <a href="mailto:agadichoornam@gmail.com">agadichoornam@gmail.com</a>
