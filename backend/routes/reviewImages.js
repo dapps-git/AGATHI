@@ -62,7 +62,8 @@ const saveBase64Image = (dataUrl, prefix = 'PHOTO-ADMIN') => {
 router.get('/', async (req, res) => {
   try {
     if (mongoose.connection.readyState === 1) {
-      let reviews = await ReviewImage.find({}).sort({ order: 1, createdAt: -1 });
+      // Dynamic reviews (isDefault: false) first (newest createdAt first), then default reviews
+      let reviews = await ReviewImage.find({}).sort({ isDefault: 1, createdAt: -1, order: 1 });
       if (reviews && reviews.length > 0) {
         return res.json(reviews);
       }
@@ -117,7 +118,8 @@ router.post('/', protect, admin, async (req, res) => {
 
     for (let i = 0; i < itemsToProcess.length; i++) {
       const item = itemsToProcess[i];
-      const processedUrl = saveBase64Image(item.url);
+      // Store the image data/url directly so it is 100% self-contained and never 404s across environments
+      const processedUrl = item.url;
 
       const reviewData = {
         url: processedUrl,

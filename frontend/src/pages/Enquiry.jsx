@@ -46,31 +46,60 @@ const Enquiry = () => {
 
       try {
         const { data } = await API.get('/review-images');
-        const apiUrls = (data && Array.isArray(data)) ? data.map(item => (typeof item === 'string' ? item : item.url)).filter(Boolean) : [];
-        const dynamicUrls = [...localDynUrls, ...apiUrls];
+        const apiItems = (data && Array.isArray(data)) ? data : [];
 
-        if (dynamicUrls.length > 0) {
-          const seen = new Set();
-          const combined = [];
-          for (const url of [...dynamicUrls, ...reviewImages]) {
-            const cleanKey = url.replace(/^\/review\//, '');
-            if (!seen.has(cleanKey)) {
-              seen.add(cleanKey);
-              combined.push(url);
-            }
+        const isDyn = (item) => {
+          if (!item) return false;
+          if (typeof item === 'string') return item.startsWith('data:') || item.includes('PHOTO-ADMIN');
+          if (item.isDefault === false) return true;
+          if (item.url?.startsWith('data:') || item.url?.includes('PHOTO-ADMIN')) return true;
+          return false;
+        };
+
+        const dynFromApi = apiItems.filter(isDyn).map(i => (typeof i === 'object' && i.url ? i.url : i));
+        const defaultFromApi = apiItems.filter(i => !isDyn(i)).map(i => (typeof i === 'object' && i.url ? i.url : i));
+
+        const seen = new Set();
+        const combined = [];
+
+        // 1. Dynamic review images FIRST
+        for (const url of [...localDynUrls, ...dynFromApi]) {
+          if (url && !seen.has(url)) {
+            seen.add(url);
+            combined.push(url);
           }
-          if (combined.length > 0) {
-            setCustomerReviewImages(combined);
+        }
+
+        // 2. Default static reviews
+        const staticList = defaultFromApi.length > 0 ? defaultFromApi : reviewImages;
+        for (const item of staticList) {
+          const url = typeof item === 'object' && item.url ? item.url : item;
+          const cleanKey = url.replace(/^\/review\//, '');
+          if (!seen.has(cleanKey) && !seen.has(url)) {
+            seen.add(cleanKey);
+            seen.add(url);
+            combined.push(url);
           }
+        }
+
+        if (combined.length > 0) {
+          setCustomerReviewImages(combined);
         }
       } catch (err) {
         if (localDynUrls.length > 0) {
           const seen = new Set();
           const combined = [];
-          for (const url of [...localDynUrls, ...reviewImages]) {
+          for (const url of localDynUrls) {
+            if (url && !seen.has(url)) {
+              seen.add(url);
+              combined.push(url);
+            }
+          }
+          for (const url of reviewImages) {
             const cleanKey = url.replace(/^\/review\//, '');
-            if (!seen.has(cleanKey)) {
+            if (!seen.has(cleanKey) && !seen.has(url)) {
               seen.add(cleanKey);
+              seen.add(url);
               combined.push(url);
             }
           }

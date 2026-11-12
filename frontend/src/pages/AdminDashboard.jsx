@@ -196,16 +196,46 @@ const AdminDashboard = () => {
           if (s) localDyn = JSON.parse(s);
         } catch (e) {}
 
+        const isDynHelper = (item) => {
+          if (!item) return false;
+          if (item.isDefault === false) return true;
+          if (typeof item.url === 'string' && item.url.startsWith('data:')) return true;
+          if (typeof item._id === 'string' && (item._id.startsWith('revimg-dyn') || item._id.length === 24)) return true;
+          if (typeof item.url === 'string' && item.url.includes('PHOTO-ADMIN')) return true;
+          return false;
+        };
+
+        const dynFromApi = reviewImagesRes.data.filter(isDynHelper);
+        const defaultFromApi = reviewImagesRes.data.filter(r => !isDynHelper(r));
+
         const seen = new Set();
         const merged = [];
-        for (const item of [...localDyn, ...reviewImagesRes.data]) {
+
+        // Put dynamic reviews first
+        for (const item of [...localDyn, ...dynFromApi]) {
           const key = item._id || item.url;
-          if (!seen.has(key)) {
+          if (key && !seen.has(key)) {
             seen.add(key);
             merged.push(item);
           }
         }
+
+        // Default reviews after
+        for (const item of defaultFromApi) {
+          const key = item._id || item.url;
+          if (key && !seen.has(key)) {
+            seen.add(key);
+            merged.push(item);
+          }
+        }
+
         setReviewImagesList(merged);
+
+        // Keep local storage in sync with dynamic items so refresh never loses them
+        try {
+          const allDyn = merged.filter(isDynHelper);
+          localStorage.setItem('dynamicReviewImages', JSON.stringify(allDyn));
+        } catch (e) {}
       }
 
       if (hasError) {
@@ -698,7 +728,8 @@ const AdminDashboard = () => {
     try {
       const processed = [];
       for (const file of files) {
-        const webpDataUrl = await compressImageToWebP(file, 1200, 1200, 0.82);
+        // Optimize to 900x900 WebP at 0.72 quality for crystal clear display & lightweight persistent storage
+        const webpDataUrl = await compressImageToWebP(file, 900, 900, 0.72);
         processed.push({
           name: file.name,
           size: file.size,
@@ -717,6 +748,15 @@ const AdminDashboard = () => {
 
   const removeSelectedReviewFile = (index) => {
     setSelectedReviewFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const isDynamicReviewItem = (item) => {
+    if (!item) return false;
+    if (item.isDefault === false) return true;
+    if (typeof item.url === 'string' && item.url.startsWith('data:')) return true;
+    if (typeof item._id === 'string' && (item._id.startsWith('revimg-dyn') || item._id.length === 24)) return true;
+    if (typeof item.url === 'string' && item.url.includes('PHOTO-ADMIN')) return true;
+    return false;
   };
 
   const handleReviewImagesUploadSubmit = async (e) => {
@@ -743,7 +783,6 @@ const AdminDashboard = () => {
       newItems = Array.isArray(data.data) ? data.data : [data.data];
     } catch (err) {
       console.warn('Backend API /review-images returned error or 404. Falling back to browser storage sync.', err);
-      // Fallback: save to localStorage so the admin doesn't lose their uploads even if backend route is restarting!
       newItems = payload.images.map((img, i) => ({
         _id: `revimg-dyn-${Date.now()}-${i}`,
         url: img.url,
@@ -752,16 +791,21 @@ const AdminDashboard = () => {
         isDefault: false,
         createdAt: new Date().toISOString()
       }));
-
-      try {
-        const current = JSON.parse(localStorage.getItem('dynamicReviewImages') || '[]');
-        localStorage.setItem('dynamicReviewImages', JSON.stringify([...newItems, ...current]));
-      } catch (storageErr) {
-        console.error('localStorage save error:', storageErr);
-      }
     }
 
-    setReviewImagesList(prev => [...newItems, ...prev]);
+    // Always persist to localStorage so images stay saved even after page refresh
+    try {
+      const current = JSON.parse(localStorage.getItem('dynamicReviewImages') || '[]');
+      const filteredCurrent = current.filter(c => !newItems.some(n => (n._id && n._id === c._id) || (n.url && n.url === c.url)));
+      localStorage.setItem('dynamicReviewImages', JSON.stringify([...newItems, ...filteredCurrent]));
+    } catch (storageErr) {
+      console.warn('localStorage save warning:', storageErr);
+    }
+
+    setReviewImagesList(prev => [
+      ...newItems,
+      ...prev.filter(p => !newItems.some(n => (n._id && n._id === p._id) || (n.url && n.url === p.url)))
+    ]);
     setSuccess(`Successfully added ${newItems.length} review image(s)!`);
     setReviewModalOpen(false);
     setSelectedReviewFiles([]);
@@ -782,7 +826,7 @@ const AdminDashboard = () => {
       console.warn('Delete review image API call notice:', err);
     }
 
-    // Always clean from localStorage if present
+    // Always clean from localStorage
     try {
       const current = JSON.parse(localStorage.getItem('dynamicReviewImages') || '[]');
       const filtered = current.filter(r => r._id !== id && r.url !== reviewItem.url);
@@ -798,7 +842,7 @@ const AdminDashboard = () => {
   const filteredReviewImages = reviewImagesList.filter(item => {
     const titleMatch = (item.title || item.url || '').toLowerCase().includes(reviewSearchTerm.toLowerCase());
     if (!titleMatch) return false;
-    const isDynamic = !item.isDefault || item.url.startsWith('data:') || item._id?.startsWith('revimg-dyn');
+    const isDynamic = isDynamicReviewItem(item);
     if (reviewFilterType === 'dynamic') return isDynamic;
     if (reviewFilterType === 'default') return !isDynamic;
     return true;
@@ -1590,8 +1634,8 @@ const AdminDashboard = () => {
                   <div style={{ display: 'inline-flex', background: '#f1f5f0', borderRadius: '8px', padding: '3px' }}>
                     {[
                       { key: 'all', label: `All (${reviewImagesList.length})` },
-                      { key: 'dynamic', label: `Dynamic (${reviewImagesList.filter(r => !r.isDefault || r.url.startsWith('data:') || r._id?.startsWith('revimg-dyn')).length})` },
-                      { key: 'default', label: `Default (${reviewImagesList.filter(r => r.isDefault && !r.url.startsWith('data:') && !r._id?.startsWith('revimg-dyn')).length})` },
+                      { key: 'dynamic', label: `Dynamic (${reviewImagesList.filter(isDynamicReviewItem).length})` },
+                      { key: 'default', label: `Default (${reviewImagesList.filter(r => !isDynamicReviewItem(r)).length})` },
                     ].map(f => (
                       <button
                         key={f.key}
@@ -1635,7 +1679,7 @@ const AdminDashboard = () => {
                     marginBottom: '28px'
                   }}>
                     {filteredReviewImages.slice(0, visibleReviewCount).map((rev, idx) => {
-                      const isDyn = !rev.isDefault || rev.url.startsWith('data:') || rev._id?.startsWith('revimg-dyn');
+                      const isDyn = isDynamicReviewItem(rev);
                       return (
                         <div
                           key={rev._id || rev.url || idx}
