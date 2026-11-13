@@ -15,6 +15,7 @@ import { AdminAuthContext } from '../context/AdminAuthContext';
 import { compressAudioFile } from '../utils/audioCompressor.js';
 import CUSTOMER_VOICE_REVIEWS from '../utils/defaultVoiceReviews';
 import reviewImages from '../utils/reviewImages';
+import { isBrokenReviewUrl } from '../utils/reviewStorage';
 
 const compressImageToWebP = (file, maxWidth = 1000, maxHeight = 1000, quality = 0.7) => {
   return new Promise((resolve, reject) => {
