@@ -22,6 +22,10 @@ function openDB() {
   });
 }
 
+const REMOVED_REVIEW_IDS = new Set([
+  '6af57aecd99a2552afd0b003'
+]);
+
 // Clean stale broken paths (e.g. older /review/PHOTO-ADMIN-... files that do not exist on static hosting)
 export const isBrokenReviewUrl = (url) => {
   if (!url || typeof url !== 'string') return true;
@@ -29,17 +33,25 @@ export const isBrokenReviewUrl = (url) => {
   return false;
 };
 
+export const isRemovedOrBrokenReview = (itemOrUrl) => {
+  if (!itemOrUrl) return true;
+  if (typeof itemOrUrl === 'string') {
+    return isBrokenReviewUrl(itemOrUrl);
+  }
+  if (itemOrUrl._id && REMOVED_REVIEW_IDS.has(String(itemOrUrl._id))) return true;
+  if (itemOrUrl.title === 'WhatsApp Image 2026-11-11 at 6.28.24 PM (3)') return true;
+  if (isBrokenReviewUrl(itemOrUrl.url)) return true;
+  return false;
+};
+
 // Retrieve all stored dynamic review images
 export async function getDynamicReviews() {
-  // Purge any stale broken records from localStorage
+  // Purge any stale broken or removed records from localStorage
   try {
     const rawLocal = localStorage.getItem('dynamicReviewImages');
     if (rawLocal) {
       const parsed = JSON.parse(rawLocal);
-      const cleaned = parsed.filter(item => {
-        const url = typeof item === 'string' ? item : item?.url;
-        return !isBrokenReviewUrl(url);
-      });
+      const cleaned = parsed.filter(item => !isRemovedOrBrokenReview(item));
       if (cleaned.length !== parsed.length) {
         localStorage.setItem('dynamicReviewImages', JSON.stringify(cleaned));
       }
@@ -58,7 +70,7 @@ export async function getDynamicReviews() {
       getAllRequest.onerror = () => reject(getAllRequest.error);
     });
 
-    const validItems = items.filter(item => !isBrokenReviewUrl(item.url));
+    const validItems = items.filter(item => !isRemovedOrBrokenReview(item));
     if (validItems.length > 0) {
       return validItems;
     }
@@ -73,7 +85,7 @@ export async function getDynamicReviews() {
       const parsed = JSON.parse(raw);
       return parsed
         .map(i => (typeof i === 'string' ? { _id: i, url: i, title: 'Customer Transformation', isDefault: false } : i))
-        .filter(i => !isBrokenReviewUrl(i.url));
+        .filter(i => !isRemovedOrBrokenReview(i));
     }
   } catch (e) {}
 
@@ -83,7 +95,7 @@ export async function getDynamicReviews() {
 // Save list of dynamic review images into IndexedDB (and sync to localStorage if small)
 export async function saveDynamicReviews(items) {
   if (!Array.isArray(items)) return;
-  const cleanItems = items.filter(item => !isBrokenReviewUrl(item.url));
+  const cleanItems = items.filter(item => !isRemovedOrBrokenReview(item));
 
   try {
     const db = await openDB();
