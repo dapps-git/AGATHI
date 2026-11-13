@@ -380,7 +380,7 @@ const Enquiry = () => {
             <div className="model-card-media">
               <div className="whatsapp-help-box">
                 <div className="help-box-sub">We are just a message away!</div>
-                <div className="help-phone-number">+91 81398 00282</div>
+                <div className="help-phone-number">+91 95394 16003</div>
                 <div className="help-trust-pills">
                   <span>⚡ Quick Reply</span>
                   <span>💚 Friendly Support</span>
