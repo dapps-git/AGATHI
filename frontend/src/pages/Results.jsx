@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Star, X, ZoomIn } from 'lucide-react';
 import reviewImages from '../utils/reviewImages';
 import API from '../utils/api';
+import { getDynamicReviews, isBrokenReviewUrl } from '../utils/reviewStorage';
 
 const getReviewImgSrc = (img) => {
   if (!img) return '/images/product-pouch.webp';
@@ -24,11 +25,8 @@ const Results = () => {
     const fetchReviewImages = async () => {
       let localDynUrls = [];
       try {
-        const s = localStorage.getItem('dynamicReviewImages');
-        if (s) {
-          const parsed = JSON.parse(s);
-          localDynUrls = parsed.map(item => (typeof item === 'string' ? item : item.url)).filter(Boolean);
-        }
+        const stored = await getDynamicReviews();
+        localDynUrls = stored.map(i => i.url).filter(u => u && !isBrokenReviewUrl(u));
       } catch (e) {}
 
       try {
@@ -37,21 +35,23 @@ const Results = () => {
 
         const isDyn = (item) => {
           if (!item) return false;
-          if (typeof item === 'string') return item.startsWith('data:') || item.includes('PHOTO-ADMIN');
+          const url = typeof item === 'object' ? item.url : item;
+          if (isBrokenReviewUrl(url)) return false;
+          if (typeof item === 'string') return item.startsWith('data:') || item.startsWith('http');
           if (item.isDefault === false) return true;
-          if (item.url?.startsWith('data:') || item.url?.includes('PHOTO-ADMIN')) return true;
+          if (item.url?.startsWith('data:') || item.url?.startsWith('http')) return true;
           return false;
         };
 
-        const dynFromApi = apiItems.filter(isDyn).map(i => (typeof i === 'object' && i.url ? i.url : i));
-        const defaultFromApi = apiItems.filter(i => !isDyn(i)).map(i => (typeof i === 'object' && i.url ? i.url : i));
+        const dynFromApi = apiItems.filter(isDyn).map(i => (typeof i === 'object' && i.url ? i.url : i)).filter(u => !isBrokenReviewUrl(u));
+        const defaultFromApi = apiItems.filter(i => !isDyn(i)).map(i => (typeof i === 'object' && i.url ? i.url : i)).filter(u => !isBrokenReviewUrl(u));
 
         const seen = new Set();
         const combined = [];
 
         // 1. Dynamic review images FIRST (newest customer transformations)
         for (const url of [...localDynUrls, ...dynFromApi]) {
-          if (url && !seen.has(url)) {
+          if (url && !seen.has(url) && !isBrokenReviewUrl(url)) {
             seen.add(url);
             combined.push(url);
           }
@@ -62,7 +62,7 @@ const Results = () => {
         for (const item of staticList) {
           const url = typeof item === 'object' && item.url ? item.url : item;
           const cleanKey = url.replace(/^\/review\//, '');
-          if (!seen.has(cleanKey) && !seen.has(url)) {
+          if (!seen.has(cleanKey) && !seen.has(url) && !isBrokenReviewUrl(url)) {
             seen.add(cleanKey);
             seen.add(url);
             combined.push(url);
@@ -77,14 +77,14 @@ const Results = () => {
           const seen = new Set();
           const combined = [];
           for (const url of localDynUrls) {
-            if (url && !seen.has(url)) {
+            if (url && !seen.has(url) && !isBrokenReviewUrl(url)) {
               seen.add(url);
               combined.push(url);
             }
           }
           for (const url of reviewImages) {
             const cleanKey = url.replace(/^\/review\//, '');
-            if (!seen.has(cleanKey) && !seen.has(url)) {
+            if (!seen.has(cleanKey) && !seen.has(url) && !isBrokenReviewUrl(url)) {
               seen.add(cleanKey);
               seen.add(url);
               combined.push(url);

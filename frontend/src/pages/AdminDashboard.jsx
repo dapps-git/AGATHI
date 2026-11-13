@@ -426,7 +426,7 @@ const AdminDashboard = () => {
       case 'Delivered':
         return `Dear ${name}, your order for ${product} has been DELIVERED successfully! Thank you for trusting Agadi Choorna.`;
       case 'Cancelled':
-        return `Dear ${name}, your order for ${product} has been CANCELLED. Please contact support at 8139800282 for details.`;
+        return `Dear ${name}, your order for ${product} has been CANCELLED. Please contact support at 9539416003 for details.`;
       case 'Delay':
         return `Dear ${name}, regarding your order for ${product}: there is a slight delay in dispatch due to high demand. We are expediting it and will share tracking updates soon. Thank you for your patience!`;
       default:
@@ -751,11 +751,10 @@ const AdminDashboard = () => {
   };
 
   const isDynamicReviewItem = (item) => {
-    if (!item) return false;
+    if (!item || isBrokenReviewUrl(item.url)) return false;
     if (item.isDefault === false) return true;
     if (typeof item.url === 'string' && item.url.startsWith('data:')) return true;
-    if (typeof item._id === 'string' && (item._id.startsWith('revimg-dyn') || item._id.length === 24)) return true;
-    if (typeof item.url === 'string' && item.url.includes('PHOTO-ADMIN')) return true;
+    if (typeof item._id === 'string' && item._id.startsWith('revimg-dyn')) return true;
     return false;
   };
 
@@ -793,14 +792,8 @@ const AdminDashboard = () => {
       }));
     }
 
-    // Always persist to localStorage so images stay saved even after page refresh
-    try {
-      const current = JSON.parse(localStorage.getItem('dynamicReviewImages') || '[]');
-      const filteredCurrent = current.filter(c => !newItems.some(n => (n._id && n._id === c._id) || (n.url && n.url === c.url)));
-      localStorage.setItem('dynamicReviewImages', JSON.stringify([...newItems, ...filteredCurrent]));
-    } catch (storageErr) {
-      console.warn('localStorage save warning:', storageErr);
-    }
+    // Always persist to IndexedDB so images stay saved even after page refresh
+    await addDynamicReviews(newItems);
 
     setReviewImagesList(prev => [
       ...newItems,
@@ -826,12 +819,8 @@ const AdminDashboard = () => {
       console.warn('Delete review image API call notice:', err);
     }
 
-    // Always clean from localStorage
-    try {
-      const current = JSON.parse(localStorage.getItem('dynamicReviewImages') || '[]');
-      const filtered = current.filter(r => r._id !== id && r.url !== reviewItem.url);
-      localStorage.setItem('dynamicReviewImages', JSON.stringify(filtered));
-    } catch (e) {}
+    // Always clean from IndexedDB and localStorage
+    await deleteDynamicReview(id);
 
     setReviewImagesList(prev => prev.filter(r => r._id !== id && r.url !== reviewItem.url));
     setSuccess('Review image removed successfully.');

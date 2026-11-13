@@ -7,6 +7,7 @@ import OrderModal from '../components/OrderModal';
 import { AuthContext } from '../context/AuthContext';
 import reviewImages from '../utils/reviewImages';
 import CUSTOMER_VOICE_REVIEWS from '../utils/defaultVoiceReviews';
+import { getDynamicReviews, isBrokenReviewUrl } from '../utils/reviewStorage';
 
 const getReviewImgSrc = (img) => {
   if (!img) return '/images/product-pouch.webp';
@@ -158,11 +159,8 @@ const Home = () => {
     const fetchReviewImages = async () => {
       let localDynUrls = [];
       try {
-        const s = localStorage.getItem('dynamicReviewImages');
-        if (s) {
-          const parsed = JSON.parse(s);
-          localDynUrls = parsed.map(item => (typeof item === 'string' ? item : item.url)).filter(Boolean);
-        }
+        const stored = await getDynamicReviews();
+        localDynUrls = stored.map(i => i.url).filter(u => u && !isBrokenReviewUrl(u));
       } catch (e) {}
 
       try {
@@ -171,21 +169,23 @@ const Home = () => {
 
         const isDyn = (item) => {
           if (!item) return false;
-          if (typeof item === 'string') return item.startsWith('data:') || item.includes('PHOTO-ADMIN');
+          const url = typeof item === 'object' ? item.url : item;
+          if (isBrokenReviewUrl(url)) return false;
+          if (typeof item === 'string') return item.startsWith('data:') || item.startsWith('http');
           if (item.isDefault === false) return true;
-          if (item.url?.startsWith('data:') || item.url?.includes('PHOTO-ADMIN')) return true;
+          if (item.url?.startsWith('data:') || item.url?.startsWith('http')) return true;
           return false;
         };
 
-        const dynFromApi = apiItems.filter(isDyn).map(i => (typeof i === 'object' && i.url ? i.url : i));
-        const defaultFromApi = apiItems.filter(i => !isDyn(i)).map(i => (typeof i === 'object' && i.url ? i.url : i));
+        const dynFromApi = apiItems.filter(isDyn).map(i => (typeof i === 'object' && i.url ? i.url : i)).filter(u => !isBrokenReviewUrl(u));
+        const defaultFromApi = apiItems.filter(i => !isDyn(i)).map(i => (typeof i === 'object' && i.url ? i.url : i)).filter(u => !isBrokenReviewUrl(u));
 
         const seen = new Set();
         const combined = [];
 
         // 1. Dynamic review images FIRST
         for (const url of [...localDynUrls, ...dynFromApi]) {
-          if (url && !seen.has(url)) {
+          if (url && !seen.has(url) && !isBrokenReviewUrl(url)) {
             seen.add(url);
             combined.push(url);
           }
@@ -196,7 +196,7 @@ const Home = () => {
         for (const item of staticList) {
           const url = typeof item === 'object' && item.url ? item.url : item;
           const cleanKey = url.replace(/^\/review\//, '');
-          if (!seen.has(cleanKey) && !seen.has(url)) {
+          if (!seen.has(cleanKey) && !seen.has(url) && !isBrokenReviewUrl(url)) {
             seen.add(cleanKey);
             seen.add(url);
             combined.push(url);
@@ -211,14 +211,14 @@ const Home = () => {
           const seen = new Set();
           const combined = [];
           for (const url of localDynUrls) {
-            if (url && !seen.has(url)) {
+            if (url && !seen.has(url) && !isBrokenReviewUrl(url)) {
               seen.add(url);
               combined.push(url);
             }
           }
           for (const url of reviewImages) {
             const cleanKey = url.replace(/^\/review\//, '');
-            if (!seen.has(cleanKey) && !seen.has(url)) {
+            if (!seen.has(cleanKey) && !seen.has(url) && !isBrokenReviewUrl(url)) {
               seen.add(cleanKey);
               seen.add(url);
               combined.push(url);
@@ -306,7 +306,7 @@ const Home = () => {
               <span>Order Now</span>
             </button>
             <a
-              href="https://wa.me/918139800282?text=Hello,%20I'd%20like%20to%20get%20expert%20guidance%20on%20Agadi%20Choornam."
+              href="https://wa.me/919539416003?text=Hello,%20I'd%20like%20to%20get%20expert%20guidance%20on%20Agadi%20Choornam."
               target="_blank"
               rel="noopener noreferrer"
               className="hero-mobile-btn hero-mobile-btn--outline"
@@ -332,7 +332,7 @@ const Home = () => {
             <span>Order Now</span>
           </button>
           <a
-            href="https://wa.me/918139800282?text=Hello,%20I'd%20like%20to%20get%20expert%20guidance%20on%20Agadi%20Choornam."
+            href="https://wa.me/919539416003?text=Hello,%20I'd%20like%20to%20get%20expert%20guidance%20on%20Agadi%20Choornam."
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-outline hero-banner-btn"
@@ -696,7 +696,7 @@ const Home = () => {
 
           <div className="contact-grid">
             <div className="contact-info">
-              <a href="https://wa.me/918139800282?text=Hello,%20I'd%20like%20to%20place%20an%20order%20for%20Agadi%20Choornam." target="_blank" rel="noopener noreferrer" className="contact-card">
+              <a href="https://wa.me/919539416003?text=Hello,%20I'd%20like%20to%20place%20an%20order%20for%20Agadi%20Choornam." target="_blank" rel="noopener noreferrer" className="contact-card">
                 <div className="contact-icon-wrapper" style={{ color: '#25D366' }}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M17.472 14.382c-.301-.15-1.78-.878-2.056-.978-.275-.1-.476-.15-.676.15-.2.301-.776.978-.952 1.179-.175.2-.351.226-.652.075-.301-.15-1.27-.468-2.42-1.493-.895-.798-1.5-1.784-1.676-2.085-.175-.301-.019-.464.132-.614.135-.135.301-.351.451-.527.151-.175.2-.301.301-.501.1-.2.05-.376-.025-.526-.075-.15-.676-1.63-.927-2.233-.244-.588-.492-.508-.676-.517l-.577-.01c-.2 0-.526.075-.802.376-.275.301-1.052 1.028-1.052 2.508 0 1.48 1.077 2.909 1.227 3.109.151.2 2.12 3.238 5.137 4.542.718.311 1.278.497 1.715.636.721.23 1.378.197 1.897.12.578-.087 1.78-.727 2.03-1.43.25-.702.25-1.304.175-1.43-.075-.125-.275-.2-.576-.351m-5.467 7.424h-.008a9.88 9.88 0 0 1-5.033-1.378l-.361-.214-3.741.982.999-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.885-9.886 9.885m8.413-18.297A11.815 11.815 0 0 0 12.005 0C5.495 0 .16 5.335.157 11.847c0 2.08.542 4.11 1.571 5.903L0 24l6.417-1.684a11.8 11.8 0 0 0 5.584 1.411h.005c6.514 0 11.847-5.336 11.85-11.849 0-3.167-1.233-6.146-3.477-8.39" />
@@ -709,14 +709,14 @@ const Home = () => {
                 </div>
               </a>
 
-              <a href="tel:+918139800282" className="contact-card">
+              <a href="tel:+919539416003" className="contact-card">
                 <div className="contact-icon-wrapper">
                   <Phone size={24} />
                 </div>
                 <div className="contact-details">
                   <h4>Phone Hotline</h4>
                   <p>Call directly to consult with our healthcare advisors.</p>
-                  <strong style={{ color: 'var(--primary-green)', fontSize: '0.9rem', display: 'block', marginTop: '6px' }}>+91 81398 00282 &rarr;</strong>
+                  <strong style={{ color: 'var(--primary-green)', fontSize: '0.9rem', display: 'block', marginTop: '6px' }}>+91 95394 16003 &rarr;</strong>
                 </div>
               </a>
 
@@ -790,7 +790,7 @@ const Home = () => {
       </section>
 
       {/* Floating Call Button */}
-      <a href="tel:+918139800282" className="floating-call" aria-label="Call Support Now">
+      <a href="tel:+919539416003" className="floating-call" aria-label="Call Support Now">
         <Phone size={20} />
       </a>
 

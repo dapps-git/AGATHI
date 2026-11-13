@@ -69,7 +69,7 @@ const Navbar = () => {
             style={{ cursor: 'pointer' }}
           />
           <a
-            href="https://wa.me/918139800282?text=Hello,%20I'd%20like%20to%20get%20expert%20guidance%20on%20Agadi%20Choornam."
+            href="https://wa.me/919539416003?text=Hello,%20I'd%20like%20to%20get%20expert%20guidance%20on%20Agadi%20Choornam."
             target="_blank"
             rel="noopener noreferrer"
             className="support-badge"

@@ -60,7 +60,7 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'PIN code must contain exactly 6 digits' });
     }
 
-    const ownerWhatsAppNumber = (process.env.WHATSAPP_PHONE || '918139800282').replace(/\+/g, '');
+    const ownerWhatsAppNumber = (process.env.WHATSAPP_PHONE || '919539416003').replace(/\+/g, '');
 
     // Helper: check if productId looks like a fallback DB ID (e.g. 'prod-1720000000000')
     const isFallbackId = typeof productId === 'string' && productId.startsWith('prod-');

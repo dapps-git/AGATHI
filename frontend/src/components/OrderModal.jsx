@@ -982,7 +982,7 @@ const OrderModal = ({ product, onClose }) => {
               </div>
               <h4 style={{ fontSize: '1.25rem', color: 'var(--primary-green)', marginBottom: '8px', fontWeight: '700' }}>Order Details Ready!</h4>
               <p style={{ color: 'var(--text-muted)', maxWidth: '380px', margin: '0 auto 16px auto', fontSize: '0.85rem', lineHeight: 1.5 }}>
-                Opening WhatsApp to send your order details directly to our support team (+91 8139800282).
+                Opening WhatsApp to send your order details directly to our support team (+91 9539416003).
               </p>
               {waUrl && (
                 <a
