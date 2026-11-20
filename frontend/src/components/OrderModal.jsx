@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { X, ArrowRight, ArrowLeft, Send, CheckCircle, Search } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, Send, CheckCircle, Search, CreditCard } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import API from '../utils/api';
 import { Country, State, City } from 'country-state-city';
@@ -331,6 +331,19 @@ const OrderModal = ({ product, onClose }) => {
   };
 
   const [waUrl, setWaUrl] = useState('');
+  const [paidOrder, setPaidOrder] = useState(null);
+
+  // Load Razorpay script dynamically
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) return resolve(true);
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -342,55 +355,92 @@ const OrderModal = ({ product, onClose }) => {
       : formData.address;
 
     const calcTotalPrice = (product.price || 1550) * quantity;
-    const ownerWhatsApp = '919539416003';
 
-    const waMessage = [
-      `🌿 *_AGADI CHOORNAM_*`,
-      `*_ORDER FORM_*`,
-      ``,
-      `_Please fill in the details below:_`,
-      ``,
-      `👤 Full Name: ${formData.name}`,
-      `🏠 House Name: ${formData.address}${formData.landmark ? ` (${formData.landmark})` : ''}`,
-      `📮 Post Office: ${formData.city || ''}`,
-      `📍 District: ${formData.district || ''}`,
-      `📌 Pincode: ${formData.pinCode || ''}`,
-      `📞 Phone Number: ${formData.phone}${formData.alternatePhone ? ` / ${formData.alternatePhone}` : ''}`,
-      ``,
-      `🛒 *Product:* ${product.name || 'Agadi Choorna'}`,
-      `📦 *Quantity:* ${quantity}`,
-      `💰 *Total Amount:* ₹${calcTotalPrice}`,
-      ``,
-      `🌿 _Thank you for choosing Agadi Choornam!_`,
-    ].join('\n');
-
-    const url = `https://api.whatsapp.com/send?phone=${ownerWhatsApp}&text=${encodeURIComponent(waMessage)}`;
-    setWaUrl(url);
-
-    // Save locally
-    if (user) {
-      user.address = [compositedAddress, formData.landmark, formData.district, formData.state, formData.pinCode].filter(Boolean).join(', ');
-      const stored = JSON.parse(localStorage.getItem('userInfo'));
-      if (stored) {
-        stored.address = user.address;
-        localStorage.setItem('userInfo', JSON.stringify(stored));
+    try {
+      // 1. Load Razorpay checkout script
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        setError('Failed to load payment gateway. Please check your internet connection and try again.');
+        setLoading(false);
+        return;
       }
+
+      // 2. Create Razorpay order on backend
+      const createRes = await API.post('/payment/create-order', {
+        amount: calcTotalPrice,
+        currency: 'INR',
+        receipt: `order_${Date.now()}`,
+      });
+
+      const { razorpayOrderId, amount, currency, keyId } = createRes.data;
+
+      // 3. Open Razorpay checkout popup
+      const options = {
+        key: keyId,
+        amount,
+        currency,
+        name: 'Agadi Choornam',
+        description: `${product.name} x${quantity}`,
+        order_id: razorpayOrderId,
+        prefill: {
+          name: formData.name,
+          email: formData.email || '',
+          contact: formData.phone,
+        },
+        theme: { color: '#2f4f1e' },
+        handler: async (response) => {
+          // 4. Verify payment & save order on backend
+          try {
+            const verifyRes = await API.post('/payment/verify', {
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+              user: user?._id || null,
+              ...formData,
+              address: compositedAddress,
+              productId: product._id,
+              quantity,
+            });
+
+            if (verifyRes.data.success) {
+              // Save address locally
+              if (user) {
+                user.address = [compositedAddress, formData.landmark, formData.district, formData.state, formData.pinCode].filter(Boolean).join(', ');
+                const stored = JSON.parse(localStorage.getItem('userInfo'));
+                if (stored) {
+                  stored.address = user.address;
+                  localStorage.setItem('userInfo', JSON.stringify(stored));
+                }
+              }
+              setPaidOrder(verifyRes.data.order);
+              setStep(3);
+            } else {
+              setError('Payment verification failed. Please contact support.');
+            }
+          } catch (verifyErr) {
+            setError(verifyErr?.response?.data?.message || 'Payment verified but order save failed. Please contact support with your payment ID: ' + response.razorpay_payment_id);
+          }
+          setLoading(false);
+        },
+        modal: {
+          ondismiss: () => {
+            setError('Payment cancelled. You can try again.');
+            setLoading(false);
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', (resp) => {
+        setError('Payment failed: ' + (resp.error?.description || 'Unknown error'));
+        setLoading(false);
+      });
+      rzp.open();
+
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Could not initiate payment. Please try again.');
+      setLoading(false);
     }
-
-    // Fire API in background non-blocking
-    API.post('/orders', {
-      user: user?._id || null,
-      ...formData,
-      address: compositedAddress,
-      productId: product._id,
-      quantity,
-    }).catch(() => { });
-
-    setStep(3);
-    setLoading(false);
-
-    // Direct redirect to WhatsApp immediately
-    window.location.href = url;
   };
 
   const totalPrice = product.price * quantity;
@@ -439,8 +489,8 @@ const OrderModal = ({ product, onClose }) => {
             </h3>
             <p style={{ fontSize: '0.78rem', margin: 0 }}>
               {step === 1 && 'Enter your contact and shipping details.'}
-              {step === 2 && 'Review your order and confirm quantity.'}
-              {step === 3 && 'Order submitted! Connecting to WhatsApp...'}
+              {step === 2 && 'Review your order and complete payment.'}
+              {step === 3 && 'Payment successful! Your order is confirmed.'}
             </p>
           </div>
 
@@ -966,8 +1016,8 @@ const OrderModal = ({ product, onClose }) => {
                     <span>Processing...</span>
                   ) : (
                     <>
-                      <Send size={16} />
-                      <span>Confirm via WhatsApp</span>
+                      <CreditCard size={16} />
+                      <span>Pay ₹{totalPrice} Online</span>
                     </>
                   )}
                 </button>
@@ -980,27 +1030,28 @@ const OrderModal = ({ product, onClose }) => {
               <div style={{ color: 'var(--primary-green)', marginBottom: '16px', display: 'flex', justifyContent: 'center' }}>
                 <CheckCircle size={60} fill="rgba(47, 79, 30, 0.1)" />
               </div>
-              <h4 style={{ fontSize: '1.25rem', color: 'var(--primary-green)', marginBottom: '8px', fontWeight: '700' }}>Order Details Ready!</h4>
-              <p style={{ color: 'var(--text-muted)', maxWidth: '380px', margin: '0 auto 16px auto', fontSize: '0.85rem', lineHeight: 1.5 }}>
-                Opening WhatsApp to send your order details directly to our support team (+91 9539416003).
+              <h4 style={{ fontSize: '1.25rem', color: 'var(--primary-green)', marginBottom: '8px', fontWeight: '700' }}>
+                Payment Successful! 🎉
+              </h4>
+              <p style={{ color: 'var(--text-muted)', maxWidth: '380px', margin: '0 auto 12px auto', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                Your order has been placed and payment confirmed. We'll ship your Agadi Choornam soon!
               </p>
-              {waUrl && (
-                <a
-                  href={waUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-primary"
-                  style={{ padding: '12px 24px', fontSize: '0.9rem', width: '100%', maxWidth: '280px', margin: '8px auto 0 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                >
-                  <Send size={18} />
-                  <span>Click to Open WhatsApp</span>
-                </a>
+              {paidOrder && (
+                <div style={{ background: '#f4fbf7', border: '1.5px solid var(--primary-green)', borderRadius: 'var(--radius-md)', padding: '12px 16px', marginBottom: '16px', textAlign: 'left', fontSize: '0.82rem' }}>
+                  <div style={{ marginBottom: '4px' }}><strong>Order ID:</strong> {paidOrder._id}</div>
+                  <div style={{ marginBottom: '4px' }}><strong>Product:</strong> {paidOrder.product?.name || 'Agadi Choornam'}</div>
+                  <div style={{ marginBottom: '4px' }}><strong>Qty:</strong> {paidOrder.quantity}</div>
+                  <div style={{ marginBottom: '4px' }}><strong>Amount Paid:</strong> ₹{paidOrder.totalPrice}</div>
+                  <div style={{ color: '#16a34a', fontWeight: '700', marginTop: '6px' }}>✓ Payment Confirmed</div>
+                </div>
               )}
-              <style>{`
-                @keyframes spin {
-                  to { transform: rotate(360deg); }
-                }
-              `}</style>
+              <button
+                onClick={onClose}
+                className="btn btn-primary"
+                style={{ padding: '10px 28px', fontSize: '0.9rem' }}
+              >
+                Done
+              </button>
             </div>
           )}
         </div>

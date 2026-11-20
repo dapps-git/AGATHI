@@ -15,6 +15,7 @@ import orderRoutes from './routes/orders.js';
 import statsRoutes from './routes/stats.js';
 import audioReviewRoutes from './routes/audioReviews.js';
 import reviewImageRoutes from './routes/reviewImages.js';
+import paymentRoutes from './routes/payment.js';
 
 // Load env vars
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -64,6 +65,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/audio-reviews', audioReviewRoutes);
 app.use('/api/review-images', reviewImageRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // Base route
 app.get('/', (req, res) => {
