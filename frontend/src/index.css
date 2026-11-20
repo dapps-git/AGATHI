@@ -1229,16 +1229,16 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 12px !important;
   }
-  /* Products: 2-column grid on mobile, override desktop flex layout */
+  /* Products: 1-column grid on mobile, override desktop flex layout */
   .products-grid {
     display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 12px !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
     flex-direction: unset !important;
     max-width: 100% !important;
     margin: 0 !important;
   }
-  /* Single product: full width on mobile */
+  /* Single product: full width on mobile (same as default now) */
   .products-grid--single {
     grid-template-columns: 1fr !important;
   }
@@ -1249,13 +1249,13 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
   }
   .products-grid .product-img-wrapper {
     width: 100% !important;
-    height: auto !important;
-    aspect-ratio: 1 / 1 !important;
+    height: 260px !important;
+    aspect-ratio: unset !important;
     border-right: none !important;
     border-bottom: 1px solid var(--border-color) !important;
   }
   .products-grid .product-card-content {
-    padding: 14px !important;
+    padding: 16px !important;
   }
 
   /* Make benefit cards prettier in 2-column mobile view */
@@ -1350,7 +1350,7 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
 
   /* Micro spacing for small screens */
   .benefits-grid, .products-grid {
-    gap: 8px !important;
+    gap: 12px !important;
   }
   .benefit-card {
     padding: 12px 8px !important;
