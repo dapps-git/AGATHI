@@ -6,7 +6,7 @@ import {
   TrendingUp, Package, UserCheck, Menu, Download,
   MessageSquare, Send, MessageCircle, Mic, Volume2, Play, Pause, Headphones,
   Image as ImageIcon, ZoomIn, UploadCloud, CheckCircle2, Eye, Filter,
-  Phone, MapPin, Calendar, Clock
+  Phone, MapPin, Calendar, Clock, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -67,6 +67,10 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [userSearch, setUserSearch] = useState('');
   const [orderSearch, setOrderSearch] = useState('');
+  const [orderDateFilter, setOrderDateFilter] = useState('all'); // 'all', 'today', 'yesterday', 'this_week', 'this_month'
+  const [orderStatusFilter, setOrderStatusFilter] = useState('all');
+  const [orderPage, setOrderPage] = useState(1);
+  const ORDERS_PER_PAGE = 20;
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
@@ -873,6 +877,55 @@ const AdminDashboard = () => {
     c.phone.includes(customerSearch)
   );
 
+  // Date filter helper for Orders
+  const filterOrderDate = (orderDate, filter) => {
+    if (filter === 'all') return true;
+    const d = new Date(orderDate);
+    const now = new Date();
+    if (filter === 'today') {
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+      return d >= start;
+    }
+    if (filter === 'yesterday') {
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0, 0);
+      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59, 999);
+      return d >= start && d <= end;
+    }
+    if (filter === 'this_week') {
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7, 0, 0, 0, 0);
+      return d >= start;
+    }
+    if (filter === 'this_month') {
+      const start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+      return d >= start;
+    }
+    return true;
+  };
+
+  // Filtered and Paginated Orders (20 per page)
+  const filteredOrders = orders.filter((o) => {
+    if (!filterOrderDate(o.createdAt, orderDateFilter)) return false;
+    if (orderStatusFilter !== 'all' && o.status !== orderStatusFilter) return false;
+    if (!orderSearch.trim()) return true;
+    const q = orderSearch.toLowerCase().trim();
+    return (
+      (o.name && o.name.toLowerCase().includes(q)) ||
+      (o.phone && o.phone.toLowerCase().includes(q)) ||
+      (o.email && o.email.toLowerCase().includes(q)) ||
+      (o.address && o.address.toLowerCase().includes(q)) ||
+      (o.district && o.district.toLowerCase().includes(q)) ||
+      (o.state && o.state.toLowerCase().includes(q)) ||
+      (o.pinCode && o.pinCode.toLowerCase().includes(q)) ||
+      (o.status && o.status.toLowerCase().includes(q)) ||
+      (o.product?.name && o.product.name.toLowerCase().includes(q))
+    );
+  });
+
+  const totalOrderPages = Math.ceil(filteredOrders.length / ORDERS_PER_PAGE) || 1;
+  const currentOrderPage = Math.min(orderPage, totalOrderPages);
+  const startOrderIndex = (currentOrderPage - 1) * ORDERS_PER_PAGE;
+  const paginatedOrders = filteredOrders.slice(startOrderIndex, startOrderIndex + ORDERS_PER_PAGE);
+
   const tabLabels = {
     dashboard: 'Dashboard Overview',
     orders: 'Manage Orders',
@@ -1221,51 +1274,128 @@ const AdminDashboard = () => {
           {/* ── Orders Tab ── */}
           {activeTab === 'orders' && (
             <div>
-              {/* Search Bar for Orders */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '16px', flexWrap: 'wrap' }}>
-                <div style={{ position: 'relative', flex: '1', minWidth: '260px', maxWidth: '420px' }}>
-                  <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                  <input
-                    type="text"
-                    placeholder="Search orders by customer, phone, status, product, PIN..."
-                    value={orderSearch}
-                    onChange={(e) => setOrderSearch(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 38px 10px 42px',
-                      fontSize: '0.875rem',
-                      borderRadius: '10px',
-                      border: '1px solid var(--border-color)',
-                      outline: 'none',
-                      background: '#fff',
-                      boxShadow: 'var(--shadow-sm)',
-                    }}
-                  />
-                  {orderSearch && (
-                    <button
-                      onClick={() => setOrderSearch('')}
-                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+              {/* Search Bar + Filters for Orders */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                  {/* Search Box */}
+                  <div style={{ position: 'relative', flex: '1', minWidth: '260px', maxWidth: '440px' }}>
+                    <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                    <input
+                      type="text"
+                      placeholder="Search orders by customer, phone, status, product, PIN..."
+                      value={orderSearch}
+                      onChange={(e) => {
+                        setOrderSearch(e.target.value);
+                        setOrderPage(1);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '10px 38px 10px 42px',
+                        fontSize: '0.875rem',
+                        borderRadius: '10px',
+                        border: '1px solid var(--border-color)',
+                        outline: 'none',
+                        background: '#fff',
+                        boxShadow: 'var(--shadow-sm)',
+                      }}
+                    />
+                    {orderSearch && (
+                      <button
+                        onClick={() => {
+                          setOrderSearch('');
+                          setOrderPage(1);
+                        }}
+                        style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                        title="Clear search"
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Status Dropdown Filter */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: '600', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Filter size={14} /> Status:
+                    </span>
+                    <select
+                      value={orderStatusFilter}
+                      onChange={(e) => {
+                        setOrderStatusFilter(e.target.value);
+                        setOrderPage(1);
+                      }}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--border-color)',
+                        background: '#fff',
+                        fontSize: '0.82rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        outline: 'none',
+                        color: 'var(--text-color)'
+                      }}
                     >
-                      <X size={16} />
-                    </button>
-                  )}
+                      <option value="all">All Statuses</option>
+                      <option value="Pending">Pending</option>
+                      <option value="Confirmed">Confirmed</option>
+                      <option value="Processing">Processing</option>
+                      <option value="Shipped">Shipped</option>
+                      <option value="Delivered">Delivered</option>
+                      <option value="Cancelled">Cancelled</option>
+                    </select>
+                  </div>
                 </div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '600' }}>
-                  Showing {orders.filter((o) => {
-                    if (!orderSearch.trim()) return true;
-                    const q = orderSearch.toLowerCase().trim();
-                    return (
-                      (o.name && o.name.toLowerCase().includes(q)) ||
-                      (o.phone && o.phone.toLowerCase().includes(q)) ||
-                      (o.email && o.email.toLowerCase().includes(q)) ||
-                      (o.address && o.address.toLowerCase().includes(q)) ||
-                      (o.district && o.district.toLowerCase().includes(q)) ||
-                      (o.state && o.state.toLowerCase().includes(q)) ||
-                      (o.pinCode && o.pinCode.toLowerCase().includes(q)) ||
-                      (o.status && o.status.toLowerCase().includes(q)) ||
-                      (o.product?.name && o.product.name.toLowerCase().includes(q))
-                    );
-                  }).length} of {orders.length} orders
+
+                {/* Date Filter Quick Pills + Result Counts */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '4px', marginRight: '4px' }}>
+                      <Calendar size={14} /> Date:
+                    </span>
+                    {[
+                      { id: 'all', label: 'All Time' },
+                      { id: 'today', label: 'Today' },
+                      { id: 'yesterday', label: 'Yesterday' },
+                      { id: 'this_week', label: 'This Week' },
+                      { id: 'this_month', label: 'This Month' },
+                    ].map((btn) => {
+                      const isActive = orderDateFilter === btn.id;
+                      return (
+                        <button
+                          key={btn.id}
+                          type="button"
+                          onClick={() => {
+                            setOrderDateFilter(btn.id);
+                            setOrderPage(1);
+                          }}
+                          style={{
+                            padding: '6px 14px',
+                            borderRadius: '20px',
+                            fontSize: '0.78rem',
+                            fontWeight: isActive ? '700' : '600',
+                            border: isActive ? '1.5px solid var(--primary-green)' : '1px solid var(--border-color)',
+                            background: isActive ? 'var(--primary-green)' : '#fff',
+                            color: isActive ? '#fff' : 'var(--text-color)',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                            boxShadow: isActive ? '0 2px 6px rgba(47,79,30,0.2)' : 'none',
+                          }}
+                        >
+                          {btn.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+                    Showing {filteredOrders.length > 0 ? `${startOrderIndex + 1}–${Math.min(startOrderIndex + ORDERS_PER_PAGE, filteredOrders.length)}` : '0'} of {filteredOrders.length} orders
+                    {filteredOrders.length !== orders.length && (
+                      <span style={{ color: 'var(--primary-green)', marginLeft: '4px' }}>
+                        (filtered from {orders.length})
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -1283,23 +1413,7 @@ const AdminDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {orders
-                      .filter((o) => {
-                        if (!orderSearch.trim()) return true;
-                        const q = orderSearch.toLowerCase().trim();
-                        return (
-                          (o.name && o.name.toLowerCase().includes(q)) ||
-                          (o.phone && o.phone.toLowerCase().includes(q)) ||
-                          (o.email && o.email.toLowerCase().includes(q)) ||
-                          (o.address && o.address.toLowerCase().includes(q)) ||
-                          (o.district && o.district.toLowerCase().includes(q)) ||
-                          (o.state && o.state.toLowerCase().includes(q)) ||
-                          (o.pinCode && o.pinCode.toLowerCase().includes(q)) ||
-                          (o.status && o.status.toLowerCase().includes(q)) ||
-                          (o.product?.name && o.product.name.toLowerCase().includes(q))
-                        );
-                      })
-                      .map((order) => (
+                    {paginatedOrders.map((order) => (
                         <tr
                           key={order._id}
                           style={{ cursor: 'pointer' }}
@@ -1452,26 +1566,128 @@ const AdminDashboard = () => {
                           </td>
                         </tr>
                       ))}
-                    {orders.filter((o) => {
-                      if (!orderSearch.trim()) return true;
-                      const q = orderSearch.toLowerCase().trim();
-                      return (
-                        (o.name && o.name.toLowerCase().includes(q)) ||
-                        (o.phone && o.phone.toLowerCase().includes(q)) ||
-                        (o.email && o.email.toLowerCase().includes(q)) ||
-                        (o.address && o.address.toLowerCase().includes(q)) ||
-                        (o.district && o.district.toLowerCase().includes(q)) ||
-                        (o.state && o.state.toLowerCase().includes(q)) ||
-                        (o.pinCode && o.pinCode.toLowerCase().includes(q)) ||
-                        (o.status && o.status.toLowerCase().includes(q)) ||
-                        (o.product?.name && o.product.name.toLowerCase().includes(q))
-                      );
-                    }).length === 0 && (
-                        <tr><td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No matching orders found.</td></tr>
-                      )}
+                    {filteredOrders.length === 0 && (
+                      <tr>
+                        <td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                          No matching orders found.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination Bar */}
+              {totalOrderPages > 1 && (
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginTop: '16px',
+                  padding: '12px 18px',
+                  background: '#fff',
+                  borderRadius: '10px',
+                  border: '1px solid var(--border-color)',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                  boxShadow: 'var(--shadow-sm)'
+                }}>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+                    Page <strong style={{ color: 'var(--primary-green)' }}>{currentOrderPage}</strong> of <strong>{totalOrderPages}</strong> ({filteredOrders.length} orders total)
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <button
+                      type="button"
+                      disabled={currentOrderPage <= 1}
+                      onClick={() => setOrderPage(prev => Math.max(prev - 1, 1))}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '6px 12px',
+                        fontSize: '0.8rem',
+                        fontWeight: '600',
+                        borderRadius: '8px',
+                        border: '1px solid var(--border-color)',
+                        background: currentOrderPage <= 1 ? '#f8fafc' : '#fff',
+                        color: currentOrderPage <= 1 ? '#94a3b8' : 'var(--text-color)',
+                        cursor: currentOrderPage <= 1 ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                      title="Previous Page"
+                    >
+                      <ChevronLeft size={15} /> Prev
+                    </button>
+
+                    {/* Page Numbers */}
+                    {Array.from({ length: totalOrderPages }, (_, i) => i + 1)
+                      .filter(p => p === 1 || p === totalOrderPages || Math.abs(p - currentOrderPage) <= 2)
+                      .reduce((acc, p, idx, arr) => {
+                        if (idx > 0 && p - arr[idx - 1] > 1) {
+                          acc.push('ellipsis-' + p);
+                        }
+                        acc.push(p);
+                        return acc;
+                      }, [])
+                      .map((item) => {
+                        if (typeof item === 'string') {
+                          return (
+                            <span key={item} style={{ padding: '0 4px', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                              …
+                            </span>
+                          );
+                        }
+                        const isCurrent = item === currentOrderPage;
+                        return (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => setOrderPage(item)}
+                            style={{
+                              minWidth: '32px',
+                              height: '32px',
+                              padding: '0 6px',
+                              fontSize: '0.8rem',
+                              fontWeight: isCurrent ? '700' : '600',
+                              borderRadius: '8px',
+                              border: isCurrent ? '1.5px solid var(--primary-green)' : '1px solid var(--border-color)',
+                              background: isCurrent ? 'var(--primary-green)' : '#fff',
+                              color: isCurrent ? '#fff' : 'var(--text-color)',
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            {item}
+                          </button>
+                        );
+                      })}
+
+                    <button
+                      type="button"
+                      disabled={currentOrderPage >= totalOrderPages}
+                      onClick={() => setOrderPage(prev => Math.min(prev + 1, totalOrderPages))}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '6px 12px',
+                        fontSize: '0.8rem',
+                        fontWeight: '600',
+                        borderRadius: '8px',
+                        border: '1px solid var(--border-color)',
+                        background: currentOrderPage >= totalOrderPages ? '#f8fafc' : '#fff',
+                        color: currentOrderPage >= totalOrderPages ? '#94a3b8' : 'var(--text-color)',
+                        cursor: currentOrderPage >= totalOrderPages ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                      title="Next Page"
+                    >
+                      Next <ChevronRight size={15} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
