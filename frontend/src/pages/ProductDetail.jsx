@@ -27,7 +27,9 @@ const ProductDetail = () => {
     const fetchProduct = async () => {
       try {
         const { data } = await API.get(`/products/${id}`);
-        setProduct(data);
+        if (data) {
+          setProduct(data);
+        }
       } catch (err) {
         console.error('Failed to fetch product details:', err);
       } finally {
@@ -35,10 +37,8 @@ const ProductDetail = () => {
       }
     };
 
-    if (!product) {
-      fetchProduct();
-    }
-  }, [id, product]);
+    fetchProduct();
+  }, [id]);
 
   const handleBuyNow = () => {
     if (user && user.isAdmin) {

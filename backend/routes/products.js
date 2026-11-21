@@ -101,11 +101,20 @@ router.put('/:id', protect, admin, async (req, res) => {
     if (mongoose.connection.readyState === 1) {
       const product = await Product.findById(req.params.id);
       if (product) {
-        product.name = name || product.name;
-        product.price = price !== undefined ? price : product.price;
-        product.description = description || product.description;
-        product.images = images || product.images;
-        product.benefits = benefits || product.benefits;
+        if (name) product.name = name;
+        if (price !== undefined) {
+          const cleanPrice = typeof price === 'string' ? Number(price.replace(/[^0-9.]/g, '')) : Number(price);
+          if (!isNaN(cleanPrice)) {
+            product.price = cleanPrice;
+          }
+        }
+        if (description) product.description = description;
+        if (images && Array.isArray(images) && images.length > 0) {
+          product.images = images;
+        }
+        if (benefits !== undefined) {
+          product.benefits = benefits;
+        }
 
         const updatedProduct = await product.save();
         res.json(updatedProduct);
@@ -116,13 +125,17 @@ router.put('/:id', protect, admin, async (req, res) => {
       const db = getFallbackDb();
       const productIndex = db.products.findIndex(p => p._id === req.params.id);
       if (productIndex !== -1) {
+        const cleanPrice = price !== undefined
+          ? (typeof price === 'string' ? Number(price.replace(/[^0-9.]/g, '')) : Number(price))
+          : db.products[productIndex].price;
+
         db.products[productIndex] = {
           ...db.products[productIndex],
           name: name || db.products[productIndex].name,
-          price: price !== undefined ? Number(price) : db.products[productIndex].price,
+          price: !isNaN(cleanPrice) ? cleanPrice : db.products[productIndex].price,
           description: description || db.products[productIndex].description,
-          images: images || db.products[productIndex].images,
-          benefits: benefits || db.products[productIndex].benefits,
+          images: (images && Array.isArray(images) && images.length > 0) ? images : db.products[productIndex].images,
+          benefits: benefits !== undefined ? benefits : db.products[productIndex].benefits,
           updatedAt: new Date().toISOString()
         };
         saveFallbackDb(db);

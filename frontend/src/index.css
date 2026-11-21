@@ -43,6 +43,16 @@ body {
   -ms-text-size-adjust: 100%;
 }
 
+/* ===== Spinner & Animation Utilities ===== */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 0.8s linear infinite;
+}
+
 /* ===== Skeleton Loader ===== */
 @keyframes skeleton-shimmer {
   0% { background-position: -200% 0; }

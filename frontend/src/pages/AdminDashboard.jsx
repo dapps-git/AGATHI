@@ -6,7 +6,7 @@ import {
   TrendingUp, Package, UserCheck, Menu, Download,
   MessageSquare, Send, MessageCircle, Mic, Volume2, Play, Pause, Headphones,
   Image as ImageIcon, ZoomIn, UploadCloud, CheckCircle2, Eye, Filter,
-  Phone, MapPin, Calendar, Clock, ChevronLeft, ChevronRight
+  Phone, MapPin, Calendar, Clock, ChevronLeft, ChevronRight, Loader2
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -81,6 +81,7 @@ const AdminDashboard = () => {
 
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [productSaving, setProductSaving] = useState(false);
   const [productForm, setProductForm] = useState({
     name: '',
     price: '',
@@ -580,7 +581,17 @@ const AdminDashboard = () => {
 
   const handleProductSubmit = async (e) => {
     e.preventDefault();
+    if (productSaving) return;
     setError('');
+
+    const cleanPrice = typeof productForm.price === 'string'
+      ? Number(productForm.price.replace(/[^0-9.]/g, ''))
+      : Number(productForm.price);
+
+    if (isNaN(cleanPrice) || cleanPrice <= 0) {
+      setError('Please enter a valid product price.');
+      return;
+    }
 
     // Determine final Main Image (card photo):
     let finalMainImage;
@@ -607,27 +618,39 @@ const AdminDashboard = () => {
     const finalImages = [finalMainImage, finalInnerImage];
 
     const payload = {
-      name: productForm.name,
-      price: Number(productForm.price),
-      description: productForm.description,
-      images: finalImages,
-      benefits: productForm.benefits.split(',').map(b => b.trim()).filter(b => b !== ''),
+      name: (productForm.name || '').trim(),
+      price: cleanPrice,
+      description: (productForm.description || '').trim(),
+      benefits: productForm.benefits ? productForm.benefits.split(',').map(b => b.trim()).filter(b => b !== '') : [],
     };
+
+    // Optimization: Only upload image data if creating a new product or if new images were selected.
+    // If updating an existing product and images didn't change, we omit 'images' from payload so
+    // we don't re-upload megabytes of Base64 across the network on every price change.
+    if (!editingProduct || mainImageBase64 || innerImageBase64 || !editingProduct.images || editingProduct.images.length === 0) {
+      payload.images = finalImages;
+    }
+
+    setProductSaving(true);
     try {
       if (editingProduct) {
         const { data } = await adminAPI.put(`/products/${editingProduct._id}`, payload);
-        setProducts(products.map(p => p._id === editingProduct._id ? data : p));
-        setSuccess('Product updated!');
+        const updated = data && data._id ? data : { ...editingProduct, ...payload, price: cleanPrice };
+        setProducts(prev => prev.map(p => p._id === editingProduct._id ? updated : p));
+        setSuccess(`"${updated.name || editingProduct.name}" updated successfully (Price: ₹${cleanPrice})!`);
       } else {
         const { data } = await adminAPI.post('/products', payload);
-        setProducts([data, ...products]);
-        setSuccess('Product created!');
+        setProducts(prev => [data, ...prev]);
+        setSuccess(`Product "${data.name}" created successfully!`);
       }
       setProductModalOpen(false);
-      setTimeout(() => setSuccess(''), 3000);
+      setTimeout(() => setSuccess(''), 4000);
       fetchData();
     } catch (err) {
-      setError(err.response?.data?.message || 'Product action failed.');
+      console.error('Save product error:', err);
+      setError(err.response?.data?.message || err.message || 'Product action failed.');
+    } finally {
+      setProductSaving(false);
     }
   };
 
@@ -2214,7 +2237,7 @@ const AdminDashboard = () => {
                 </div>
                 <div className="form-group" style={{ marginBottom: '16px' }}>
                   <label htmlFor="prod-price">Price (₹) *</label>
-                  <input type="number" id="prod-price" value={productForm.price} onChange={e => setProductForm({ ...productForm, price: e.target.value })} placeholder="1250" required />
+                  <input type="number" id="prod-price" value={productForm.price} onChange={e => setProductForm({ ...productForm, price: e.target.value })} placeholder="1250" required min="1" step="any" />
                 </div>
 
                 {/* Dual Image Upload: Main Image (Card) + Inner Image (Details Page) */}
@@ -2316,9 +2339,31 @@ const AdminDashboard = () => {
                   <textarea id="prod-benefits" value={productForm.benefits} onChange={e => setProductForm({ ...productForm, benefits: e.target.value })} placeholder="100% Ayurvedic, Boosts Appetite, Builds Muscle" rows={2} style={{ resize: 'none' }} />
                 </div>
                 <div style={{ display: 'flex', gap: '14px' }}>
-                  <button type="button" onClick={() => setProductModalOpen(false)} className="btn btn-outline" style={{ flexGrow: 1 }}>Cancel</button>
-                  <button type="submit" className="btn btn-primary" style={{ flexGrow: 2 }}>
-                    {editingProduct ? 'Save Changes' : 'Create Product'}
+                  <button type="button" onClick={() => setProductModalOpen(false)} className="btn btn-outline" style={{ flexGrow: 1 }} disabled={productSaving}>
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={productSaving}
+                    style={{
+                      flexGrow: 2,
+                      opacity: productSaving ? 0.75 : 1,
+                      cursor: productSaving ? 'not-allowed' : 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    {productSaving ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      editingProduct ? 'Save Changes' : 'Create Product'
+                    )}
                   </button>
                 </div>
               </form>
