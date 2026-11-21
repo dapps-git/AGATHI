@@ -122,13 +122,13 @@ const Policies = () => {
                 <p>We implement industry-standard security measures to protect your personal data from unauthorised access, alteration, disclosure, or destruction. All data transmissions on our website are secured via HTTPS/SSL encryption.</p>
               </Section>
               <Section title="6. Your Rights">
-                <p>You may request access to, correction of, or deletion of your personal data at any time by contacting us at <strong>agadichoornam@gmail.com</strong>.</p>
+                <p>You may request access to, correction of, or deletion of your personal data at any time by contacting us at <strong>agadinaturals@gmail.com</strong>.</p>
               </Section>
               <Section title="7. Changes to This Policy">
                 <p>We may update this Privacy Policy periodically. Continued use of our website after any changes constitutes acceptance of the revised policy.</p>
               </Section>
               <Section title="8. Contact Us">
-                <p>For any privacy-related concerns, please contact us at:<br /><strong>Email:</strong> agadichoornam@gmail.com<br /><strong>Phone:</strong> +91 9539416003</p>
+                <p>For any privacy-related concerns, please contact us at:<br /><strong>Email:</strong> agadinaturals@gmail.com<br /><strong>Phone:</strong> +91 9539416003</p>
               </Section>
             </PolicyContent>
           )}
@@ -178,7 +178,7 @@ const Policies = () => {
                 <p>These Terms and Conditions are governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of the courts in Kerala, India.</p>
               </Section>
               <Section title="9. Contact Us">
-                <p>For any queries regarding these terms, please contact:<br /><strong>Email:</strong> agadichoornam@gmail.com<br /><strong>Phone:</strong> +91 9539416003</p>
+                <p>For any queries regarding these terms, please contact:<br /><strong>Email:</strong> agadinaturals@gmail.com<br /><strong>Phone:</strong> +91 9539416003</p>
               </Section>
             </PolicyContent>
           )}
@@ -226,7 +226,7 @@ const Policies = () => {
                 </ul>
               </Section>
               <Section title="7. Contact Us">
-                <p>For refund or cancellation requests:<br /><strong>WhatsApp / Phone:</strong> +91 9539416003<br /><strong>Email:</strong> agadichoornam@gmail.com</p>
+                <p>For refund or cancellation requests:<br /><strong>WhatsApp / Phone:</strong> +91 9539416003<br /><strong>Email:</strong> agadinaturals@gmail.com</p>
               </Section>
             </PolicyContent>
           )}
@@ -258,7 +258,7 @@ const Policies = () => {
                 <p>If your product arrives visibly damaged, please contact us within <strong>48 hours</strong> of delivery with photographs. We will arrange a replacement or refund as per our Refund Policy.</p>
               </Section>
               <Section title="8. Contact Us">
-                <p>For shipping-related queries:<br /><strong>WhatsApp / Phone:</strong> +91 9539416003<br /><strong>Email:</strong> agadichoornam@gmail.com</p>
+                <p>For shipping-related queries:<br /><strong>WhatsApp / Phone:</strong> +91 9539416003<br /><strong>Email:</strong> agadinaturals@gmail.com</p>
               </Section>
             </PolicyContent>
           )}

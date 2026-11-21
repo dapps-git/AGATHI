@@ -60,7 +60,7 @@ const Footer = () => {
 
             <li>
               <Mail size={16} className="footer-contact-icon" />
-              <a href="mailto:agadichoornam@gmail.com">agadichoornam@gmail.com</a>
+              <a href="mailto:agadinaturals@gmail.com">agadinaturals@gmail.com</a>
             </li>
             <li style={{ alignItems: 'flex-start' }}>
               <MapPin size={16} className="footer-contact-icon" style={{ marginTop: '3px', flexShrink: 0 }} />

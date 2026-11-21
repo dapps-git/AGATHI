@@ -18,7 +18,7 @@ const defaultDb = {
     {
       _id: "66723e7f4a56a6452ba3be81",
       name: "Agadi Administrator",
-      email: "agadichoornam@gmail.com",
+      email: "agadinaturals@gmail.com",
       phone: "8139800282",
       password: "agadiadmin@2026",
       isAdmin: true

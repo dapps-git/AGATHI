@@ -12,7 +12,7 @@ const updateAdmin = async () => {
     await mongoose.connect(mongoUri);
     console.log('Connected to MongoDB.');
 
-    const newEmail = 'agadichoornam@gmail.com';
+    const newEmail = 'agadinaturals@gmail.com';
     const newPassword = 'agadiadmin@2026';
 
     // Check if there are any existing admins or user with newEmail / old emails

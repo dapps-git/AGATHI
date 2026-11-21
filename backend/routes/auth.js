@@ -136,13 +136,18 @@ router.post('/login', async (req, res) => {
     }
 
     email = String(email).trim().toLowerCase();
-
+    const adminEmails = ['agadinaturals@gmail.com', 'agadichoornam@gmail.com'];
+    const isAdminLookup = adminEmails.includes(email);
 
     // Fallback login if mongoose is not connected
     if (mongoose.connection.readyState !== 1) {
       const { getFallbackDb } = await import('../utils/dbFallback.js');
       const db = getFallbackDb();
-      const user = db.users.find(u => String(u.email).toLowerCase() === email);
+      const user = db.users.find(u => {
+        const uEmail = String(u.email).toLowerCase();
+        if (isAdminLookup && adminEmails.includes(uEmail)) return true;
+        return uEmail === email;
+      });
       if (user && user.password === password) {
         return res.json({
           _id: user._id,
@@ -158,7 +163,9 @@ router.post('/login', async (req, res) => {
       }
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne(
+      isAdminLookup ? { email: { $in: adminEmails } } : { email }
+    );
 
     if (user && (await user.matchPassword(password))) {
       res.json({
