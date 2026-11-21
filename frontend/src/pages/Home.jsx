@@ -277,8 +277,8 @@ const Home = () => {
         <div className="hero-banner-wrap">
           {/* Desktop hero image */}
           <img
-            src="/images/hero-banner.webp"
-            alt="Agadi Choornam - Natural Weight Gain The Ayurvedic Way"
+            src="/images/hero-banner.jpg"
+            alt="Agadi Naturals - Traditional Care for Modern Wellness"
             className="hero-banner-img"
             loading="eager"
             fetchPriority="high"
@@ -286,8 +286,8 @@ const Home = () => {
           />
           {/* Mobile hero image */}
           <img
-            src="/images/mobilehero.webp"
-            alt="Agadi Choornam - Natural Weight Gain The Ayurvedic Way"
+            src="/images/mobilehero.jpg"
+            alt="Agadi Naturals - Natural Care for Hair, Skin & Body"
             className="hero-banner-img-mobile"
             loading="eager"
             fetchPriority="high"
