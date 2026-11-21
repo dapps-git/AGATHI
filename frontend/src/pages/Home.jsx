@@ -603,7 +603,7 @@ const Home = () => {
 
       {/* Product Section */}
       <section id="products" className="products section-padding" style={{ backgroundColor: 'var(--card-bg)' }}>
-        <div className="container">
+        <div className="container" style={{ maxWidth: '100%', padding: '0 24px' }}>
           <div className="text-center">
             <h2 className="section-title">Our Premium Formulations</h2>
             <p className="section-subtitle">
@@ -613,14 +613,14 @@ const Home = () => {
 
           {loading ? (
             <div className="products-grid">
-              {[1, 2, 3, 4].map(n => (
-                <div key={n} className="product-card" style={{ padding: '12px' }}>
-                  <div className="skeleton-box" style={{ width: '100%', aspectRatio: '1/1', borderRadius: '4px' }} />
-                  <div className="skeleton-box" style={{ width: '75%', height: '16px', borderRadius: '4px', marginTop: '10px' }} />
-                  <div className="skeleton-box" style={{ width: '40%', height: '20px', borderRadius: '4px', marginTop: '8px' }} />
-                  <div style={{ display: 'flex', gap: '6px', marginTop: '12px' }}>
-                    <div className="skeleton-box" style={{ flex: 1, height: '32px', borderRadius: '4px' }} />
-                    <div className="skeleton-box" style={{ flex: 1, height: '32px', borderRadius: '4px' }} />
+              {[1, 2, 3, 4, 5].map(n => (
+                <div key={n} className="product-card" style={{ padding: '10px' }}>
+                  <div className="skeleton-box" style={{ width: '100%', height: '160px', borderRadius: '4px' }} />
+                  <div className="skeleton-box" style={{ width: '75%', height: '14px', borderRadius: '4px', marginTop: '8px' }} />
+                  <div className="skeleton-box" style={{ width: '40%', height: '18px', borderRadius: '4px', marginTop: '6px' }} />
+                  <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
+                    <div className="skeleton-box" style={{ flex: 1, height: '30px', borderRadius: '4px' }} />
+                    <div className="skeleton-box" style={{ flex: 1, height: '30px', borderRadius: '4px' }} />
                   </div>
                 </div>
               ))}

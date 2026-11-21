@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, ShoppingBag, MessageCircle, Check, ShieldCheck, Truck, Sparkles, Heart } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, MessageCircle, Check, ShieldCheck } from 'lucide-react';
 import API from '../utils/api';
 import OrderModal from '../components/OrderModal';
 import { AuthContext } from '../context/AuthContext';
@@ -13,7 +13,6 @@ const ProductDetail = () => {
 
   const [product, setProduct] = useState(location.state?.product || null);
   const [loading, setLoading] = useState(!location.state?.product);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showOrderModal, setShowOrderModal] = useState(false);
 
   useEffect(() => {
@@ -23,12 +22,6 @@ const ProductDetail = () => {
       try {
         const { data } = await API.get(`/products/${id}`);
         setProduct(data);
-        // Default to inner image (images[1]) if available, otherwise images[0]
-        if (data.images && data.images.length > 1) {
-          setSelectedImageIndex(1);
-        } else {
-          setSelectedImageIndex(0);
-        }
       } catch (err) {
         console.error('Failed to fetch product details:', err);
       } finally {
@@ -36,15 +29,10 @@ const ProductDetail = () => {
       }
     };
 
-    fetchProduct();
-  }, [id]);
-
-  // Set default view to inner image if already available from location.state
-  useEffect(() => {
-    if (product?.images && product.images.length > 1) {
-      setSelectedImageIndex(1);
+    if (!product) {
+      fetchProduct();
     }
-  }, [product]);
+  }, [id, product]);
 
   const handleBuyNow = () => {
     if (user && user.isAdmin) {
@@ -76,20 +64,17 @@ const ProductDetail = () => {
     );
   }
 
-  const images = (product.images && product.images.length > 0)
-    ? product.images
-    : ['/images/product-pouch.webp'];
-
-  const currentImage = images[selectedImageIndex] || images[0];
+  // Only show the inner page image directly
+  const innerImage = (product.images && (product.images[1] || product.images[0])) || '/images/product-pouch.webp';
 
   const waMessage = `Hello, I'd like to ask a question about *${product.name}* (₹${product.price}).`;
   const waUrl = `https://wa.me/919539416003?text=${encodeURIComponent(waMessage)}`;
 
   return (
     <div className="product-detail-page section-padding" style={{ backgroundColor: 'var(--bg-color)', minHeight: '85vh' }}>
-      <div className="container" style={{ maxWidth: '1100px' }}>
+      <div className="container" style={{ maxWidth: '1050px' }}>
         {/* Back Link / Breadcrumb */}
-        <div style={{ marginBottom: '24px' }}>
+        <div style={{ marginBottom: '20px' }}>
           <button
             onClick={() => navigate(-1)}
             style={{
@@ -118,112 +103,37 @@ const ProductDetail = () => {
           boxShadow: 'var(--shadow-sm)',
           overflow: 'hidden',
           display: 'grid',
-          gridTemplateColumns: 'minmax(320px, 1fr) 1.2fr',
+          gridTemplateColumns: 'minmax(300px, 1fr) 1.2fr',
           gap: '32px',
           padding: '28px'
         }} className="product-detail-grid">
 
-          {/* Left: Product Images (Inner & Main) */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <div style={{
-              width: '100%',
-              aspectRatio: '1 / 1',
-              borderRadius: '8px',
-              border: '1px solid var(--border-color)',
-              background: '#f8fafc',
-              overflow: 'hidden',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <img
-                src={currentImage}
-                alt={product.name}
-                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = '/images/product-pouch.webp';
-                }}
-              />
-            </div>
-
-            {/* Thumbnail Selectors (Main vs Inner) */}
-            {images.length > 1 && (
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                {images.map((imgUrl, idx) => {
-                  const isSelected = selectedImageIndex === idx;
-                  const label = idx === 0 ? 'Main Photo' : 'Inner Photo';
-                  return (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setSelectedImageIndex(idx)}
-                      style={{
-                        flex: '1',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '6px 10px',
-                        borderRadius: '6px',
-                        border: isSelected ? '2px solid var(--primary-green)' : '1px solid var(--border-color)',
-                        background: isSelected ? '#f4fbf7' : '#ffffff',
-                        cursor: 'pointer',
-                        textAlign: 'left'
-                      }}
-                    >
-                      <img
-                        src={imgUrl}
-                        alt=""
-                        style={{ width: '38px', height: '38px', objectFit: 'contain', borderRadius: '4px', background: '#fff', border: '1px solid #e2e8f0' }}
-                        onError={(e) => { e.target.onerror = null; e.target.src = '/images/product-pouch.webp'; }}
-                      />
-                      <div>
-                        <div style={{ fontSize: '0.75rem', fontWeight: isSelected ? '700' : '600', color: isSelected ? 'var(--primary-green)' : 'var(--text-color)' }}>
-                          {label}
-                        </div>
-                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
-                          {idx === 0 ? 'Card view' : 'Details view'}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+          {/* Left: Inner Page Image Directly */}
+          <div style={{
+            width: '100%',
+            aspectRatio: '1 / 1',
+            borderRadius: '8px',
+            border: '1px solid var(--border-color)',
+            background: '#ffffff',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '12px'
+          }}>
+            <img
+              src={innerImage}
+              alt={product.name}
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = '/images/product-pouch.webp';
+              }}
+            />
           </div>
 
           {/* Right: Product Info & Actions */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-            {/* Category / Badge */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{
-                background: '#f4fbf7',
-                color: 'var(--primary-green)',
-                border: '1px solid #bbf7d0',
-                padding: '3px 10px',
-                borderRadius: '100px',
-                fontSize: '0.74rem',
-                fontWeight: '700',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}>
-                <Sparkles size={12} /> 100% Ayurvedic Formula
-              </span>
-              <span style={{
-                background: '#ecfdf5',
-                color: '#059669',
-                padding: '3px 10px',
-                borderRadius: '100px',
-                fontSize: '0.74rem',
-                fontWeight: '600'
-              }}>
-                In Stock
-              </span>
-            </div>
-
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {/* Title */}
             <h1 style={{
               fontSize: '1.6rem',
@@ -235,19 +145,16 @@ const ProductDetail = () => {
               {product.name}
             </h1>
 
-            {/* Price Row */}
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', borderBottom: '1px solid var(--border-color)', paddingBottom: '14px' }}>
+            {/* Price */}
+            <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
               <div style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--primary-green)' }}>
                 ₹{product.price}
-              </div>
-              <div style={{ fontSize: '0.82rem', color: '#059669', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Truck size={14} /> FREE Shipping across India
               </div>
             </div>
 
             {/* Description */}
             <div>
-              <h4 style={{ fontSize: '0.9rem', fontWeight: '700', color: '#334155', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <h4 style={{ fontSize: '0.88rem', fontWeight: '700', color: '#334155', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 About This Product
               </h4>
               <p style={{ fontSize: '0.92rem', color: 'var(--text-muted)', lineHeight: '1.7', margin: 0 }}>
@@ -258,7 +165,7 @@ const ProductDetail = () => {
             {/* Key Benefits */}
             {product.benefits && product.benefits.length > 0 && (
               <div style={{ background: '#fbfcfb', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                <h4 style={{ fontSize: '0.88rem', fontWeight: '700', color: 'var(--primary-green)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <h4 style={{ fontSize: '0.86rem', fontWeight: '700', color: 'var(--primary-green)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <ShieldCheck size={16} /> Key Benefits & Features
                 </h4>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px' }}>
