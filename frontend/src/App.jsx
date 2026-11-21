@@ -49,14 +49,31 @@ function PublicAppContent() {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
-  // Set --vh CSS variable to real inner height (fixes iOS hero zoom on scroll)
+  // Set --vh CSS variable without triggering zoom on vertical iOS scroll
   useEffect(() => {
+    let lastWidth = typeof window !== 'undefined' ? window.innerWidth : 0;
     const setVh = () => {
-      document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+      // On iOS Safari, scrolling collapses the address bar which fires resize.
+      // Only recalculate when window width changes (e.g. device rotation).
+      if (typeof window !== 'undefined' && window.innerWidth !== lastWidth) {
+        lastWidth = window.innerWidth;
+        document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+      }
     };
-    setVh();
-    window.addEventListener('resize', setVh);
-    return () => window.removeEventListener('resize', setVh);
+    if (typeof window !== 'undefined') {
+      document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+      window.addEventListener('resize', setVh);
+      window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+          document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+        }, 200);
+      });
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', setVh);
+      }
+    };
   }, []);
 
   return (

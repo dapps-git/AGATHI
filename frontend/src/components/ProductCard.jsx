@@ -38,10 +38,10 @@ const ProductCard = ({ product, onBuyNow }) => {
             type="button"
             onClick={handleViewDetails}
             className="btn btn-outline product-btn-details"
-            title="View full description and details"
+            title="View Details"
           >
-            <Eye size={14} />
-            <span>View Details</span>
+            <Eye size={15} />
+            <span className="product-btn-text">View Details</span>
           </button>
           <button
             type="button"

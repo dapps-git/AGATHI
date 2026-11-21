@@ -71,10 +71,10 @@ const ProductDetail = () => {
   const waUrl = `https://wa.me/919539416003?text=${encodeURIComponent(waMessage)}`;
 
   return (
-    <div className="product-detail-page section-padding" style={{ backgroundColor: 'var(--bg-color)', minHeight: '85vh' }}>
-      <div className="container" style={{ maxWidth: '1050px' }}>
+    <div className="product-detail-page section-padding" style={{ backgroundColor: 'var(--bg-color)', minHeight: '85vh', paddingTop: '86px' }}>
+      <div className="container" style={{ maxWidth: '980px', padding: '0 16px' }}>
         {/* Back Link / Breadcrumb */}
-        <div style={{ marginBottom: '20px' }}>
+        <div style={{ marginBottom: '18px', paddingTop: '4px' }}>
           <button
             onClick={() => navigate(-1)}
             style={{
@@ -84,10 +84,10 @@ const ProductDetail = () => {
               border: 'none',
               background: 'none',
               color: 'var(--primary-green)',
-              fontWeight: '700',
+              fontWeight: '600',
               fontSize: '0.88rem',
               cursor: 'pointer',
-              padding: '4px 0'
+              padding: '6px 0'
             }}
           >
             <ArrowLeft size={18} />
@@ -105,21 +105,21 @@ const ProductDetail = () => {
           display: 'grid',
           gridTemplateColumns: 'minmax(300px, 1fr) 1.2fr',
           gap: '32px',
-          padding: '28px'
+          padding: '24px'
         }} className="product-detail-grid">
 
-          {/* Left: Inner Page Image Directly */}
+          {/* Left: Inner Page Image Directly (border box removed) */}
           <div style={{
             width: '100%',
             aspectRatio: '1 / 1',
-            borderRadius: '8px',
-            border: '1px solid var(--border-color)',
-            background: '#ffffff',
+            borderRadius: '0',
+            border: 'none',
+            background: 'transparent',
             overflow: 'hidden',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '12px'
+            padding: '0'
           }}>
             <img
               src={innerImage}
@@ -133,11 +133,11 @@ const ProductDetail = () => {
           </div>
 
           {/* Right: Product Info & Actions */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {/* Title */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {/* Title (reduced font size and weight) */}
             <h1 style={{
-              fontSize: '1.6rem',
-              fontWeight: '800',
+              fontSize: '1.25rem',
+              fontWeight: '600',
               color: '#1e293b',
               margin: 0,
               lineHeight: 1.3
@@ -145,33 +145,33 @@ const ProductDetail = () => {
               {product.name}
             </h1>
 
-            {/* Price */}
-            <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
-              <div style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--primary-green)' }}>
+            {/* Price (reduced font size and weight) */}
+            <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
+              <div style={{ fontSize: '1.35rem', fontWeight: '700', color: 'var(--primary-green)' }}>
                 ₹{product.price}
               </div>
             </div>
 
             {/* Description */}
             <div>
-              <h4 style={{ fontSize: '0.88rem', fontWeight: '700', color: '#334155', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <h4 style={{ fontSize: '0.82rem', fontWeight: '600', color: '#475569', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 About This Product
               </h4>
-              <p style={{ fontSize: '0.92rem', color: 'var(--text-muted)', lineHeight: '1.7', margin: 0 }}>
+              <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: '1.65', margin: 0 }}>
                 {product.description}
               </p>
             </div>
 
             {/* Key Benefits */}
             {product.benefits && product.benefits.length > 0 && (
-              <div style={{ background: '#fbfcfb', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                <h4 style={{ fontSize: '0.86rem', fontWeight: '700', color: 'var(--primary-green)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <ShieldCheck size={16} /> Key Benefits & Features
+              <div style={{ background: '#fbfcfb', padding: '14px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                <h4 style={{ fontSize: '0.82rem', fontWeight: '600', color: 'var(--primary-green)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <ShieldCheck size={15} /> Key Benefits & Features
                 </h4>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '6px' }}>
                   {product.benefits.map((benefit, idx) => (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.86rem', color: '#334155' }}>
-                      <Check size={15} style={{ color: 'var(--primary-green)', flexShrink: 0, marginTop: '2px' }} />
+                    <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.82rem', color: '#334155' }}>
+                      <Check size={14} style={{ color: 'var(--primary-green)', flexShrink: 0, marginTop: '2px' }} />
                       <span>{benefit}</span>
                     </div>
                   ))}
@@ -179,16 +179,16 @@ const ProductDetail = () => {
               </div>
             )}
 
-            {/* Action Buttons: Buy Now & WhatsApp Enquiry */}
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '6px' }}>
+            {/* Action Button: Only Buy Now Button */}
+            <div style={{ marginTop: '6px' }}>
               <button
                 type="button"
                 onClick={handleBuyNow}
                 className="btn btn-primary"
                 style={{
-                  flex: '1 1 200px',
+                  width: '100%',
                   padding: '12px 24px',
-                  fontSize: '0.95rem',
+                  fontSize: '0.92rem',
                   fontWeight: '700',
                   borderRadius: '8px',
                   display: 'inline-flex',
@@ -201,45 +201,6 @@ const ProductDetail = () => {
                 <ShoppingBag size={18} />
                 <span>Buy Now • ₹{product.price}</span>
               </button>
-
-              <a
-                href={waUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-outline"
-                style={{
-                  flex: '1 1 180px',
-                  padding: '12px 20px',
-                  fontSize: '0.88rem',
-                  fontWeight: '600',
-                  borderRadius: '8px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  borderColor: '#25D366',
-                  color: '#15803d'
-                }}
-              >
-                <MessageCircle size={18} style={{ color: '#25D366' }} />
-                <span>Chat on WhatsApp</span>
-              </a>
-            </div>
-
-            {/* Trust Points */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', borderTop: '1px solid var(--border-color)', paddingTop: '16px', marginTop: '4px' }}>
-              <div style={{ textAlign: 'center', fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                <div style={{ fontWeight: '700', color: 'var(--primary-green)', marginBottom: '2px' }}>✓ 100% Herbal</div>
-                No Side Effects
-              </div>
-              <div style={{ textAlign: 'center', fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                <div style={{ fontWeight: '700', color: 'var(--primary-green)', marginBottom: '2px' }}>✓ Kerala Sourced</div>
-                Authentic Herbs
-              </div>
-              <div style={{ textAlign: 'center', fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                <div style={{ fontWeight: '700', color: 'var(--primary-green)', marginBottom: '2px' }}>✓ Fast Delivery</div>
-                Dispatched in 24 Hrs
-              </div>
             </div>
           </div>
         </div>

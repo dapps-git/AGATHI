@@ -274,7 +274,15 @@ const Home = () => {
     <div>
       {/* Hero Section */}
       <section id="hero" className="hero">
-        <div className="hero-banner-wrap">
+        <div
+          className="hero-banner-wrap"
+          onClick={() => {
+            const element = document.getElementById('products');
+            if (element) window.scrollTo({ top: element.offsetTop - 80, behavior: 'smooth' });
+          }}
+          style={{ cursor: 'pointer' }}
+          title="Click to view our products"
+        >
           {/* Desktop hero image */}
           <img
             src="/images/hero-banner.jpg"
@@ -296,7 +304,8 @@ const Home = () => {
           {/* Mobile-only: buttons overlaid at bottom of image */}
           <div className="hero-mobile-cta">
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 const element = document.getElementById('products');
                 if (element) window.scrollTo({ top: element.offsetTop - 80, behavior: 'smooth' });
               }}
@@ -309,6 +318,7 @@ const Home = () => {
               href="https://wa.me/919539416003?text=Hello,%20I'd%20like%20to%20get%20expert%20guidance%20on%20Agadi%20Choornam."
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
               className="hero-mobile-btn hero-mobile-btn--outline"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366" style={{ flexShrink: 0 }}>

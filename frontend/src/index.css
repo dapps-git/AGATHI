@@ -252,26 +252,31 @@ input::placeholder, textarea::placeholder { color: #aab2a8; }
 /* ===== Hero ===== */
 .hero {
   position: relative;
-  background: #f0f3ee;
+  background: #f4f6f2;
   margin-top: 68px;
-  height: calc(var(--vh, 1vh) * 100 - 68px);
+  height: auto;
+  min-height: unset;
   overflow: hidden;
 }
 
 .hero-banner-wrap {
   position: relative;
   width: 100%;
-  height: 100%;
+  height: auto;
   overflow: hidden;
-  background: #2F4F1E linear-gradient(135deg, #1d3313 0%, #2F4F1E 50%, #3c6627 100%);
+  background: #f4f6f2;
+  cursor: pointer;
 }
 
 .hero-banner-img {
   width: 100%;
-  height: 100%;
+  height: auto;
+  max-width: 100%;
   display: block;
-  object-fit: cover;
-  object-position: center center;
+  object-fit: contain;
+  object-position: center top;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 /* Mobile image: hidden on desktop */
@@ -279,12 +284,32 @@ input::placeholder, textarea::placeholder { color: #aab2a8; }
   display: none;
 }
 
-/* ── Green CTA bar: HIDDEN (buttons now overlaid on image) ── */
+/* Desktop-only: clean CTA bar below banner image (never covering products) */
 .hero-banner-cta {
-  display: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 24px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+}
+.hero-banner-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  font-weight: 700;
+  font-size: 0.92rem;
+  border-radius: 8px;
 }
 
-/* ── Overlay buttons: shown on BOTH desktop & mobile ── */
+/* Floating overlay buttons: mobile-only */
+@media (min-width: 769px) {
+  .hero-mobile-cta {
+    display: none !important;
+  }
+}
 .hero-mobile-cta {
   display: flex;
   position: absolute;
@@ -523,11 +548,12 @@ input::placeholder, textarea::placeholder { color: #aab2a8; }
   height: 100%;
   object-fit: contain;
   transition: transform 0.25s ease;
-  padding: 6px;
+  padding: 0;
   background: #ffffff;
+  transform: scale(1.18);
 }
 .product-card:hover .product-card-img {
-  transform: scale(1.04);
+  transform: scale(1.24);
 }
 .product-card-content {
   padding: 12px 14px 14px;
@@ -1169,17 +1195,17 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
   .hero {
     position: relative !important;
     margin-top: 60px !important;
-    height: calc(var(--vh, 1vh) * 100 - 60px) !important;
+    height: auto !important;
+    min-height: unset !important;
     padding: 0 !important;
     overflow: hidden !important;
-    touch-action: pan-y;
   }
   .hero-banner-wrap {
-    height: 100% !important;
+    height: auto !important;
     width: 100% !important;
     overflow: hidden !important;
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
+    transform: none !important;
+    -webkit-transform: none !important;
   }
   /* Hide desktop banner on mobile, show mobile image */
   .hero-banner-img {
@@ -1188,13 +1214,14 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
   .hero-banner-img-mobile {
     display: block !important;
     width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    object-position: center center !important;
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    height: auto !important;
+    object-fit: contain !important;
+    object-position: center top !important;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+  .hero-banner-cta {
+    display: none !important;
   }
   /* Adjust overlay buttons for mobile size */
   .hero-mobile-cta {
@@ -1292,13 +1319,18 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
     gap: 12px !important;
   }
   /* Products: 2-column grid on mobile (5-column on desktop) */
+  #products .container {
+    padding: 0 8px !important;
+    max-width: 100% !important;
+  }
   .products-grid {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 12px !important;
+    gap: 8px !important;
     flex-direction: unset !important;
     max-width: 100% !important;
     margin: 0 !important;
+    width: 100% !important;
   }
   .products-grid .product-card {
     border-radius: 8px !important;
@@ -1312,32 +1344,69 @@ select.status-select:focus { border-color: var(--primary-green); outline: none; 
     min-height: unset !important;
     border-right: none !important;
     border-bottom: 1px solid #f1f5f9 !important;
+    overflow: hidden !important;
   }
   .products-grid .product-card-img {
-    padding: 6px !important;
+    padding: 0 !important;
+    transform: scale(1.16) !important;
+  }
+  .products-grid .product-card:hover .product-card-img {
+    transform: scale(1.22) !important;
   }
   .products-grid .product-card-content {
-    padding: 10px 10px 12px !important;
+    padding: 8px 8px 10px !important;
   }
   .product-card-title {
-    font-size: 0.82rem !important;
+    font-size: 0.8rem !important;
     min-height: 2.2em !important;
-    margin-bottom: 4px !important;
+    margin-bottom: 3px !important;
     line-height: 1.25 !important;
   }
   .product-price {
-    font-size: 1rem !important;
-    margin-bottom: 8px !important;
+    font-size: 0.95rem !important;
+    margin-bottom: 6px !important;
   }
+  /* Buttons in a single row on mobile: [ Eye icon ] + [ Buy Now ] */
   .product-card-actions {
-    flex-direction: column !important;
-    gap: 6px !important;
-  }
-  .product-btn-details,
-  .product-btn-buy {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 5px !important;
+    margin-top: auto !important;
     width: 100% !important;
-    padding: 7px 6px !important;
+  }
+  .product-btn-details {
+    flex: 0 0 34px !important;
+    width: 34px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    border-radius: 6px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #f8fafc !important;
+    border: 1px solid var(--border-color) !important;
+    color: #475569 !important;
+  }
+  .product-btn-details .product-btn-text {
+    display: none !important;
+  }
+  .product-btn-buy {
+    flex: 1 1 auto !important;
+    height: 32px !important;
+    padding: 4px 8px !important;
     font-size: 0.74rem !important;
+    font-weight: 700 !important;
+    border-radius: 6px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    white-space: nowrap !important;
+  }
+  .product-btn-buy svg {
+    width: 13px !important;
+    height: 13px !important;
   }
 
   /* Make benefit cards prettier in 2-column mobile view */
