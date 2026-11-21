@@ -7,7 +7,7 @@ const getBaseUrl = () => {
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
-  if (typeof window !== 'undefined' && window.location.hostname.includes('agadichoornam.com')) {
+  if (typeof window !== 'undefined' && (window.location.hostname.includes('agadinaturals.com') || window.location.hostname.includes('agadichoornam.com'))) {
     return 'https://tweaki.pw/agadi/api';
   }
   return '/api';

@@ -95,7 +95,7 @@ const Policies = () => {
           {activeTab === 'privacy' && (
             <PolicyContent title="Privacy Policy" updated="19 July 2025">
               <Section title="1. Introduction">
-                <p>Agadi Choorna ("we", "us", or "our") respects your privacy. This Privacy Policy explains how we collect, use, and protect your personal information when you visit our website <strong>www.agadichoornam.com</strong> or place an order with us.</p>
+                <p>Agadi Choorna ("we", "us", or "our") respects your privacy. This Privacy Policy explains how we collect, use, and protect your personal information when you visit our website <strong>www.agadinaturals.com</strong> or place an order with us.</p>
               </Section>
               <Section title="2. Information We Collect">
                 <p>When you place an order or register on our website, we may collect:</p>
@@ -137,7 +137,7 @@ const Policies = () => {
           {activeTab === 'terms' && (
             <PolicyContent title="Terms & Conditions" updated="19 July 2025">
               <Section title="1. Acceptance of Terms">
-                <p>By accessing or using the website <strong>www.agadichoornam.com</strong> or purchasing our products, you agree to be bound by these Terms and Conditions. If you do not agree, please do not use our website.</p>
+                <p>By accessing or using the website <strong>www.agadinaturals.com</strong> or purchasing our products, you agree to be bound by these Terms and Conditions. If you do not agree, please do not use our website.</p>
               </Section>
               <Section title="2. About Our Products">
                 <p>Agadi Choorna is a traditional Ayurvedic herbal formulation. Our products are:</p>

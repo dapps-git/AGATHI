@@ -8,6 +8,7 @@
     Header unset Access-Control-Allow-Credentials
 
     # Allow the specific production origins
+    SetEnvIf Origin "^https://(www\.)?agadinaturals\.com$" CORS_ALLOW=1
     SetEnvIf Origin "^https://(www\.)?agadichoornam\.com$" CORS_ALLOW=1
     SetEnvIf Origin "^https://(www\.)?tweaki\.pw$"        CORS_ALLOW=1
     SetEnvIf Origin "^https://.*\.vercel\.app$"            CORS_ALLOW=1
