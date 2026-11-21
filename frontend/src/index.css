@@ -252,31 +252,27 @@ input::placeholder, textarea::placeholder { color: #aab2a8; }
 /* ===== Hero ===== */
 .hero {
   position: relative;
-  background: #f4f6f2;
+  background: #f0f3ee;
   margin-top: 68px;
-  height: auto;
-  min-height: unset;
+  height: calc(var(--vh, 1vh) * 100 - 68px);
   overflow: hidden;
 }
 
 .hero-banner-wrap {
   position: relative;
   width: 100%;
-  height: auto;
+  height: 100%;
   overflow: hidden;
-  background: #f4f6f2;
+  background: #2F4F1E linear-gradient(135deg, #1d3313 0%, #2F4F1E 50%, #3c6627 100%);
   cursor: pointer;
 }
 
 .hero-banner-img {
   width: 100%;
-  height: auto;
-  max-width: 100%;
+  height: 100%;
   display: block;
-  object-fit: contain;
-  object-position: center top;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
+  object-fit: cover;
+  object-position: center center;
 }
 
 /* Mobile image: hidden on desktop */
@@ -284,32 +280,12 @@ input::placeholder, textarea::placeholder { color: #aab2a8; }
   display: none;
 }
 
-/* Desktop-only: clean CTA bar below banner image (never covering products) */
+/* ── Green CTA bar: HIDDEN (buttons now overlaid on image) ── */
 .hero-banner-cta {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  padding: 14px 24px;
-  background: #ffffff;
-  border-bottom: 1px solid var(--border-color);
-}
-.hero-banner-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 24px;
-  font-weight: 700;
-  font-size: 0.92rem;
-  border-radius: 8px;
+  display: none;
 }
 
-/* Floating overlay buttons: mobile-only */
-@media (min-width: 769px) {
-  .hero-mobile-cta {
-    display: none !important;
-  }
-}
+/* ── Overlay buttons: shown on BOTH desktop & mobile ── */
 .hero-mobile-cta {
   display: flex;
   position: absolute;

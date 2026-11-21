@@ -285,8 +285,8 @@ const Home = () => {
         >
           {/* Desktop hero image */}
           <img
-            src="/images/hero-banner.jpg"
-            alt="Agadi Naturals - Traditional Care for Modern Wellness"
+            src="/images/hero-banner.webp"
+            alt="Agadi Choornam - Natural Weight Gain The Ayurvedic Way"
             className="hero-banner-img"
             loading="eager"
             fetchPriority="high"
