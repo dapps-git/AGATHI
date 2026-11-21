@@ -1,63 +1,60 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, ShoppingBag, HelpCircle } from 'lucide-react';
+import { ShoppingBag, Eye } from 'lucide-react';
 
 const ProductCard = ({ product, onBuyNow }) => {
   const navigate = useNavigate();
 
-  const handleEnquiry = (e) => {
+  const handleViewDetails = (e) => {
     e.stopPropagation();
-    navigate('/enquiry', { state: { product } });
+    navigate(`/product/${product._id}`, { state: { product } });
   };
 
+  const mainImage = (product.images && product.images[0]) || '/images/product-pouch.webp';
+
   return (
-    <div className="product-card">
+    <div className="product-card" onClick={handleViewDetails} style={{ cursor: 'pointer' }}>
       <div className="product-img-wrapper">
-        {product.images && product.images[0] ? (
-          <img
-            src={product.images[0]}
-            alt={product.name}
-            className="product-card-img"
-            onError={(e) => {
-              // Fallback if image fails to load
-              e.target.onerror = null;
-              e.target.src = 'https://placehold.co/300x300/f0f3ee/2f4f1e?text=Agadi+Churna';
-            }}
-          />
-        ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--accent-green)' }}>
-            <span style={{ color: 'var(--primary-green)', fontWeight: 'bold' }}>Agadi Choorna</span>
-          </div>
-        )}
+        <img
+          src={mainImage}
+          alt={product.name}
+          className="product-card-img"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = '/images/product-pouch.webp';
+          }}
+        />
       </div>
 
       <div className="product-card-content">
-        <h3 className="product-card-title">{product.name}</h3>
-        <p className="product-card-desc">{product.description}</p>
+        <h3 className="product-card-title" title={product.name}>
+          {product.name}
+        </h3>
 
-        {product.benefits && product.benefits.length > 0 && (
-          <ul className="product-benefits-list">
-            {product.benefits.slice(0, 4).map((benefit, index) => (
-              <li key={index} className="product-benefit-item">
-                <Check size={14} />
-                <span>{benefit}</span>
-              </li>
-            ))}
-          </ul>
-        )}
+        <div className="product-price">₹{product.price}</div>
 
-        <div className="product-card-footer">
-          <div className="product-price">₹{product.price}</div>
-          <div className="product-card-actions" style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <button onClick={handleEnquiry} className="btn btn-outline product-btn-enquiry" style={{ padding: '8px 14px', fontSize: '0.85rem' }}>
-              <HelpCircle size={16} />
-              <span>Enquiry Now</span>
-            </button>
-            <button onClick={() => onBuyNow(product)} className="btn btn-primary" style={{ padding: '8px 14px', fontSize: '0.85rem' }}>
-              <ShoppingBag size={16} />
-              <span>Buy Now</span>
-            </button>
-          </div>
+        <div className="product-card-actions">
+          <button
+            type="button"
+            onClick={handleViewDetails}
+            className="btn btn-outline product-btn-details"
+            title="View full description and details"
+          >
+            <Eye size={14} />
+            <span>View Details</span>
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onBuyNow(product);
+            }}
+            className="btn btn-primary product-btn-buy"
+            title="Buy this product"
+          >
+            <ShoppingBag size={14} />
+            <span>Buy Now</span>
+          </button>
         </div>
       </div>
     </div>
@@ -65,3 +62,4 @@ const ProductCard = ({ product, onBuyNow }) => {
 };
 
 export default ProductCard;
+

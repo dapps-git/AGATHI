@@ -87,8 +87,10 @@ const AdminDashboard = () => {
     description: '',
     benefits: '',
   });
-  const [imagePreview, setImagePreview] = useState(null);  // base64 or existing URL
-  const [imageBase64, setImageBase64] = useState('');      // base64 to submit
+  const [mainImagePreview, setMainImagePreview] = useState(null);
+  const [mainImageBase64, setMainImageBase64] = useState('');
+  const [innerImagePreview, setInnerImagePreview] = useState(null);
+  const [innerImageBase64, setInnerImageBase64] = useState('');
 
   // Audio Reviews State
   const [audioReviews, setAudioReviews] = useState(CUSTOMER_VOICE_REVIEWS);
@@ -519,8 +521,10 @@ const AdminDashboard = () => {
   const openAddProductModal = () => {
     setEditingProduct(null);
     setProductForm({ name: '', price: '', description: '', benefits: '' });
-    setImagePreview(null);
-    setImageBase64('');
+    setMainImagePreview(null);
+    setMainImageBase64('');
+    setInnerImagePreview(null);
+    setInnerImageBase64('');
     setProductModalOpen(true);
   };
 
@@ -530,27 +534,47 @@ const AdminDashboard = () => {
       name: prod.name,
       price: prod.price,
       description: prod.description,
-      benefits: prod.benefits.join(', '),
+      benefits: (prod.benefits || []).join(', '),
     });
-    // Show existing image as preview (keep it; only replaced if admin picks a new file)
-    setImagePreview(prod.images[0] || null);
-    setImageBase64('');
+    // Set Main Image (images[0]) and Inner Image (images[1] or fallback to images[0])
+    const mainImg = (prod.images && prod.images[0]) || null;
+    const innerImg = (prod.images && (prod.images[1] || prod.images[0])) || null;
+    setMainImagePreview(mainImg);
+    setMainImageBase64('');
+    setInnerImagePreview(innerImg);
+    setInnerImageBase64('');
     setProductModalOpen(true);
   };
 
-  // Convert selected file → WebP Base64 and compress
-  const handleImageChange = async (e) => {
+  // Convert Main Image file → WebP Base64 and compress
+  const handleMainImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     try {
       setError('');
       const webpDataUrl = await compressImageToWebP(file, 1000, 1000, 0.7);
-      setImageBase64(webpDataUrl);
-      setImagePreview(webpDataUrl);
+      setMainImageBase64(webpDataUrl);
+      setMainImagePreview(webpDataUrl);
     } catch (err) {
-      console.error('Image compression error:', err);
-      setError('Failed to compress and convert image to WebP.');
+      console.error('Main image compression error:', err);
+      setError('Failed to compress and convert Main Image to WebP.');
+    }
+  };
+
+  // Convert Inner Image file → WebP Base64 and compress
+  const handleInnerImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      setError('');
+      const webpDataUrl = await compressImageToWebP(file, 1200, 1200, 0.75);
+      setInnerImageBase64(webpDataUrl);
+      setInnerImagePreview(webpDataUrl);
+    } catch (err) {
+      console.error('Inner image compression error:', err);
+      setError('Failed to compress and convert Inner Image to WebP.');
     }
   };
 
@@ -558,19 +582,29 @@ const AdminDashboard = () => {
     e.preventDefault();
     setError('');
 
-    // Determine final images array:
-    // - If admin picked a new file → use new Base64
-    // - Else if editing → keep existing images
-    // - Else (new product, no file) → error
-    let finalImages;
-    if (imageBase64) {
-      finalImages = [imageBase64];
-    } else if (editingProduct && imagePreview) {
-      finalImages = editingProduct.images;  // unchanged
+    // Determine final Main Image (card photo):
+    let finalMainImage;
+    if (mainImageBase64) {
+      finalMainImage = mainImageBase64;
+    } else if (editingProduct && editingProduct.images && editingProduct.images[0]) {
+      finalMainImage = editingProduct.images[0];
     } else {
-      setError('Please select a product image.');
+      setError('Please select a Main Image (card photo).');
       return;
     }
+
+    // Determine final Inner Image (details page photo):
+    let finalInnerImage;
+    if (innerImageBase64) {
+      finalInnerImage = innerImageBase64;
+    } else if (editingProduct && editingProduct.images && editingProduct.images[1]) {
+      finalInnerImage = editingProduct.images[1];
+    } else {
+      // Default to Main Image if no separate inner image was chosen
+      finalInnerImage = finalMainImage;
+    }
+
+    const finalImages = [finalMainImage, finalInnerImage];
 
     const payload = {
       name: productForm.name,
@@ -1697,7 +1731,7 @@ const AdminDashboard = () => {
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>Image</th>
+                    <th>Images (Main & Inner)</th>
                     <th>Name</th>
                     <th>Description</th>
                     <th>Price</th>
@@ -1708,13 +1742,29 @@ const AdminDashboard = () => {
                 <tbody>
                   {products.map(prod => (
                     <tr key={prod._id}>
-                      <td data-label="Image">
-                        <img
-                          src={prod.images[0]}
-                          alt={prod.name}
-                          style={{ width: '60px', height: '60px', objectFit: 'contain', border: '1px solid var(--border-color)', borderRadius: '8px', background: 'var(--card-bg)', padding: '4px' }}
-                          onError={e => { e.target.onerror = null; e.target.src = 'https://placehold.co/80x80?text=Agadi'; }}
-                        />
+                      <td data-label="Images">
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <div style={{ textAlign: 'center' }} title="Main Image (Card view)">
+                            <img
+                              src={(prod.images && prod.images[0]) || '/images/product-pouch.webp'}
+                              alt={prod.name}
+                              style={{ width: '50px', height: '50px', objectFit: 'contain', border: '1px solid var(--border-color)', borderRadius: '6px', background: '#fff', padding: '2px' }}
+                              onError={e => { e.target.onerror = null; e.target.src = '/images/product-pouch.webp'; }}
+                            />
+                            <div style={{ fontSize: '0.62rem', fontWeight: '700', color: 'var(--primary-green)', marginTop: '2px' }}>Main</div>
+                          </div>
+                          {prod.images && prod.images[1] && (
+                            <div style={{ textAlign: 'center' }} title="Inner Image (Details view)">
+                              <img
+                                src={prod.images[1]}
+                                alt="Inner"
+                                style={{ width: '50px', height: '50px', objectFit: 'contain', border: '1px solid #c7d2fe', borderRadius: '6px', background: '#f5f7ff', padding: '2px' }}
+                                onError={e => { e.target.onerror = null; e.target.src = '/images/product-pouch.webp'; }}
+                              />
+                              <div style={{ fontSize: '0.62rem', fontWeight: '700', color: '#4f46e5', marginTop: '2px' }}>Inner</div>
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td data-label="Name" style={{ fontWeight: '600', maxWidth: '180px' }}>{prod.name}</td>
                       <td data-label="Description" style={{ fontSize: '0.82rem', maxWidth: '240px', color: 'var(--text-muted)' }}>{prod.description}</td>
@@ -2162,19 +2212,24 @@ const AdminDashboard = () => {
                   <label htmlFor="prod-name">Product Name *</label>
                   <input type="text" id="prod-name" value={productForm.name} onChange={e => setProductForm({ ...productForm, name: e.target.value })} placeholder="e.g. Agadhi Choorna 500g" required />
                 </div>
+                <div className="form-group" style={{ marginBottom: '16px' }}>
+                  <label htmlFor="prod-price">Price (₹) *</label>
+                  <input type="number" id="prod-price" value={productForm.price} onChange={e => setProductForm({ ...productForm, price: e.target.value })} placeholder="1250" required />
+                </div>
+
+                {/* Dual Image Upload: Main Image (Card) + Inner Image (Details Page) */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                  {/* 1. Main Image (Card Photo) */}
                   <div className="form-group">
-                    <label htmlFor="prod-price">Price (₹) *</label>
-                    <input type="number" id="prod-price" value={productForm.price} onChange={e => setProductForm({ ...productForm, price: e.target.value })} placeholder="1250" required />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="prod-image-upload">Product Image *</label>
+                    <label htmlFor="prod-main-image-upload" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.82rem', fontWeight: '700' }}>
+                      <span>Main Image (Card Photo) *</span>
+                    </label>
                     <label
-                      htmlFor="prod-image-upload"
+                      htmlFor="prod-main-image-upload"
                       style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        gap: '8px', padding: '8px 12px', border: '1.5px dashed var(--border-color)',
-                        borderRadius: '8px', cursor: 'pointer', fontSize: '0.82rem',
+                        gap: '6px', padding: '8px 12px', border: '1.5px dashed var(--border-color)',
+                        borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem',
                         color: 'var(--primary-green)', fontWeight: '600',
                         background: 'var(--card-bg)', transition: 'var(--transition)',
                         minHeight: '42px',
@@ -2182,24 +2237,71 @@ const AdminDashboard = () => {
                       onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary-green)'}
                       onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
                     >
-                      📁 {imagePreview ? 'Change Image' : 'Choose Image'}
+                      📷 {mainImagePreview ? 'Change Main Image' : 'Choose Main Image'}
                     </label>
                     <input
                       type="file"
-                      id="prod-image-upload"
+                      id="prod-main-image-upload"
                       accept="image/*"
-                      onChange={handleImageChange}
+                      onChange={handleMainImageChange}
                       style={{ display: 'none' }}
                     />
-                    {imagePreview && (
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '3px' }}>
+                      Appears on catalog cards (1:1 square)
+                    </div>
+                    {mainImagePreview && (
                       <div style={{ marginTop: '8px', textAlign: 'center' }}>
                         <img
-                          src={imagePreview}
-                          alt="Preview"
+                          src={mainImagePreview}
+                          alt="Main Preview"
                           style={{ maxHeight: '80px', maxWidth: '100%', objectFit: 'contain', borderRadius: '6px', border: '1px solid var(--border-color)', background: '#fff', padding: '4px' }}
                         />
-                        {imageBase64 && (
+                        {mainImageBase64 && (
                           <div style={{ fontSize: '0.72rem', color: 'var(--secondary-green)', marginTop: '4px' }}>✓ New image ready</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 2. Inner Image (Details Page Photo) */}
+                  <div className="form-group">
+                    <label htmlFor="prod-inner-image-upload" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.82rem', fontWeight: '700' }}>
+                      <span>Inner Image (Details Photo)</span>
+                    </label>
+                    <label
+                      htmlFor="prod-inner-image-upload"
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        gap: '6px', padding: '8px 12px', border: '1.5px dashed var(--border-color)',
+                        borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem',
+                        color: '#4f46e5', fontWeight: '600',
+                        background: 'var(--card-bg)', transition: 'var(--transition)',
+                        minHeight: '42px',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.borderColor = '#4f46e5'}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                    >
+                      🖼️ {innerImagePreview ? 'Change Inner Image' : 'Choose Inner Image'}
+                    </label>
+                    <input
+                      type="file"
+                      id="prod-inner-image-upload"
+                      accept="image/*"
+                      onChange={handleInnerImageChange}
+                      style={{ display: 'none' }}
+                    />
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '3px' }}>
+                      Shown on View Details inner page
+                    </div>
+                    {innerImagePreview && (
+                      <div style={{ marginTop: '8px', textAlign: 'center' }}>
+                        <img
+                          src={innerImagePreview}
+                          alt="Inner Preview"
+                          style={{ maxHeight: '80px', maxWidth: '100%', objectFit: 'contain', borderRadius: '6px', border: '1px solid var(--border-color)', background: '#fff', padding: '4px' }}
+                        />
+                        {innerImageBase64 && (
+                          <div style={{ fontSize: '0.72rem', color: '#4f46e5', marginTop: '4px' }}>✓ New image ready</div>
                         )}
                       </div>
                     )}

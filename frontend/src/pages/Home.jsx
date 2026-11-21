@@ -612,25 +612,21 @@ const Home = () => {
           </div>
 
           {loading ? (
-            <div className="products-grid products-grid--single">
-              <div className="product-skeleton-card">
-                <div className="skeleton-box" style={{ width: '100%', height: '220px', borderRadius: '14px' }} />
-                <div className="skeleton-box" style={{ width: '65%', height: '24px', borderRadius: '6px', marginTop: '6px' }} />
-                <div className="skeleton-box" style={{ width: '95%', height: '14px', borderRadius: '4px' }} />
-                <div className="skeleton-box" style={{ width: '80%', height: '14px', borderRadius: '4px' }} />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
-                  <div className="skeleton-box" style={{ width: '55%', height: '14px', borderRadius: '4px' }} />
-                  <div className="skeleton-box" style={{ width: '60%', height: '14px', borderRadius: '4px' }} />
-                  <div className="skeleton-box" style={{ width: '50%', height: '14px', borderRadius: '4px' }} />
+            <div className="products-grid">
+              {[1, 2, 3, 4].map(n => (
+                <div key={n} className="product-card" style={{ padding: '12px' }}>
+                  <div className="skeleton-box" style={{ width: '100%', aspectRatio: '1/1', borderRadius: '4px' }} />
+                  <div className="skeleton-box" style={{ width: '75%', height: '16px', borderRadius: '4px', marginTop: '10px' }} />
+                  <div className="skeleton-box" style={{ width: '40%', height: '20px', borderRadius: '4px', marginTop: '8px' }} />
+                  <div style={{ display: 'flex', gap: '6px', marginTop: '12px' }}>
+                    <div className="skeleton-box" style={{ flex: 1, height: '32px', borderRadius: '4px' }} />
+                    <div className="skeleton-box" style={{ flex: 1, height: '32px', borderRadius: '4px' }} />
+                  </div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
-                  <div className="skeleton-box" style={{ width: '85px', height: '30px', borderRadius: '6px' }} />
-                  <div className="skeleton-box" style={{ width: '125px', height: '40px', borderRadius: '25px' }} />
-                </div>
-              </div>
+              ))}
             </div>
           ) : (
-            <div className={`products-grid${products.length === 1 ? ' products-grid--single' : ''}`}>
+            <div className="products-grid">
               {products.map((product) => (
                 <ProductCard key={product._id} product={product} onBuyNow={handleBuyNow} />
               ))}
