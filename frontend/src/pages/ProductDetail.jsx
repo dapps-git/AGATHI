@@ -16,7 +16,13 @@ const ProductDetail = () => {
   const [showOrderModal, setShowOrderModal] = useState(false);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    // Always start at the top of the product detail page, never scrolled down or near the footer
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 50);
 
     const fetchProduct = async () => {
       try {
@@ -76,7 +82,7 @@ const ProductDetail = () => {
         {/* Back Link / Breadcrumb */}
         <div style={{ marginBottom: '18px', paddingTop: '4px' }}>
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/', { state: { scrollTo: 'products' } })}
             style={{
               display: 'inline-flex',
               alignItems: 'center',

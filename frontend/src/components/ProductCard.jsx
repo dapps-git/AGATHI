@@ -12,13 +12,25 @@ const ProductCard = ({ product, onBuyNow }) => {
 
   const mainImage = (product.images && product.images[0]) || '/images/product-pouch.webp';
 
+  const nameLower = product.name ? product.name.toLowerCase() : '';
+  const isBottle100ml = nameLower.includes('100 ml') || nameLower.includes('100ml');
+  const isHairPack = nameLower.includes('hair pack');
+  const isFaceGlow = nameLower.includes('face glow');
+
+  let imgScaleClass = '';
+  if (isBottle100ml || isFaceGlow) {
+    imgScaleClass = ' product-card-img--scaled-bottle';
+  } else if (isHairPack) {
+    imgScaleClass = ' product-card-img--scaled-jar';
+  }
+
   return (
     <div className="product-card" onClick={handleViewDetails} style={{ cursor: 'pointer' }}>
       <div className="product-img-wrapper">
         <img
           src={mainImage}
           alt={product.name}
-          className="product-card-img"
+          className={`product-card-img${imgScaleClass}`}
           onError={(e) => {
             e.target.onerror = null;
             e.target.src = '/images/product-pouch.webp';

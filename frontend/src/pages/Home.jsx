@@ -31,26 +31,14 @@ const REVIEWS = [
   },
 ];
 
-const DEFAULT_AGADI_PRODUCT = {
-  _id: 'agadi-choorna-default',
-  name: 'Agadi Choorna (Weight Gain Formula)',
-  price: 1550,
-  description: 'Pure 100% Ayurvedic herbal blend for natural weight gain, appetite stimulation, and gut health.',
-  images: ['/images/product-pouch.webp'],
-  benefits: [
-    'Naturally Stimulates Appetite & Digestion',
-    'Promotes Healthy Weight & Muscle Gain',
-    '100% Herbal & Chemical Free Formula',
-    'Improves Intestinal Nutrient Absorption'
-  ]
-};
+let memoryProducts = null;
 
 const Home = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [products, setProducts] = useState([DEFAULT_AGADI_PRODUCT]);
+  const [products, setProducts] = useState(memoryProducts || []);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!memoryProducts || memoryProducts.length === 0);
 
   // Home Customer Voice state
   const homeVoiceAudioRef = useRef(null);
@@ -89,21 +77,23 @@ const Home = () => {
   const location = useLocation();
 
   const onScrollTo = useCallback((sectionId) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      setTimeout(() => {
-        const offset = 80;
+    const doScroll = () => {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        const offset = 70;
         const bodyRect = document.body.getBoundingClientRect().top;
         const elementRect = element.getBoundingClientRect().top;
         const elementPosition = elementRect - bodyRect;
-        const offsetPosition = elementPosition - offset;
+        const offsetPosition = Math.max(0, elementPosition - offset);
 
         window.scrollTo({
           top: offsetPosition,
           behavior: 'smooth',
         });
-      }, 100);
-    }
+      }
+    };
+    setTimeout(doScroll, 80);
+    setTimeout(doScroll, 250);
   }, []);
 
   // Handle routing scroll state
@@ -111,23 +101,31 @@ const Home = () => {
     if (location.state && location.state.scrollTo) {
       onScrollTo(location.state.scrollTo);
     }
-  }, [location]);
+  }, [location, onScrollTo]);
 
   const [customerVoices, setCustomerVoices] = useState(CUSTOMER_VOICE_REVIEWS);
 
-  // Fetch products (updates dynamically if API available, else keeps static DEFAULT_AGADI_PRODUCT)
+  // Fetch products dynamically from backend API (with skeleton loading and memory cache)
   useEffect(() => {
+    let isMounted = true;
     const fetchProducts = async () => {
+      if (!memoryProducts || memoryProducts.length === 0) {
+        setLoading(true);
+      }
       try {
         const { data } = await API.get('/products');
-        if (data && Array.isArray(data) && data.length > 0) {
+        if (data && Array.isArray(data) && data.length > 0 && isMounted) {
+          memoryProducts = data;
           setProducts(data);
         }
       } catch (error) {
-        // Keeps static DEFAULT_AGADI_PRODUCT seamlessly
+        console.error('Failed to load products from API:', error);
+      } finally {
+        if (isMounted) setLoading(false);
       }
     };
     fetchProducts();
+    return () => { isMounted = false; };
   }, []);
 
   // Fetch audio reviews (updates dynamically from API, showing admin-added reviews at the top)
@@ -623,14 +621,14 @@ const Home = () => {
 
           {loading ? (
             <div className="products-grid">
-              {[1, 2, 3, 4, 5].map(n => (
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
                 <div key={n} className="product-card" style={{ padding: '10px' }}>
-                  <div className="skeleton-box" style={{ width: '100%', height: '160px', borderRadius: '4px' }} />
-                  <div className="skeleton-box" style={{ width: '75%', height: '14px', borderRadius: '4px', marginTop: '8px' }} />
-                  <div className="skeleton-box" style={{ width: '40%', height: '18px', borderRadius: '4px', marginTop: '6px' }} />
+                  <div className="skeleton-box" style={{ width: '100%', aspectRatio: '1 / 1', borderRadius: '6px' }} />
+                  <div className="skeleton-box" style={{ width: '80%', height: '14px', borderRadius: '4px', marginTop: '10px' }} />
+                  <div className="skeleton-box" style={{ width: '45%', height: '18px', borderRadius: '4px', marginTop: '6px' }} />
                   <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
-                    <div className="skeleton-box" style={{ flex: 1, height: '30px', borderRadius: '4px' }} />
-                    <div className="skeleton-box" style={{ flex: 1, height: '30px', borderRadius: '4px' }} />
+                    <div className="skeleton-box" style={{ width: '34px', height: '32px', borderRadius: '6px' }} />
+                    <div className="skeleton-box" style={{ flex: 1, height: '32px', borderRadius: '6px' }} />
                   </div>
                 </div>
               ))}
