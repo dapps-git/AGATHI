@@ -11,8 +11,21 @@ const ProductDetail = () => {
   const location = useLocation();
   const { user } = useContext(AuthContext);
 
-  const [product, setProduct] = useState(location.state?.product || null);
-  const [loading, setLoading] = useState(!location.state?.product);
+  const [product, setProduct] = useState(() => {
+    if (location.state?.product) return location.state.product;
+    try {
+      const cached = localStorage.getItem('agadi_products_cache');
+      if (cached) {
+        const list = JSON.parse(cached);
+        if (Array.isArray(list)) {
+          const found = list.find(p => p._id === id);
+          if (found) return found;
+        }
+      }
+    } catch (e) {}
+    return null;
+  });
+  const [loading, setLoading] = useState(!product);
   const [showOrderModal, setShowOrderModal] = useState(false);
 
   useEffect(() => {
@@ -29,6 +42,21 @@ const ProductDetail = () => {
         const { data } = await API.get(`/products/${id}`);
         if (data) {
           setProduct(data);
+          try {
+            const cached = localStorage.getItem('agadi_products_cache');
+            if (cached) {
+              const list = JSON.parse(cached);
+              if (Array.isArray(list)) {
+                const idx = list.findIndex(p => p._id === id);
+                if (idx !== -1) {
+                  list[idx] = data;
+                } else {
+                  list.push(data);
+                }
+                localStorage.setItem('agadi_products_cache', JSON.stringify(list));
+              }
+            }
+          } catch (storageErr) {}
         }
       } catch (err) {
         console.error('Failed to fetch product details:', err);
@@ -48,11 +76,22 @@ const ProductDetail = () => {
     setShowOrderModal(true);
   };
 
-  if (loading) {
+  // Full-layout skeleton if loading on direct link without cache
+  if (loading && !product) {
     return (
-      <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '14px' }}>
-        <div className="skeleton-box" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Loading product details...</p>
+      <div className="product-detail-page section-padding" style={{ paddingTop: '90px', minHeight: '80vh' }}>
+        <div className="container">
+          <div className="skeleton-box" style={{ width: '130px', height: '22px', marginBottom: '24px', borderRadius: '6px' }} />
+          <div className="product-detail-layout" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px' }}>
+            <div className="skeleton-box" style={{ width: '100%', aspectRatio: '1/1', borderRadius: '16px', minHeight: '320px' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="skeleton-box" style={{ width: '75%', height: '32px', borderRadius: '8px' }} />
+              <div className="skeleton-box" style={{ width: '35%', height: '28px', borderRadius: '8px' }} />
+              <div className="skeleton-box" style={{ width: '100%', height: '70px', borderRadius: '8px' }} />
+              <div className="skeleton-box" style={{ width: '100%', height: '48px', borderRadius: '10px', marginTop: '16px' }} />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

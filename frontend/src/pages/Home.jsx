@@ -31,7 +31,18 @@ const REVIEWS = [
   },
 ];
 
-let memoryProducts = null;
+const getInitialProducts = () => {
+  try {
+    const cached = localStorage.getItem('agadi_products_cache');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {}
+  return null;
+};
+
+let memoryProducts = getInitialProducts();
 
 const Home = () => {
   const { user } = useContext(AuthContext);
@@ -117,6 +128,9 @@ const Home = () => {
         if (data && Array.isArray(data) && data.length > 0 && isMounted) {
           memoryProducts = data;
           setProducts(data);
+          try {
+            localStorage.setItem('agadi_products_cache', JSON.stringify(data));
+          } catch (storageErr) {}
         }
       } catch (error) {
         console.error('Failed to load products from API:', error);

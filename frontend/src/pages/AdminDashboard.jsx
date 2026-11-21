@@ -63,7 +63,16 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [stats, setStats] = useState(null);
   const [orders, setOrders] = useState([]);
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState(() => {
+    try {
+      const cached = localStorage.getItem('agadi_products_cache');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return [];
+  });
   const [users, setUsers] = useState([]);
   const [userSearch, setUserSearch] = useState('');
   const [orderSearch, setOrderSearch] = useState('');
@@ -71,7 +80,25 @@ const AdminDashboard = () => {
   const [orderStatusFilter, setOrderStatusFilter] = useState('all');
   const [orderPage, setOrderPage] = useState(1);
   const ORDERS_PER_PAGE = 20;
+
+  // Products pagination & search
+  const [productPage, setProductPage] = useState(1);
+  const [productSearch, setProductSearch] = useState('');
+  const PRODUCTS_PER_PAGE = 8;
+
+  // Customers & Users pagination
+  const [customerPage, setCustomerPage] = useState(1);
+  const CUSTOMERS_PER_PAGE = 15;
+  const [userPage, setUserPage] = useState(1);
+  const USERS_PER_PAGE = 15;
+
+  // Granular loading states for responsive, non-blocking tabs
   const [loading, setLoading] = useState(true);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [loadingAudioReviews, setLoadingAudioReviews] = useState(false);
+  const [loadingReviewImages, setLoadingReviewImages] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [viewingOrder, setViewingOrder] = useState(null);
@@ -155,47 +182,81 @@ const AdminDashboard = () => {
     },
   };
 
-  const fetchData = async () => {
-    setLoading(true);
-    setError('');
-    let hasError = false;
-
+  const fetchStats = async () => {
     try {
       const statsRes = await adminAPI.get('/stats').catch(() => null);
       if (statsRes && statsRes.data) {
         setStats(statsRes.data);
-      } else {
+      } else if (!stats) {
         setStats(DEFAULT_STATS);
-        hasError = true;
       }
+    } catch (e) {
+      if (!stats) setStats(DEFAULT_STATS);
+    }
+  };
 
+  const fetchOrders = async () => {
+    setLoadingOrders(true);
+    try {
       const ordersRes = await adminAPI.get('/orders').catch(() => null);
       if (ordersRes && Array.isArray(ordersRes.data)) {
         setOrders(ordersRes.data);
-      } else {
-        setOrders([]);
-        hasError = true;
       }
+    } catch (e) {
+      console.error('Orders fetch failed:', e);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
 
+  const fetchProducts = async () => {
+    setLoadingProducts(true);
+    try {
       const productsRes = await adminAPI.get('/products').catch(() => null);
       if (productsRes && Array.isArray(productsRes.data)) {
         setProducts(productsRes.data);
-      } else {
-        setProducts([]);
+        try {
+          localStorage.setItem('agadi_products_cache', JSON.stringify(productsRes.data));
+        } catch (e) {}
       }
+    } catch (e) {
+      console.error('Products fetch failed:', e);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
 
+  const fetchUsers = async () => {
+    setLoadingUsers(true);
+    try {
       const usersRes = await adminAPI.get('/stats/users').catch(() => null);
       if (usersRes && Array.isArray(usersRes.data)) {
         setUsers(usersRes.data);
-      } else {
-        setUsers([]);
       }
+    } catch (e) {
+      console.error('Users fetch failed:', e);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
 
+  const fetchAudioReviews = async () => {
+    setLoadingAudioReviews(true);
+    try {
       const audioRes = await adminAPI.get('/audio-reviews').catch(() => null);
       if (audioRes && Array.isArray(audioRes.data) && audioRes.data.length > 0) {
         setAudioReviews(audioRes.data);
       }
+    } catch (e) {
+      console.error('Audio reviews fetch failed:', e);
+    } finally {
+      setLoadingAudioReviews(false);
+    }
+  };
 
+  const fetchReviewImages = async () => {
+    setLoadingReviewImages(true);
+    try {
       const reviewImagesRes = await adminAPI.get('/review-images').catch(() => null);
       if (reviewImagesRes && Array.isArray(reviewImagesRes.data) && reviewImagesRes.data.length > 0) {
         let localDyn = [];
@@ -219,7 +280,6 @@ const AdminDashboard = () => {
         const seen = new Set();
         const merged = [];
 
-        // Put dynamic reviews first
         for (const item of [...localDyn, ...dynFromApi]) {
           const key = item._id || item.url;
           if (key && !seen.has(key)) {
@@ -228,7 +288,6 @@ const AdminDashboard = () => {
           }
         }
 
-        // Default reviews after
         for (const item of defaultFromApi) {
           const key = item._id || item.url;
           if (key && !seen.has(key)) {
@@ -239,25 +298,47 @@ const AdminDashboard = () => {
 
         setReviewImagesList(merged);
 
-        // Keep local storage in sync with dynamic items so refresh never loses them
         try {
           const allDyn = merged.filter(isDynHelper);
           localStorage.setItem('dynamicReviewImages', JSON.stringify(allDyn));
         } catch (e) {}
       }
-
-      if (hasError) {
-        setError('Unable to reach backend API or database. Once you update your MONGO_URI in Namecheap cPanel and click "Restart App", click Refresh to reload.');
-      }
-    } catch (err) {
-      setStats(DEFAULT_STATS);
-      setError('Unable to connect to backend server. Please verify your backend deployment and MongoDB URI.');
+    } catch (e) {
+      console.error('Review images fetch failed:', e);
     } finally {
-      setLoading(false);
+      setLoadingReviewImages(false);
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  // Main coordinator: fetches core overview quickly in parallel without blocking with 176 images
+  const fetchData = async () => {
+    setError('');
+    await Promise.allSettled([
+      fetchStats(),
+      fetchOrders(),
+      fetchProducts(),
+    ]);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Lazy-load secondary tabs only when user actually opens them
+  useEffect(() => {
+    if (activeTab === 'users' || activeTab === 'customers') {
+      if (users.length === 0) fetchUsers();
+    } else if (activeTab === 'audioReviews') {
+      if (audioReviews.length <= 4) fetchAudioReviews();
+    } else if (activeTab === 'reviewImages') {
+      if (reviewImagesList.length <= 176) fetchReviewImages();
+    } else if (activeTab === 'products') {
+      if (products.length === 0) fetchProducts();
+    } else if (activeTab === 'orders') {
+      if (orders.length === 0) fetchOrders();
+    }
+  }, [activeTab]);
 
   const handleLogout = () => {
     logoutAdmin();
@@ -983,6 +1064,33 @@ const AdminDashboard = () => {
   const startOrderIndex = (currentOrderPage - 1) * ORDERS_PER_PAGE;
   const paginatedOrders = filteredOrders.slice(startOrderIndex, startOrderIndex + ORDERS_PER_PAGE);
 
+  // Filtered and Paginated Products (8 per page)
+  const filteredProducts = products.filter(p => {
+    if (!productSearch.trim()) return true;
+    const q = productSearch.toLowerCase().trim();
+    return (
+      (p.name && p.name.toLowerCase().includes(q)) ||
+      (p.description && p.description.toLowerCase().includes(q)) ||
+      (p.benefits && p.benefits.some(b => b.toLowerCase().includes(q)))
+    );
+  });
+  const totalProductPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE) || 1;
+  const currentProductPage = Math.min(productPage, totalProductPages);
+  const startProductIndex = (currentProductPage - 1) * PRODUCTS_PER_PAGE;
+  const paginatedProducts = filteredProducts.slice(startProductIndex, startProductIndex + PRODUCTS_PER_PAGE);
+
+  // Filtered and Paginated Customers (15 per page)
+  const totalCustomerPages = Math.ceil(customersList.length / CUSTOMERS_PER_PAGE) || 1;
+  const currentCustomerPage = Math.min(customerPage, totalCustomerPages);
+  const startCustomerIndex = (currentCustomerPage - 1) * CUSTOMERS_PER_PAGE;
+  const paginatedCustomers = customersList.slice(startCustomerIndex, startCustomerIndex + CUSTOMERS_PER_PAGE);
+
+  // Filtered and Paginated Users (15 per page)
+  const totalUserPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE) || 1;
+  const currentUserPage = Math.min(userPage, totalUserPages);
+  const startUserIndex = (currentUserPage - 1) * USERS_PER_PAGE;
+  const paginatedUsers = filteredUsers.slice(startUserIndex, startUserIndex + USERS_PER_PAGE);
+
   const tabLabels = {
     dashboard: 'Dashboard Overview',
     orders: 'Manage Orders',
@@ -1102,8 +1210,15 @@ const AdminDashboard = () => {
           )}
 
           <button
-            onClick={() => { fetchData(); }}
-            title="Refresh data"
+            onClick={() => {
+              if (activeTab === 'products') fetchProducts();
+              else if (activeTab === 'orders') fetchOrders();
+              else if (activeTab === 'users' || activeTab === 'customers') fetchUsers();
+              else if (activeTab === 'audioReviews') fetchAudioReviews();
+              else if (activeTab === 'reviewImages') fetchReviewImages();
+              else fetchData();
+            }}
+            title="Refresh current data"
             style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', border: '1.5px solid var(--border-color)', borderRadius: '8px', fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-muted)', background: '#fff', cursor: 'pointer' }}
           >
             <RefreshCw size={15} />
@@ -1470,7 +1585,35 @@ const AdminDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {paginatedOrders.map((order) => (
+                    {loadingOrders && orders.length === 0 ? (
+                      [...Array(6)].map((_, i) => (
+                        <tr key={`ord-skel-${i}`}>
+                          <td data-label="Customer">
+                            <div className="skeleton-box" style={{ width: '120px', height: '16px', borderRadius: '4px', marginBottom: '6px' }} />
+                            <div className="skeleton-box" style={{ width: '85px', height: '12px', borderRadius: '4px' }} />
+                          </td>
+                          <td data-label="Product">
+                            <div className="skeleton-box" style={{ width: '110px', height: '16px', borderRadius: '4px' }} />
+                          </td>
+                          <td data-label="Total">
+                            <div className="skeleton-box" style={{ width: '55px', height: '16px', borderRadius: '4px' }} />
+                          </td>
+                          <td data-label="Delivery Address">
+                            <div className="skeleton-box" style={{ width: '150px', height: '28px', borderRadius: '4px' }} />
+                          </td>
+                          <td data-label="Order Time">
+                            <div className="skeleton-box" style={{ width: '80px', height: '16px', borderRadius: '4px' }} />
+                          </td>
+                          <td data-label="Status">
+                            <div className="skeleton-box" style={{ width: '75px', height: '24px', borderRadius: '6px' }} />
+                          </td>
+                          <td data-label="Actions" style={{ textAlign: 'right' }}>
+                            <div className="skeleton-box" style={{ width: '65px', height: '26px', borderRadius: '6px', marginLeft: 'auto' }} />
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      paginatedOrders.map((order) => (
                         <tr
                           key={order._id}
                           style={{ cursor: 'pointer' }}
@@ -1622,8 +1765,8 @@ const AdminDashboard = () => {
                             </div>
                           </td>
                         </tr>
-                      ))}
-                    {filteredOrders.length === 0 && (
+                      )))}
+                    {!loadingOrders && filteredOrders.length === 0 && (
                       <tr>
                         <td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
                           No matching orders found.
@@ -1750,73 +1893,228 @@ const AdminDashboard = () => {
 
           {/* ── Products Tab ── */}
           {activeTab === 'products' && (
-            <div className="table-container">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Images (Main & Inner)</th>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Price</th>
-                    <th>Benefits</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {products.map(prod => (
-                    <tr key={prod._id}>
-                      <td data-label="Images">
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                          <div style={{ textAlign: 'center' }} title="Main Image (Card view)">
-                            <img
-                              src={(prod.images && prod.images[0]) || '/images/product-pouch.webp'}
-                              alt={prod.name}
-                              style={{ width: '50px', height: '50px', objectFit: 'contain', border: '1px solid var(--border-color)', borderRadius: '6px', background: '#fff', padding: '2px' }}
-                              onError={e => { e.target.onerror = null; e.target.src = '/images/product-pouch.webp'; }}
-                            />
-                            <div style={{ fontSize: '0.62rem', fontWeight: '700', color: 'var(--primary-green)', marginTop: '2px' }}>Main</div>
-                          </div>
-                          {prod.images && prod.images[1] && (
-                            <div style={{ textAlign: 'center' }} title="Inner Image (Details view)">
-                              <img
-                                src={prod.images[1]}
-                                alt="Inner"
-                                style={{ width: '50px', height: '50px', objectFit: 'contain', border: '1px solid #c7d2fe', borderRadius: '6px', background: '#f5f7ff', padding: '2px' }}
-                                onError={e => { e.target.onerror = null; e.target.src = '/images/product-pouch.webp'; }}
-                              />
-                              <div style={{ fontSize: '0.62rem', fontWeight: '700', color: '#4f46e5', marginTop: '2px' }}>Inner</div>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td data-label="Name" style={{ fontWeight: '600', maxWidth: '180px' }}>{prod.name}</td>
-                      <td data-label="Description" style={{ fontSize: '0.82rem', maxWidth: '240px', color: 'var(--text-muted)' }}>{prod.description}</td>
-                      <td data-label="Price" style={{ fontWeight: '700', color: 'var(--primary-green)', whiteSpace: 'nowrap' }}>₹{prod.price}</td>
-                      <td data-label="Benefits">
-                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                          {prod.benefits.slice(0, 3).map((b, i) => (
-                            <li key={i} style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '3px' }}>• {b}</li>
-                          ))}
-                          {prod.benefits.length > 3 && <li style={{ fontSize: '0.75rem', color: 'var(--secondary-green)' }}>+{prod.benefits.length - 3} more</li>}
-                        </ul>
-                      </td>
-                      <td data-label="Actions">
-                        <div className="actions-cell">
-                          <button onClick={() => openEditProductModal(prod)} className="action-btn" aria-label="Edit">
-                            <Edit2 size={15} />
-                          </button>
-                          <button onClick={() => handleProductDelete(prod._id)} className="action-btn action-btn-danger" aria-label="Delete">
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {products.length === 0 && (
-                    <tr><td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No products in catalog.</td></tr>
+            <div>
+              {/* Product Search & Counter Bar */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+                <div style={{ position: 'relative', width: '100%', maxWidth: '340px' }}>
+                  <input
+                    type="text"
+                    value={productSearch}
+                    onChange={e => { setProductSearch(e.target.value); setProductPage(1); }}
+                    placeholder="Search products by name or benefits..."
+                    style={{ paddingLeft: '40px', paddingRight: productSearch ? '36px' : '14px', height: '42px', borderRadius: '8px', border: '1px solid var(--border-color)', width: '100%', fontSize: '0.86rem', background: '#fff' }}
+                  />
+                  <Search size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                  {productSearch && (
+                    <button
+                      type="button"
+                      onClick={() => { setProductSearch(''); setProductPage(1); }}
+                      style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'transparent', cursor: 'pointer', color: '#94a3b8' }}
+                      title="Clear search"
+                    >
+                      <X size={15} />
+                    </button>
                   )}
-                </tbody>
-              </table>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+                    Showing {filteredProducts.length > 0 ? `${startProductIndex + 1}–${Math.min(startProductIndex + PRODUCTS_PER_PAGE, filteredProducts.length)}` : '0'} of {filteredProducts.length} products
+                  </span>
+                  <button onClick={openAddProductModal} className="btn btn-primary" style={{ gap: '6px', borderRadius: '8px', padding: '8px 16px', fontSize: '0.82rem' }}>
+                    <Plus size={16} /> Add Product
+                  </button>
+                </div>
+              </div>
+
+              <div className="table-container">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Images (Main & Inner)</th>
+                      <th>Name</th>
+                      <th>Description</th>
+                      <th>Price</th>
+                      <th>Benefits</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loadingProducts && products.length === 0 ? (
+                      [...Array(6)].map((_, i) => (
+                        <tr key={`prod-skel-${i}`}>
+                          <td data-label="Images">
+                            <div className="skeleton-box" style={{ width: '50px', height: '50px', borderRadius: '6px' }} />
+                          </td>
+                          <td data-label="Name">
+                            <div className="skeleton-box" style={{ width: '130px', height: '18px', borderRadius: '4px' }} />
+                          </td>
+                          <td data-label="Description">
+                            <div className="skeleton-box" style={{ width: '220px', height: '32px', borderRadius: '4px' }} />
+                          </td>
+                          <td data-label="Price">
+                            <div className="skeleton-box" style={{ width: '60px', height: '18px', borderRadius: '4px' }} />
+                          </td>
+                          <td data-label="Benefits">
+                            <div className="skeleton-box" style={{ width: '140px', height: '18px', borderRadius: '4px' }} />
+                          </td>
+                          <td data-label="Actions">
+                            <div className="skeleton-box" style={{ width: '70px', height: '30px', borderRadius: '6px' }} />
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      paginatedProducts.map(prod => (
+                        <tr key={prod._id}>
+                          <td data-label="Images">
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                              <div style={{ textAlign: 'center' }} title="Main Image (Card view)">
+                                <img
+                                  src={(prod.images && prod.images[0]) || '/images/product-pouch.webp'}
+                                  alt={prod.name}
+                                  style={{ width: '50px', height: '50px', objectFit: 'contain', border: '1px solid var(--border-color)', borderRadius: '6px', background: '#fff', padding: '2px' }}
+                                  onError={e => { e.target.onerror = null; e.target.src = '/images/product-pouch.webp'; }}
+                                />
+                                <div style={{ fontSize: '0.62rem', fontWeight: '700', color: 'var(--primary-green)', marginTop: '2px' }}>Main</div>
+                              </div>
+                              {prod.images && prod.images[1] && (
+                                <div style={{ textAlign: 'center' }} title="Inner Image (Details view)">
+                                  <img
+                                    src={prod.images[1]}
+                                    alt="Inner"
+                                    style={{ width: '50px', height: '50px', objectFit: 'contain', border: '1px solid #c7d2fe', borderRadius: '6px', background: '#f5f7ff', padding: '2px' }}
+                                    onError={e => { e.target.onerror = null; e.target.src = '/images/product-pouch.webp'; }}
+                                  />
+                                  <div style={{ fontSize: '0.62rem', fontWeight: '700', color: '#4f46e5', marginTop: '2px' }}>Inner</div>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          <td data-label="Name" style={{ fontWeight: '600', maxWidth: '180px' }}>{prod.name}</td>
+                          <td data-label="Description" style={{ fontSize: '0.82rem', maxWidth: '240px', color: 'var(--text-muted)' }}>{prod.description}</td>
+                          <td data-label="Price" style={{ fontWeight: '700', color: 'var(--primary-green)', whiteSpace: 'nowrap' }}>₹{prod.price}</td>
+                          <td data-label="Benefits">
+                            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                              {prod.benefits.slice(0, 3).map((b, i) => (
+                                <li key={i} style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '3px' }}>• {b}</li>
+                              ))}
+                              {prod.benefits.length > 3 && <li style={{ fontSize: '0.75rem', color: 'var(--secondary-green)' }}>+{prod.benefits.length - 3} more</li>}
+                            </ul>
+                          </td>
+                          <td data-label="Actions">
+                            <div className="actions-cell">
+                              <button onClick={() => openEditProductModal(prod)} className="action-btn" aria-label="Edit">
+                                <Edit2 size={15} />
+                              </button>
+                              <button onClick={() => handleProductDelete(prod._id)} className="action-btn action-btn-danger" aria-label="Delete">
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                    {!loadingProducts && filteredProducts.length === 0 && (
+                      <tr><td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No products in catalog.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Products Pagination Bar */}
+              {totalProductPages > 1 && (
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginTop: '16px',
+                  padding: '12px 18px',
+                  background: '#fff',
+                  borderRadius: '10px',
+                  border: '1px solid var(--border-color)',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                  boxShadow: 'var(--shadow-sm)'
+                }}>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+                    Page <strong style={{ color: 'var(--primary-green)' }}>{currentProductPage}</strong> of <strong>{totalProductPages}</strong> ({filteredProducts.length} products total)
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <button
+                      type="button"
+                      disabled={currentProductPage <= 1}
+                      onClick={() => setProductPage(prev => Math.max(prev - 1, 1))}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '6px 12px',
+                        fontSize: '0.8rem',
+                        fontWeight: '600',
+                        borderRadius: '8px',
+                        border: '1px solid var(--border-color)',
+                        background: currentProductPage <= 1 ? '#f8fafc' : '#fff',
+                        color: currentProductPage <= 1 ? '#94a3b8' : 'var(--text-color)',
+                        cursor: currentProductPage <= 1 ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                      title="Previous Page"
+                    >
+                      <ChevronLeft size={15} /> Prev
+                    </button>
+
+                    {Array.from({ length: totalProductPages }, (_, i) => i + 1).map((p) => {
+                      const isCurrent = p === currentProductPage;
+                      return (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => setProductPage(p)}
+                          style={{
+                            minWidth: '32px',
+                            height: '32px',
+                            padding: '0 6px',
+                            fontSize: '0.8rem',
+                            fontWeight: isCurrent ? '700' : '600',
+                            borderRadius: '8px',
+                            border: isCurrent ? '1.5px solid var(--primary-green)' : '1px solid var(--border-color)',
+                            background: isCurrent ? 'var(--primary-green)' : '#fff',
+                            color: isCurrent ? '#fff' : 'var(--text-color)',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          {p}
+                        </button>
+                      );
+                    })}
+
+                    <button
+                      type="button"
+                      disabled={currentProductPage >= totalProductPages}
+                      onClick={() => setProductPage(prev => Math.min(prev + 1, totalProductPages))}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '6px 12px',
+                        fontSize: '0.8rem',
+                        fontWeight: '600',
+                        borderRadius: '8px',
+                        border: '1px solid var(--border-color)',
+                        background: currentProductPage >= totalProductPages ? '#f8fafc' : '#fff',
+                        color: currentProductPage >= totalProductPages ? '#94a3b8' : 'var(--text-color)',
+                        cursor: currentProductPage >= totalProductPages ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                      title="Next Page"
+                    >
+                      Next <ChevronRight size={15} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -2098,15 +2396,20 @@ const AdminDashboard = () => {
           {/* ── Customers Tab ── */}
           {activeTab === 'customers' && (
             <div>
-              <div style={{ position: 'relative', width: '100%', maxWidth: '380px', marginBottom: '22px' }}>
-                <input
-                  type="text"
-                  value={customerSearch}
-                  onChange={e => setCustomerSearch(e.target.value)}
-                  placeholder="Search customers by name, email, or phone..."
-                  style={{ paddingLeft: '42px' }}
-                />
-                <Search size={17} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#aaa' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px', flexWrap: 'wrap', gap: '14px' }}>
+                <div style={{ position: 'relative', width: '100%', maxWidth: '380px' }}>
+                  <input
+                    type="text"
+                    value={customerSearch}
+                    onChange={e => { setCustomerSearch(e.target.value); setCustomerPage(1); }}
+                    placeholder="Search customers by name, email, or phone..."
+                    style={{ paddingLeft: '42px', height: '42px', borderRadius: '8px', border: '1px solid var(--border-color)', width: '100%', fontSize: '0.86rem', background: '#fff' }}
+                  />
+                  <Search size={17} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#aaa' }} />
+                </div>
+                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+                  Showing {customersList.length > 0 ? `${startCustomerIndex + 1}–${Math.min(startCustomerIndex + CUSTOMERS_PER_PAGE, customersList.length)}` : '0'} of {customersList.length} customers
+                </div>
               </div>
 
               <div className="table-container">
@@ -2123,48 +2426,89 @@ const AdminDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {customersList.map(c => (
-                      <tr key={c._id || c.email || c.phone}>
-                        <td data-label="Customer Name" style={{ fontWeight: '700', color: 'var(--primary-green)' }}>{c.name}</td>
-                        <td data-label="Email">{c.email}</td>
-                        <td data-label="Phone">{c.phone}</td>
-                        <td data-label="Shipping Address" style={{ maxWidth: '240px', whiteSpace: 'normal', lineHeight: '1.4', fontSize: '0.82rem' }}>
-                          {c.address || '—'}
-                        </td>
-                        <td data-label="Orders Placed" style={{ textAlign: 'center', fontWeight: '700' }}>
-                          <span className="badge badge-processing" style={{ padding: '4px 10px' }}>
-                            {c.orderCount} {c.orderCount === 1 ? 'Order' : 'Orders'}
-                          </span>
-                        </td>
-                        <td data-label="Total Spent" style={{ fontWeight: '800', color: 'var(--primary-green)' }}>
-                          ₹{c.totalSpent.toLocaleString('en-IN')}
-                        </td>
-                        <td data-label="Last Order">
-                          {c.lastOrderDate ? new Date(c.lastOrderDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
-                        </td>
-                      </tr>
-                    ))}
-                    {customersList.length === 0 && (
+                    {loadingOrders && orders.length === 0 ? (
+                      [...Array(6)].map((_, i) => (
+                        <tr key={`cust-skel-${i}`}>
+                          <td><div className="skeleton-box" style={{ width: '110px', height: '16px' }} /></td>
+                          <td><div className="skeleton-box" style={{ width: '140px', height: '16px' }} /></td>
+                          <td><div className="skeleton-box" style={{ width: '90px', height: '16px' }} /></td>
+                          <td><div className="skeleton-box" style={{ width: '160px', height: '24px' }} /></td>
+                          <td><div className="skeleton-box" style={{ width: '60px', height: '20px' }} /></td>
+                          <td><div className="skeleton-box" style={{ width: '70px', height: '16px' }} /></td>
+                          <td><div className="skeleton-box" style={{ width: '80px', height: '16px' }} /></td>
+                        </tr>
+                      ))
+                    ) : (
+                      paginatedCustomers.map(c => (
+                        <tr key={c._id || c.email || c.phone}>
+                          <td data-label="Customer Name" style={{ fontWeight: '700', color: 'var(--primary-green)' }}>{c.name}</td>
+                          <td data-label="Email">{c.email}</td>
+                          <td data-label="Phone">{c.phone}</td>
+                          <td data-label="Shipping Address" style={{ maxWidth: '240px', whiteSpace: 'normal', lineHeight: '1.4', fontSize: '0.82rem' }}>
+                            {c.address || '—'}
+                          </td>
+                          <td data-label="Orders Placed" style={{ textAlign: 'center', fontWeight: '700' }}>
+                            <span className="badge badge-processing" style={{ padding: '4px 10px' }}>
+                              {c.orderCount} {c.orderCount === 1 ? 'Order' : 'Orders'}
+                            </span>
+                          </td>
+                          <td data-label="Total Spent" style={{ fontWeight: '800', color: 'var(--primary-green)' }}>
+                            ₹{c.totalSpent.toLocaleString('en-IN')}
+                          </td>
+                          <td data-label="Last Order">
+                            {c.lastOrderDate ? new Date(c.lastOrderDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                    {!loadingOrders && customersList.length === 0 && (
                       <tr><td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No customers with orders found.</td></tr>
                     )}
                   </tbody>
                 </table>
               </div>
+
+              {/* Customers Pagination Bar */}
+              {totalCustomerPages > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', padding: '12px 18px', background: '#fff', borderRadius: '10px', border: '1px solid var(--border-color)', flexWrap: 'wrap', gap: '12px', boxShadow: 'var(--shadow-sm)' }}>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+                    Page <strong style={{ color: 'var(--primary-green)' }}>{currentCustomerPage}</strong> of <strong>{totalCustomerPages}</strong>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button type="button" disabled={currentCustomerPage <= 1} onClick={() => setCustomerPage(p => Math.max(p - 1, 1))} style={{ padding: '6px 12px', fontSize: '0.8rem', fontWeight: '600', borderRadius: '8px', border: '1px solid var(--border-color)', background: currentCustomerPage <= 1 ? '#f8fafc' : '#fff', color: currentCustomerPage <= 1 ? '#94a3b8' : 'var(--text-color)', cursor: currentCustomerPage <= 1 ? 'not-allowed' : 'pointer' }}>
+                      <ChevronLeft size={15} /> Prev
+                    </button>
+                    {Array.from({ length: totalCustomerPages }, (_, i) => i + 1).map(p => (
+                      <button key={p} type="button" onClick={() => setCustomerPage(p)} style={{ minWidth: '32px', height: '32px', padding: '0 6px', fontSize: '0.8rem', fontWeight: p === currentCustomerPage ? '700' : '600', borderRadius: '8px', border: p === currentCustomerPage ? '1.5px solid var(--primary-green)' : '1px solid var(--border-color)', background: p === currentCustomerPage ? 'var(--primary-green)' : '#fff', color: p === currentCustomerPage ? '#fff' : 'var(--text-color)', cursor: 'pointer' }}>
+                        {p}
+                      </button>
+                    ))}
+                    <button type="button" disabled={currentCustomerPage >= totalCustomerPages} onClick={() => setCustomerPage(p => Math.min(p + 1, totalCustomerPages))} style={{ padding: '6px 12px', fontSize: '0.8rem', fontWeight: '600', borderRadius: '8px', border: '1px solid var(--border-color)', background: currentCustomerPage >= totalCustomerPages ? '#f8fafc' : '#fff', color: currentCustomerPage >= totalCustomerPages ? '#94a3b8' : 'var(--text-color)', cursor: currentCustomerPage >= totalCustomerPages ? 'not-allowed' : 'pointer' }}>
+                      Next <ChevronRight size={15} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
           {/* ── Users Tab ── */}
           {activeTab === 'users' && (
             <div>
-              <div style={{ position: 'relative', width: '100%', maxWidth: '380px', marginBottom: '22px' }}>
-                <input
-                  type="text"
-                  value={userSearch}
-                  onChange={e => setUserSearch(e.target.value)}
-                  placeholder="Search by name, email, or mobile..."
-                  style={{ paddingLeft: '42px' }}
-                />
-                <Search size={17} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#aaa' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px', flexWrap: 'wrap', gap: '14px' }}>
+                <div style={{ position: 'relative', width: '100%', maxWidth: '380px' }}>
+                  <input
+                    type="text"
+                    value={userSearch}
+                    onChange={e => { setUserSearch(e.target.value); setUserPage(1); }}
+                    placeholder="Search by name, email, or mobile..."
+                    style={{ paddingLeft: '42px', height: '42px', borderRadius: '8px', border: '1px solid var(--border-color)', width: '100%', fontSize: '0.86rem', background: '#fff' }}
+                  />
+                  <Search size={17} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#aaa' }} />
+                </div>
+                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+                  Showing {filteredUsers.length > 0 ? `${startUserIndex + 1}–${Math.min(startUserIndex + USERS_PER_PAGE, filteredUsers.length)}` : '0'} of {filteredUsers.length} users
+                </div>
               </div>
 
               <div className="table-container">
@@ -2181,37 +2525,73 @@ const AdminDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredUsers.map(u => (
-                      <tr key={u._id}>
-                        <td data-label="Name" style={{ fontWeight: '600' }}>{u.name}</td>
-                        <td data-label="Email">{u.email}</td>
-                        <td data-label="Phone">{u.phone}</td>
-                        <td data-label="Shipping Address" style={{ maxWidth: '220px', whiteSpace: 'normal', lineHeight: '1.4', fontSize: '0.82rem', color: u.address ? 'var(--text-color)' : 'var(--text-muted)' }}>
-                          {u.address || <span style={{ fontStyle: 'italic' }}>No order yet</span>}
-                        </td>
-                        <td data-label="Role">
-                          <span className={`badge ${u.isAdmin ? 'badge-completed' : 'badge-pending'}`}>
-                            {u.isAdmin ? 'Admin' : 'Customer'}
-                          </span>
-                        </td>
-                        <td data-label="Joined">{new Date(u.createdAt).toLocaleDateString()}</td>
-                        <td data-label="Actions">
-                          {!u.isAdmin ? (
-                            <button onClick={() => handleUserDelete(u._id)} className="action-btn action-btn-danger" aria-label="Delete user">
-                              <Trash2 size={15} />
-                            </button>
-                          ) : (
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', background: 'var(--card-bg)', padding: '4px 10px', borderRadius: '100px', border: '1px solid var(--border-color)' }}>Protected</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                    {filteredUsers.length === 0 && (
+                    {loadingUsers && users.length === 0 ? (
+                      [...Array(6)].map((_, i) => (
+                        <tr key={`user-skel-${i}`}>
+                          <td><div className="skeleton-box" style={{ width: '110px', height: '16px' }} /></td>
+                          <td><div className="skeleton-box" style={{ width: '140px', height: '16px' }} /></td>
+                          <td><div className="skeleton-box" style={{ width: '90px', height: '16px' }} /></td>
+                          <td><div className="skeleton-box" style={{ width: '150px', height: '24px' }} /></td>
+                          <td><div className="skeleton-box" style={{ width: '65px', height: '20px' }} /></td>
+                          <td><div className="skeleton-box" style={{ width: '80px', height: '16px' }} /></td>
+                          <td><div className="skeleton-box" style={{ width: '40px', height: '26px' }} /></td>
+                        </tr>
+                      ))
+                    ) : (
+                      paginatedUsers.map(u => (
+                        <tr key={u._id}>
+                          <td data-label="Name" style={{ fontWeight: '600' }}>{u.name}</td>
+                          <td data-label="Email">{u.email}</td>
+                          <td data-label="Phone">{u.phone}</td>
+                          <td data-label="Shipping Address" style={{ maxWidth: '220px', whiteSpace: 'normal', lineHeight: '1.4', fontSize: '0.82rem', color: u.address ? 'var(--text-color)' : 'var(--text-muted)' }}>
+                            {u.address || <span style={{ fontStyle: 'italic' }}>No order yet</span>}
+                          </td>
+                          <td data-label="Role">
+                            <span className={`badge ${u.isAdmin ? 'badge-completed' : 'badge-pending'}`}>
+                              {u.isAdmin ? 'Admin' : 'Customer'}
+                            </span>
+                          </td>
+                          <td data-label="Joined">{new Date(u.createdAt).toLocaleDateString()}</td>
+                          <td data-label="Actions">
+                            {!u.isAdmin ? (
+                              <button onClick={() => handleUserDelete(u._id)} className="action-btn action-btn-danger" aria-label="Delete user">
+                                <Trash2 size={15} />
+                              </button>
+                            ) : (
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', background: 'var(--card-bg)', padding: '4px 10px', borderRadius: '100px', border: '1px solid var(--border-color)' }}>Protected</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                    {!loadingUsers && filteredUsers.length === 0 && (
                       <tr><td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No users found.</td></tr>
                     )}
                   </tbody>
                 </table>
               </div>
+
+              {/* Users Pagination Bar */}
+              {totalUserPages > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', padding: '12px 18px', background: '#fff', borderRadius: '10px', border: '1px solid var(--border-color)', flexWrap: 'wrap', gap: '12px', boxShadow: 'var(--shadow-sm)' }}>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+                    Page <strong style={{ color: 'var(--primary-green)' }}>{currentUserPage}</strong> of <strong>{totalUserPages}</strong>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button type="button" disabled={currentUserPage <= 1} onClick={() => setUserPage(p => Math.max(p - 1, 1))} style={{ padding: '6px 12px', fontSize: '0.8rem', fontWeight: '600', borderRadius: '8px', border: '1px solid var(--border-color)', background: currentUserPage <= 1 ? '#f8fafc' : '#fff', color: currentUserPage <= 1 ? '#94a3b8' : 'var(--text-color)', cursor: currentUserPage <= 1 ? 'not-allowed' : 'pointer' }}>
+                      <ChevronLeft size={15} /> Prev
+                    </button>
+                    {Array.from({ length: totalUserPages }, (_, i) => i + 1).map(p => (
+                      <button key={p} type="button" onClick={() => setUserPage(p)} style={{ minWidth: '32px', height: '32px', padding: '0 6px', fontSize: '0.8rem', fontWeight: p === currentUserPage ? '700' : '600', borderRadius: '8px', border: p === currentUserPage ? '1.5px solid var(--primary-green)' : '1px solid var(--border-color)', background: p === currentUserPage ? 'var(--primary-green)' : '#fff', color: p === currentUserPage ? '#fff' : 'var(--text-color)', cursor: 'pointer' }}>
+                        {p}
+                      </button>
+                    ))}
+                    <button type="button" disabled={currentUserPage >= totalUserPages} onClick={() => setUserPage(p => Math.min(p + 1, totalUserPages))} style={{ padding: '6px 12px', fontSize: '0.8rem', fontWeight: '600', borderRadius: '8px', border: '1px solid var(--border-color)', background: currentUserPage >= totalUserPages ? '#f8fafc' : '#fff', color: currentUserPage >= totalUserPages ? '#94a3b8' : 'var(--text-color)', cursor: currentUserPage >= totalUserPages ? 'not-allowed' : 'pointer' }}>
+                      Next <ChevronRight size={15} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </main>
