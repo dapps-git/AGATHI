@@ -45,7 +45,9 @@ API.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response && error.response.status === 401) {
+    const reqUrl = error.config?.url || '';
+    const isPaymentEndpoint = reqUrl.includes('/create-order') || reqUrl.includes('/verify-payment');
+    if (error.response && error.response.status === 401 && !isPaymentEndpoint) {
       localStorage.removeItem('userInfo');
       window.dispatchEvent(new Event('auth-logout'));
     }
