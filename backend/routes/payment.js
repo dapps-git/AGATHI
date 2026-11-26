@@ -74,8 +74,8 @@ router.post('/create-order', async (req, res) => {
     });
   }
 
-  const keyId = process.env.RAZORPAY_KEY_ID;
-  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  const keyId = (process.env.RAZORPAY_KEY_ID || '').trim();
+  const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
   if (!keyId || !keySecret) {
     return res.status(401).json({
       message: 'Razorpay credentials are not configured',
@@ -119,7 +119,7 @@ router.post('/verify-payment', async (req, res) => {
     });
   }
 
-  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
   if (!keySecret) {
     return res.status(500).json({
       success: false,
