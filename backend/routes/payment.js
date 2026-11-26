@@ -1,24 +1,39 @@
 import express from 'express';
 import crypto from 'crypto';
 import mongoose from 'mongoose';
-import Razorpay from 'razorpay';
 import Product from '../models/Product.js';
 import { getFallbackDb } from '../utils/dbFallback.js';
 
 const router = express.Router();
 
-const getRazorpayClient = () => {
-  const keyId = process.env.RAZORPAY_KEY_ID;
-  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+const createRazorpayOrder = async ({ amount, currency, receipt, keyId, keySecret }) => {
+  try {
+    const { default: Razorpay } = await import('razorpay');
+    const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
+    return await razorpay.orders.create({ amount, currency, receipt });
+  } catch (importErr) {
+    if (importErr?.code !== 'ERR_MODULE_NOT_FOUND') {
+      throw importErr;
+    }
 
-  if (!keyId || !keySecret) {
-    return null;
+    const authHeader = Buffer.from(`${keyId}:${keySecret}`).toString('base64');
+    const response = await fetch('https://api.razorpay.com/v1/orders', {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${authHeader}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ amount, currency, receipt }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      const err = new Error(data?.error?.description || 'Failed to create Razorpay order');
+      err.statusCode = response.status;
+      throw err;
+    }
+    return data;
   }
-
-  return new Razorpay({
-    key_id: keyId,
-    key_secret: keySecret,
-  });
 };
 
 // @desc    Create a Razorpay order (amount calculated strictly on backend from product price * quantity)
@@ -59,18 +74,21 @@ router.post('/create-order', async (req, res) => {
     });
   }
 
-  const razorpay = getRazorpayClient();
-  if (!razorpay) {
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  if (!keyId || !keySecret) {
     return res.status(401).json({
       message: 'Razorpay credentials are not configured',
     });
   }
 
   try {
-    const order = await razorpay.orders.create({
+    const order = await createRazorpayOrder({
       amount: amountInPaise,
       currency: String(currency || 'INR').toUpperCase(),
       receipt: receipt || `rcpt_${Date.now()}`,
+      keyId,
+      keySecret,
     });
 
     return res.status(200).json({
