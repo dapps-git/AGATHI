@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { X, ArrowRight, ArrowLeft, Send, CheckCircle, Search } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, Send, CheckCircle, Search, CreditCard } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import API from '../utils/api';
 import { Country, State, City } from 'country-state-city';
@@ -331,66 +331,151 @@ const OrderModal = ({ product, onClose }) => {
   };
 
   const [waUrl, setWaUrl] = useState('');
+  const [paymentResult, setPaymentResult] = useState(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  const handleRazorpayPayment = async () => {
     setError('');
+    const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
+
+    if (!razorpayKeyId) {
+      setError('Payment gateway is not configured. Please try again later.');
+      return;
+    }
+
+    if (typeof window === 'undefined' || !window.Razorpay) {
+      setError('Razorpay checkout failed to load. Please refresh the page and try again.');
+      return;
+    }
 
     const compositedAddress = formData.city
       ? `${formData.address}, ${formData.city}`
       : formData.address;
 
-    const calcTotalPrice = (product.price || 1550) * quantity;
-    const ownerWhatsApp = '919539416003';
+    setLoading(true);
+    try {
+      const { data: orderData } = await API.post('/create-order', {
+        productId: product._id,
+        quantity,
+        currency: 'INR',
+        receipt: `agadi_${Date.now()}`,
+      });
 
-    const waMessage = [
-      `🌿 *_AGADI CHOORNAM_*`,
-      `*_ORDER FORM_*`,
-      ``,
-      `_Please fill in the details below:_`,
-      ``,
-      `👤 Full Name: ${formData.name}`,
-      `🏠 House Name: ${formData.address}${formData.landmark ? ` (${formData.landmark})` : ''}`,
-      `📮 Post Office: ${formData.city || ''}`,
-      `📍 District: ${formData.district || ''}`,
-      `📌 Pincode: ${formData.pinCode || ''}`,
-      `📞 Phone Number: ${formData.phone}${formData.alternatePhone ? ` / ${formData.alternatePhone}` : ''}`,
-      ``,
-      `🛒 *Product:* ${product.name || 'Agadi Choorna'}`,
-      `📦 *Quantity:* ${quantity}`,
-      `💰 *Total Amount:* ₹${calcTotalPrice}`,
-      ``,
-      `🌿 _Thank you for choosing Agadi Choornam!_`,
-    ].join('\n');
+      const options = {
+        key: razorpayKeyId,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: 'Agadi Naturals',
+        description: product.name || 'Agadi Choorna',
+        order_id: orderData.order_id,
+        prefill: {
+          name: formData.name,
+          email: formData.email,
+          contact: formData.phone,
+        },
+        notes: {
+          address: compositedAddress,
+          district: formData.district,
+          state: formData.state,
+          pinCode: formData.pinCode,
+        },
+        theme: {
+          color: '#2F4F1E',
+        },
+        handler: async (response) => {
+          try {
+            const { data: verifyData } = await API.post('/verify-payment', {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+            });
 
-    const url = `https://api.whatsapp.com/send?phone=${ownerWhatsApp}&text=${encodeURIComponent(waMessage)}`;
-    setWaUrl(url);
+            if (!verifyData?.success) {
+              setError(verifyData?.message || 'Payment verification failed.');
+              setLoading(false);
+              return;
+            }
 
-    // Save locally
-    if (user) {
-      user.address = [compositedAddress, formData.landmark, formData.district, formData.state, formData.pinCode].filter(Boolean).join(', ');
-      const stored = JSON.parse(localStorage.getItem('userInfo'));
-      if (stored) {
-        stored.address = user.address;
-        localStorage.setItem('userInfo', JSON.stringify(stored));
-      }
+            if (user) {
+              user.address = [compositedAddress, formData.landmark, formData.district, formData.state, formData.pinCode].filter(Boolean).join(', ');
+              const stored = JSON.parse(localStorage.getItem('userInfo'));
+              if (stored) {
+                stored.address = user.address;
+                localStorage.setItem('userInfo', JSON.stringify(stored));
+              }
+            }
+
+            const calcTotalPrice = orderData.amount / 100;
+            const ownerWhatsApp = '919539416003';
+
+            const waMessage = [
+              `🌿 *_AGADI CHOORNAM_*`,
+              `*_PAID ORDER CONFIRMATION_*`,
+              ``,
+              `👤 Full Name: ${formData.name}`,
+              `🏠 House Name: ${formData.address}${formData.landmark ? ` (${formData.landmark})` : ''}`,
+              `📮 Post Office: ${formData.city || ''}`,
+              `📍 District: ${formData.district || ''}`,
+              `📌 Pincode: ${formData.pinCode || ''}`,
+              `📞 Phone Number: ${formData.phone}${formData.alternatePhone ? ` / ${formData.alternatePhone}` : ''}`,
+              ``,
+              `🛒 *Product:* ${product.name || 'Agadi Choorna'}`,
+              `📦 *Quantity:* ${quantity}`,
+              `💰 *Total Paid:* ₹${calcTotalPrice}`,
+              `✅ *Payment Status:* PAID (Razorpay)`,
+              `🧾 *Payment ID:* ${response.razorpay_payment_id}`,
+              `🆔 *Order ID:* ${response.razorpay_order_id}`,
+              ``,
+              `🌿 _Thank you for choosing Agadi Choornam!_`,
+            ].join('\n');
+
+            const url = `https://api.whatsapp.com/send?phone=${ownerWhatsApp}&text=${encodeURIComponent(waMessage)}`;
+            setWaUrl(url);
+
+            await API.post('/orders', {
+              user: user?._id || null,
+              ...formData,
+              address: compositedAddress,
+              productId: product._id,
+              quantity,
+              paymentMethod: 'Razorpay',
+              paymentStatus: 'Paid',
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+            }).catch(() => {});
+
+            setPaymentResult({
+              paymentId: response.razorpay_payment_id,
+              orderId: response.razorpay_order_id,
+              amount: orderData.amount / 100,
+            });
+            setLoading(false);
+            setStep(3);
+
+            // Redirect paid order details to WhatsApp
+            window.location.href = url;
+          } catch (verifyErr) {
+            setError(verifyErr.response?.data?.message || 'Payment verification failed. Please contact support.');
+            setLoading(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setLoading(false);
+            setError('Payment was cancelled. Please complete the payment to place your order.');
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', (response) => {
+        setLoading(false);
+        setError(response.error?.description || 'Payment failed. Please try again.');
+      });
+      rzp.open();
+    } catch (err) {
+      setLoading(false);
+      setError(err.response?.data?.message || 'Unable to initiate payment. Please try again.');
     }
-
-    // Fire API in background non-blocking
-    API.post('/orders', {
-      user: user?._id || null,
-      ...formData,
-      address: compositedAddress,
-      productId: product._id,
-      quantity,
-    }).catch(() => { });
-
-    setStep(3);
-    setLoading(false);
-
-    // Direct redirect to WhatsApp immediately
-    window.location.href = url;
   };
 
   const totalPrice = product.price * quantity;
@@ -440,7 +525,7 @@ const OrderModal = ({ product, onClose }) => {
             <p style={{ fontSize: '0.78rem', margin: 0 }}>
               {step === 1 && 'Enter your contact and shipping details.'}
               {step === 2 && 'Review your order and confirm quantity.'}
-              {step === 3 && 'Order submitted! Connecting to WhatsApp...'}
+              {step === 3 && (paymentResult ? 'Payment confirmed! Thank you for your order.' : 'Order submitted! Connecting to WhatsApp...')}
             </p>
           </div>
 
@@ -957,17 +1042,23 @@ const OrderModal = ({ product, onClose }) => {
               </div>
 
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={prevStep} className="btn btn-outline" style={{ flexGrow: 1, padding: '10px', fontSize: '0.85rem' }} disabled={loading}>
+                <button type="button" onClick={prevStep} className="btn btn-outline" style={{ flexGrow: 1, padding: '10px', fontSize: '0.85rem' }} disabled={loading}>
                   <ArrowLeft size={16} />
                   <span>Back</span>
                 </button>
-                <button onClick={handleSubmit} className="btn btn-primary" style={{ flexGrow: 2, padding: '10px', fontSize: '0.85rem' }} disabled={loading}>
+                <button
+                  type="button"
+                  onClick={handleRazorpayPayment}
+                  className="btn btn-primary"
+                  style={{ flexGrow: 2, padding: '11px', fontSize: '0.9rem' }}
+                  disabled={loading}
+                >
                   {loading ? (
                     <span>Processing...</span>
                   ) : (
                     <>
-                      <Send size={16} />
-                      <span>Confirm via WhatsApp</span>
+                      <CreditCard size={16} />
+                      <span>Pay Now • ₹{totalPrice}</span>
                     </>
                   )}
                 </button>
@@ -980,21 +1071,48 @@ const OrderModal = ({ product, onClose }) => {
               <div style={{ color: 'var(--primary-green)', marginBottom: '16px', display: 'flex', justifyContent: 'center' }}>
                 <CheckCircle size={60} fill="rgba(47, 79, 30, 0.1)" />
               </div>
-              <h4 style={{ fontSize: '1.25rem', color: 'var(--primary-green)', marginBottom: '8px', fontWeight: '700' }}>Order Details Ready!</h4>
-              <p style={{ color: 'var(--text-muted)', maxWidth: '380px', margin: '0 auto 16px auto', fontSize: '0.85rem', lineHeight: 1.5 }}>
-                Opening WhatsApp to send your order details directly to our support team (+91 9539416003).
-              </p>
-              {waUrl && (
-                <a
-                  href={waUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-primary"
-                  style={{ padding: '12px 24px', fontSize: '0.9rem', width: '100%', maxWidth: '280px', margin: '8px auto 0 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                >
-                  <Send size={18} />
-                  <span>Click to Open WhatsApp</span>
-                </a>
+              {paymentResult ? (
+                <>
+                  <h4 style={{ fontSize: '1.25rem', color: 'var(--primary-green)', marginBottom: '8px', fontWeight: '700' }}>Payment Successful!</h4>
+                  <p style={{ color: 'var(--text-muted)', maxWidth: '380px', margin: '0 auto 14px auto', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                    Your payment of ₹{paymentResult.amount} is verified and your order is saved. Opening WhatsApp to send your paid order details to our team (+91 9539416003).
+                  </p>
+                  <div style={{ background: '#f8faf7', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: '10px 14px', fontSize: '0.8rem', maxWidth: '360px', margin: '0 auto 16px auto', textAlign: 'left' }}>
+                    <div><strong>Payment ID:</strong> {paymentResult.paymentId}</div>
+                    <div><strong>Order ID:</strong> {paymentResult.orderId}</div>
+                  </div>
+                  {waUrl && (
+                    <a
+                      href={waUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-primary"
+                      style={{ padding: '12px 24px', fontSize: '0.9rem', width: '100%', maxWidth: '280px', margin: '8px auto 0 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                    >
+                      <Send size={18} />
+                      <span>Click to Open WhatsApp</span>
+                    </a>
+                  )}
+                </>
+              ) : (
+                <>
+                  <h4 style={{ fontSize: '1.25rem', color: 'var(--primary-green)', marginBottom: '8px', fontWeight: '700' }}>Order Details Ready!</h4>
+                  <p style={{ color: 'var(--text-muted)', maxWidth: '380px', margin: '0 auto 16px auto', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                    Opening WhatsApp to send your order details directly to our support team (+91 9539416003).
+                  </p>
+                  {waUrl && (
+                    <a
+                      href={waUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-primary"
+                      style={{ padding: '12px 24px', fontSize: '0.9rem', width: '100%', maxWidth: '280px', margin: '8px auto 0 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                    >
+                      <Send size={18} />
+                      <span>Click to Open WhatsApp</span>
+                    </a>
+                  )}
+                </>
               )}
               <style>{`
                 @keyframes spin {

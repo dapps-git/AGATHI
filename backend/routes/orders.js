@@ -26,6 +26,10 @@ router.post('/', async (req, res) => {
     pinCode,
     productId,
     quantity,
+    paymentMethod,
+    paymentStatus,
+    razorpayOrderId,
+    razorpayPaymentId,
   } = req.body;
 
   try {
@@ -94,7 +98,11 @@ router.post('/', async (req, res) => {
         },
         quantity,
         totalPrice,
-        status: 'Pending',
+        status: paymentStatus === 'Paid' ? 'Confirmed' : 'Pending',
+        paymentMethod: paymentMethod || 'WhatsApp',
+        paymentStatus: paymentStatus || 'Pending',
+        razorpayOrderId: razorpayOrderId || null,
+        razorpayPaymentId: razorpayPaymentId || null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -149,7 +157,11 @@ router.post('/', async (req, res) => {
       product: productId,
       quantity,
       totalPrice,
-      status: 'Pending',
+      status: paymentStatus === 'Paid' ? 'Confirmed' : 'Pending',
+      paymentMethod: paymentMethod || 'WhatsApp',
+      paymentStatus: paymentStatus || 'Pending',
+      razorpayOrderId: razorpayOrderId || undefined,
+      razorpayPaymentId: razorpayPaymentId || undefined,
     });
 
     const createdOrder = await order.save();
