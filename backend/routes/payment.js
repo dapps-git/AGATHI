@@ -8,8 +8,21 @@ const router = express.Router();
 
 const createRazorpayOrder = async ({ amount, currency, receipt, keyId, keySecret }) => {
   try {
-    const { default: Razorpay } = await import('razorpay');
-    const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
+    const mod = await import('razorpay');
+    const RazorpayCtor =
+      typeof mod.default === 'function'
+        ? mod.default
+        : typeof mod.default?.default === 'function'
+          ? mod.default.default
+          : mod.Razorpay;
+
+    if (typeof RazorpayCtor !== 'function') {
+      const err = new Error('Razorpay constructor not found');
+      err.code = 'ERR_MODULE_NOT_FOUND';
+      throw err;
+    }
+
+    const razorpay = new RazorpayCtor({ key_id: keyId, key_secret: keySecret });
     return await razorpay.orders.create({ amount, currency, receipt });
   } catch (importErr) {
     if (importErr?.code !== 'ERR_MODULE_NOT_FOUND') {
