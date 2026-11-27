@@ -441,6 +441,7 @@ const OrderModal = ({ product, onClose }) => {
               paymentStatus: 'Paid',
               razorpayOrderId: response.razorpay_order_id,
               razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
             }).catch(() => {});
 
             setPaymentResult({

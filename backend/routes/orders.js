@@ -1,4 +1,5 @@
 import express from 'express';
+import crypto from 'crypto';
 import mongoose from 'mongoose';
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
@@ -30,6 +31,7 @@ router.post('/', async (req, res) => {
     paymentStatus,
     razorpayOrderId,
     razorpayPaymentId,
+    razorpaySignature,
   } = req.body;
 
   try {
@@ -66,6 +68,28 @@ router.post('/', async (req, res) => {
 
     const ownerWhatsAppNumber = (process.env.WHATSAPP_PHONE || '919539416003').replace(/\+/g, '');
 
+    // Verify Razorpay signature server-side before marking any order as Paid
+    let isVerifiedRazorpay = false;
+    if (paymentMethod === 'Razorpay' || paymentStatus === 'Paid') {
+      const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
+      if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature || !keySecret) {
+        return res.status(400).json({ message: 'Missing Razorpay payment verification details' });
+      }
+      const expectedSig = crypto
+        .createHmac('sha256', keySecret)
+        .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+        .digest('hex');
+      const expectedBuf = Buffer.from(expectedSig, 'utf8');
+      const receivedBuf = Buffer.from(String(razorpaySignature), 'utf8');
+      isVerifiedRazorpay =
+        expectedBuf.length === receivedBuf.length &&
+        crypto.timingSafeEqual(expectedBuf, receivedBuf);
+
+      if (!isVerifiedRazorpay) {
+        return res.status(400).json({ message: 'Invalid Razorpay payment signature' });
+      }
+    }
+
     // Helper: check if productId looks like a fallback DB ID (e.g. 'prod-1720000000000')
     const isFallbackId = typeof productId === 'string' && productId.startsWith('prod-');
 
@@ -98,11 +122,11 @@ router.post('/', async (req, res) => {
         },
         quantity,
         totalPrice,
-        status: paymentStatus === 'Paid' ? 'Confirmed' : 'Pending',
-        paymentMethod: paymentMethod || 'WhatsApp',
-        paymentStatus: paymentStatus || 'Pending',
-        razorpayOrderId: razorpayOrderId || null,
-        razorpayPaymentId: razorpayPaymentId || null,
+        status: isVerifiedRazorpay ? 'Paid' : 'Pending',
+        paymentMethod: isVerifiedRazorpay ? 'Razorpay' : 'WhatsApp',
+        paymentStatus: isVerifiedRazorpay ? 'Paid' : 'Pending',
+        razorpayOrderId: isVerifiedRazorpay ? razorpayOrderId : null,
+        razorpayPaymentId: isVerifiedRazorpay ? razorpayPaymentId : null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -157,11 +181,11 @@ router.post('/', async (req, res) => {
       product: productId,
       quantity,
       totalPrice,
-      status: paymentStatus === 'Paid' ? 'Confirmed' : 'Pending',
-      paymentMethod: paymentMethod || 'WhatsApp',
-      paymentStatus: paymentStatus || 'Pending',
-      razorpayOrderId: razorpayOrderId || undefined,
-      razorpayPaymentId: razorpayPaymentId || undefined,
+      status: isVerifiedRazorpay ? 'Paid' : 'Pending',
+      paymentMethod: isVerifiedRazorpay ? 'Razorpay' : 'WhatsApp',
+      paymentStatus: isVerifiedRazorpay ? 'Paid' : 'Pending',
+      razorpayOrderId: isVerifiedRazorpay ? razorpayOrderId : undefined,
+      razorpayPaymentId: isVerifiedRazorpay ? razorpayPaymentId : undefined,
     });
 
     const createdOrder = await order.save();

@@ -506,6 +506,8 @@ const AdminDashboard = () => {
     const name = order.name || 'Customer';
     const product = order.product?.name || 'Agadi Choorna';
     switch (type) {
+      case 'Paid':
+        return `Thank you for choosing Agadi Naturals! Your payment of ₹${order.totalPrice} for ${product} has been received. Please stay noticed, we will contact you shortly regarding your order.`;
       case 'Confirmed':
         return `Dear ${name}, your order for ${product} (₹${order.totalPrice}) has been CONFIRMED! We are preparing your package. Thank you for choosing Agadi Choorna!`;
       case 'Processing':
@@ -527,6 +529,8 @@ const AdminDashboard = () => {
     setMsgOrder(order);
     if (defaultType && defaultType !== 'Custom') {
       setMsgText(getTemplateMsg(order, defaultType));
+    } else if (order.status === 'Paid') {
+      setMsgText(getTemplateMsg(order, 'Paid'));
     } else {
       setMsgText(`Dear ${order.name || 'Customer'}, regarding your order for ${order.product?.name || 'Agadi Choorna'}: `);
     }
@@ -1725,6 +1729,7 @@ const AdminDashboard = () => {
                               }}
                             >
                               <option value="Pending">Pending</option>
+                              <option value="Paid">Paid</option>
                               <option value="Confirmed">Confirmed</option>
                               <option value="Processing">Processing</option>
                               <option value="Shipped">Shipped</option>
@@ -2893,6 +2898,7 @@ const AdminDashboard = () => {
                     }}
                   >
                     <option value="Pending">Pending</option>
+                    <option value="Paid">Paid</option>
                     <option value="Confirmed">Confirmed</option>
                     <option value="Processing">Processing</option>
                     <option value="Shipped">Shipped</option>
