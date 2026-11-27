@@ -3044,7 +3044,8 @@ const AdminDashboard = () => {
                 </label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                   {[
-                    { label: 'Confirmed', type: 'Confirmed', bg: '#d1fae5', color: '#065f46' },
+                    { label: 'Paid', type: 'Paid', bg: '#d1fae5', color: '#065f46' },
+                    { label: 'Confirmed', type: 'Confirmed', bg: '#dcfce7', color: '#166534' },
                     { label: 'Shipped', type: 'Shipped', bg: '#f3e8ff', color: '#6b21a8' },
                     { label: 'Delivered', type: 'Delivered', bg: '#dcfce7', color: '#15803d' },
                     { label: 'Delay Notice', type: 'Delay', bg: '#fef3c7', color: '#92400e' },
